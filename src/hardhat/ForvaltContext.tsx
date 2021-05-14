@@ -123,7 +123,7 @@ export const Symfoni: React.FC<SymfoniProps> = ({
     const [provider, setProvider] = useState<providers.Provider>(undefined!);
     const providers = PROVIDERS
 
-    const [selectedSigner, setSelectedSigner] = useState<SignerTypes>("prompt");
+    const [selectedSigner, setSelectedSigner] = useState<SignerTypes>("walletConnectV2");
     const [signer, setSigner] = useState<Signer | undefined>(undefined);
     const signers = SIGNERS
     const loading = state === STATE.DEFAULT || state === STATE.INITIALIZING
@@ -173,7 +173,7 @@ export const Symfoni: React.FC<SymfoniProps> = ({
                     return resolve(signer)
                 }
                 const _signer = new WalletConnectSigner({
-                    methods: ['eth_sendTransaction', 'personal_sign', 'eth_signTypedData', 'eth_signTransaction', 'oracle_data']
+                    methods: ['eth_sendTransaction', 'personal_sign', 'eth_signTypedData', 'eth_signTransaction', 'oracle_data'],
                 }).connect(_provider);
 
                 if (forceSigner) {
