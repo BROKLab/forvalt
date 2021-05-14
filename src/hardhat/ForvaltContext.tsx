@@ -3,7 +3,7 @@
 /* eslint-disable */
 import { SIGNER_EVENTS, WalletConnectSigner } from "@symfoni/walletconnect-v2-ethers-signer";
 import copy from "clipboard-copy";
-import { ethers, providers, Signer as EthersSigner } from "ethers";
+import { ethers, providers, Signer as EthersSigner, Wallet } from "ethers";
 import { Box, Button, Grid, Image, Text, TextInput } from "grommet";
 import { Copy } from "grommet-icons";
 import React, { useCallback, useEffect, useState } from "react";
@@ -123,7 +123,7 @@ export const Symfoni: React.FC<SymfoniProps> = ({
     const [provider, setProvider] = useState<providers.Provider>(undefined!);
     const providers = PROVIDERS
 
-    const [selectedSigner, setSelectedSigner] = useState<SignerTypes>("walletConnectV2");
+    const [selectedSigner, setSelectedSigner] = useState<SignerTypes>("prompt");
     const [signer, setSigner] = useState<Signer | undefined>(undefined);
     const signers = SIGNERS
     const loading = state === STATE.DEFAULT || state === STATE.INITIALIZING
@@ -165,46 +165,58 @@ export const Symfoni: React.FC<SymfoniProps> = ({
     };
 
     const getSigner = useCallback(async (_provider: providers.Provider, _forceSigner?: boolean) => {
-        return new Promise<Signer | undefined>(async (resolve) => {
-            console.log("getSigner with force ", forceSigner)
-            let resolved = false
-            if (signer) {
-                return resolve(signer)
-            }
-            const _signer = new WalletConnectSigner({
-                methods: ['eth_sendTransaction', 'personal_sign', 'eth_signTypedData', 'eth_signTransaction', 'oracle_data']
-            }).connect(_provider);
+        if (selectedSigner === "walletConnectV2") {
+            return new Promise<Signer | undefined>(async (resolve) => {
+                console.log("getSigner with force ", forceSigner)
+                let resolved = false
+                if (signer) {
+                    return resolve(signer)
+                }
+                const _signer = new WalletConnectSigner({
+                    methods: ['eth_sendTransaction', 'personal_sign', 'eth_signTypedData', 'eth_signTransaction', 'oracle_data']
+                }).connect(_provider);
 
-            if (forceSigner) {
-                _signer.on(SIGNER_EVENTS.uri, (uri: any) => {
-                    console.log("NEED URI QR CODE")
-                    console.log(uri)
-                    setWalletConnectURI(uri)
-                    setShowWalletConnectLogin(true)
-                });
+                if (forceSigner) {
+                    _signer.on(SIGNER_EVENTS.uri, (uri: any) => {
+                        console.log("NEED URI QR CODE")
+                        console.log(uri)
+                        setWalletConnectURI(uri)
+                        setShowWalletConnectLogin(true)
+                    });
 
-                _signer.on(SIGNER_EVENTS.statusUpdate, (uri: any) => {
-                    setShowWalletConnectLogin(false)
-                    resolve(_signer)
-                });
-            } else {
-                _signer.on(SIGNER_EVENTS.statusUpdate, (session: any) => {
-                    if (!resolved) {
-                        resolved = true
-                        return resolve(_signer)
-                    }
-                });
-                setTimeout(() => {
-                    console.log("TImeout", forceSigner)
-                    if (!resolved && !forceSigner) {
-                        console.log(`No signer received within ${SIGNER_TIMEOUT / 1000} seconds, proceeding without signer`)
-                        resolved = true
-                        return resolve(undefined)
-                    }
-                }, SIGNER_TIMEOUT)
-            }
-            _signer.open({ onlyReconnect: !forceSigner })
-        })
+                    _signer.on(SIGNER_EVENTS.statusUpdate, (uri: any) => {
+                        setShowWalletConnectLogin(false)
+                        resolve(_signer)
+                    });
+                } else {
+                    _signer.on(SIGNER_EVENTS.statusUpdate, (session: any) => {
+                        if (!resolved) {
+                            resolved = true
+                            return resolve(_signer)
+                        }
+                    });
+                    setTimeout(() => {
+                        console.log("TImeout", forceSigner)
+                        if (!resolved && !forceSigner) {
+                            console.log(`No signer received within ${SIGNER_TIMEOUT / 1000} seconds, proceeding without signer`)
+                            resolved = true
+                            return resolve(undefined)
+                        }
+                    }, SIGNER_TIMEOUT)
+                }
+                _signer.open({ onlyReconnect: !forceSigner })
+            })
+        } else if (selectedSigner === "prompt") {
+            return new Promise<Signer | undefined>(async (resolve) => {
+                console.log("getSigner with force ", forceSigner)
+                let resolved = false
+                if (signer) {
+                    return resolve(signer)
+                }
+                const _signer = new Wallet("ac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80").connect(_provider);
+                resolve(_signer)
+            })
+        }
     }, [forceSigner]);
 
     const init = async (opts: InitOpts = {}) => {
@@ -317,10 +329,10 @@ export const Symfoni: React.FC<SymfoniProps> = ({
                                                         </Grid>
                                                         <Grid columns={["2/3", "1/3"]}>
                                                             <TextInput size="small" value={walletConnectURI}></TextInput>
-                                                            <Button size="small" icon={<Copy></Copy>} label="Copy" onClick={(e) => copy(walletConnectURI)}></Button>
+                                                            <Button size="small" icon={<Copy></Copy>} label="Copy" onClick={() => copy(walletConnectURI)}></Button>
                                                         </Grid>
                                                         <Grid columns={"1/2"} gap="small">
-                                                            <Button size="medium" label="Symfoni Browser Test Wallet" target={"_blank"} href={"https://symfoni-browser-wallet-stage.herokuapp.com/wallet-connect?wc-uri=" + encodeURIComponent(walletConnectURI) + "&callback-url=" + encodeURIComponent(document.URL)}></Button>
+                                                            <Button size="medium" label="Symfoni Browser Test Wallet" target={"_blank"} href={BROWSER_WALLET_URL + "?wc-uri=" + encodeURIComponent(walletConnectURI) + "&callback-url=" + encodeURIComponent(document.URL)}></Button>
                                                         </Grid>
                                                     </Box>
                                                     : <Text>No Wallet Connect URI found</Text>
