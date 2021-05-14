@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { Box, Button, Header, Image, ResponsiveContext, Text } from 'grommet';
 import { Link } from 'react-router-dom';
 import { Account } from './Account';
 
 import BRREG_LOGO_SVG from './../../assets/brreg_logo.svg'
 import BRREG_LOGO_SMALL_PNG from './../../assets/brreg_logo.png'
+import { SymfoniContext } from '../../hardhat/ForvaltContext';
 
 
 
@@ -12,6 +13,7 @@ interface Props { }
 
 export const Navigation: React.FC<Props> = () => {
     const size = React.useContext(ResponsiveContext);
+    const { init } = useContext(SymfoniContext)
     return (
         <Header background="brand-contrast" pad="small" height={{ min: "15vh" }}>
             <Box>
@@ -33,11 +35,10 @@ export const Navigation: React.FC<Props> = () => {
                 <Link to="/register/list">
                     <Button size="small" label="Register" hoverIndicator focusIndicator={false} />
                 </Link>
+                <Button label="Loginn" size="small" hoverIndicator focusIndicator={false} onClick={() => init({ forceSigner: true })}></Button>
 
             </Box>
-            <Box direction="row" gap="small" >
-                <Account></Account>
-            </Box>
+
         </Header>
     )
 }

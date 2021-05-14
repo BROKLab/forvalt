@@ -26,6 +26,7 @@ import { CapTableRegistry__factory } from "./typechain/factories/CapTableRegistr
 import { ERC1400AuthValidator__factory } from "./typechain/factories/ERC1400AuthValidator__factory";
 import { ERC1400__factory } from "./typechain/factories/ERC1400__factory";
 import { ERC1820Registry__factory } from "./typechain/factories/ERC1820Registry__factory";
+import QRCode from "qrcode.react";
 
 export const SymfoniContext = React.createContext<SymfoniContextInterface>(undefined!);
 export const ERC1400Context = React.createContext<SymfoniERC1400>(undefined!);
@@ -83,6 +84,7 @@ export interface InitOpts {
     provider?: ProviderTypes,
     forceSigner?: boolean
 }
+const BROWSER_WALLET_URL = process.env.REACT_APP_BROWSER_WALLET
 
 type Signer = EthersSigner | WalletConnectSigner
 export enum STATE {
@@ -301,7 +303,18 @@ export const Symfoni: React.FC<SymfoniProps> = ({
                                                     <Box gap="small">
                                                         {/* TODO : Fix this, not safe */}
                                                         <Text truncate>For å se denne nettsiden må du logge inn med en Lommebok</Text>
-                                                        <Image alignSelf="center" height="200px" width="200px" src={`${"https://chart.googleapis.com/chart?cht=qr&chs=200x200&chl=" + walletConnectURI}`} ></Image>
+                                                        {/* TODO VERY NOT SAFE, just for testing */}
+                                                        <Grid columns={["1/2", "1/2"]}>
+                                                            <Box align="center">
+                                                                <Text size="xsmall">WC Deeplink</Text>
+                                                                <QRCode size={200} value={`${walletConnectURI}`}></QRCode>
+
+                                                            </Box>
+                                                            <Box align="center">
+                                                                <Text size="xsmall">Symfoni Browser Wallet URL</Text>
+                                                                <QRCode size={200} value={`${BROWSER_WALLET_URL + "?wc-uri=" + encodeURIComponent(walletConnectURI) + "&callback-url=" + encodeURIComponent(document.URL)}`}></QRCode>
+                                                            </Box>
+                                                        </Grid>
                                                         <Grid columns={["2/3", "1/3"]}>
                                                             <TextInput size="small" value={walletConnectURI}></TextInput>
                                                             <Button size="small" icon={<Copy></Copy>} label="Copy" onClick={(e) => copy(walletConnectURI)}></Button>
