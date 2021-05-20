@@ -8,6 +8,7 @@ import { CapTableQue } from '../../hardhat/typechain/CapTableQue';
 interface Props {
     capTableQue: CapTableQue,
     capTableAddress: string,
+    done?: () => void
 }
 
 export const QueSelfApprove: React.FC<Props> = ({ ...props }) => {
@@ -23,7 +24,9 @@ export const QueSelfApprove: React.FC<Props> = ({ ...props }) => {
                 method: "approve_captable",
                 capTableAddress: props.capTableAddress
             }])
-            console.log("Test", test)
+            if (props.done) {
+                props.done()
+            }
         }
 
     }
