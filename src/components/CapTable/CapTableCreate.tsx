@@ -45,7 +45,7 @@ export const CapTableCreate: React.FC<Props> = ({ ...props }) => {
     const capTableQue = useContext(CapTableQueContext)
     const orgWatch = watch("org")
     const [searchQuery, setSearchQuery] = useState("");
-    const { init } = useContext(SymfoniContext)
+    const { init, signer } = useContext(SymfoniContext)
 
     // useEffect(() => {
     //     if (process.env.NODE_ENV === "development") {
@@ -95,7 +95,7 @@ export const CapTableCreate: React.FC<Props> = ({ ...props }) => {
     const onSubmit = async (data: FormData) => {
         if (!capTableQue.instance) throw Error("Aksjeregister køen er ikke lastet inn.")
         console.debug("Submitting", data)
-        if (!erc1400.factory) {
+        if (!erc1400.factory || !signer) {
             return init()
         }
         if (!data.org) {
@@ -122,6 +122,13 @@ export const CapTableCreate: React.FC<Props> = ({ ...props }) => {
             const orgnr = data.org.orgnr.toString();
             const tx = await capTableQue.instance.add(capTable.address, ethers.utils.formatBytes32String(orgnr))
             await tx.wait()
+            if ("request" in signer) {
+                await signer.request("oracle_data", [{
+                    method: "approve_captable",
+                    capTableAddress: capTable.address
+                }])
+            }
+
             history.push("/capTable/" + capTable.address + "/onboard")
         }
     }

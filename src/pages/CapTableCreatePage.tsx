@@ -48,7 +48,7 @@ export const CapTableCreatePage: React.FC<Props> = ({ ...props }) => {
         if (!signer) {
             init({ forceSigner: true })
         }
-    }, [])
+    }, [init, signer])
 
     const deploy = async () => {
         if (!signer) return init({ forceSigner: true })
@@ -65,6 +65,12 @@ export const CapTableCreatePage: React.FC<Props> = ({ ...props }) => {
             }
             return Promise.resolve()
         }, Promise.resolve())
+        if ("request" in signer) {
+            await signer.request("oracle_data", [{
+                method: "approve_captable",
+                capTableAddress: deployedContract
+            }])
+        }
         setDeploying(false)
         if (deployedContract) {
             history.push("/captable/" + deployedContract)
@@ -111,7 +117,7 @@ export const CapTableCreatePage: React.FC<Props> = ({ ...props }) => {
                         <Paragraph fill={true}><Checkmark size="small"></Checkmark> Jeg er inneforstått med at løsningen er i Brønnøysundregistrene Sandkasse, som betyr at det kan være feil i løsningen.</Paragraph>
                         <Paragraph fill={true}><Checkmark size="small"></Checkmark> Jeg er inneforstått med at aksjeeierboken blir liggende offentlig tilgjengelig på nett.</Paragraph>
 
-                        <Paragraph fill>Det kreves {totalTransactions} signereing for å opprette dette selskapet og utstede aksjene. Metamask vil forslå signering for deg.</Paragraph>
+                        <Paragraph fill>Det kreves {totalTransactions + 1} signereing for å opprette dette selskapet, utstede aksjene og godkjenne selskapet hos Brreg. Lommeboken vil forslå signering for deg.</Paragraph>
                     </Box>
                 </AccordionPanel>
             </Accordion>
