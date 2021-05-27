@@ -3,7 +3,7 @@ import { Box, Grid, Text } from 'grommet';
 import React, { useContext, useEffect, useState } from 'react';
 import { CapTableQueContext, CapTableRegistryContext, SymfoniContext } from '../../hardhat/ForvaltContext';
 import { ERC1400 } from '../../hardhat/typechain/ERC1400';
-import { CapTableQueDetails } from './Que/CapTableQueDetails';
+import { CapTableQueDetails } from './../Que/CapTableQueDetails';
 
 interface Props {
     capTable: ERC1400

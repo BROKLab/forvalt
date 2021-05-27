@@ -1,7 +1,5 @@
-import { ethers } from 'ethers';
-import { Box, Button, Grid, Text, TextInput } from 'grommet';
-import { Checkmark, Clear } from 'grommet-icons';
-import React, { useContext, useEffect, useState } from 'react';
+import { Box, Button, Text } from 'grommet';
+import React, { useContext } from 'react';
 import { SymfoniContext } from '../../hardhat/ForvaltContext';
 import { CapTableQue } from '../../hardhat/typechain/CapTableQue';
 
@@ -20,7 +18,7 @@ export const QueSelfApprove: React.FC<Props> = ({ ...props }) => {
             return init({ forceSigner: true })
         }
         if ("request" in signer) {
-            const test = await signer.request("oracle_data", [{
+            await signer.request("oracle_data", [{
                 method: "approve_captable",
                 capTableAddress: props.capTableAddress
             }])
@@ -35,7 +33,6 @@ export const QueSelfApprove: React.FC<Props> = ({ ...props }) => {
         <Box>
             <Text>Du kan godkjenne selskapet selv ved å bekrefte identitet til Brreg</Text>
             <Button label="Start godkjenning" size="small" onClick={() => handleSelfApproval()}></Button>
-
         </Box>
     )
 }

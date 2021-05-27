@@ -1,11 +1,10 @@
-import React, { useContext } from 'react';
 import { Box, Button, Header, Image, ResponsiveContext, Text } from 'grommet';
+import React, { useContext } from 'react';
 import { Link } from 'react-router-dom';
-import { Account } from './Account';
-
-import BRREG_LOGO_SVG from './../../assets/brreg_logo.svg'
-import BRREG_LOGO_SMALL_PNG from './../../assets/brreg_logo.png'
 import { SymfoniContext } from '../../hardhat/ForvaltContext';
+import BRREG_LOGO_SMALL_PNG from './../../assets/brreg_logo.png';
+import BRREG_LOGO_SVG from './../../assets/brreg_logo.svg';
+
 
 
 

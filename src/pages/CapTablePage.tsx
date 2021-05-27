@@ -15,13 +15,13 @@ interface RouteParams {
 export const CapTablePage: React.FC<Props> = ({ ...props }) => {
     const { address } = useParams<RouteParams>();
     const { path } = useRouteMatch()
-    const ERC1400 = useContext(ERC1400Context);
+    const erc1400 = useContext(ERC1400Context);
     const [capTable, setCapTable] = useState<ERC1400>();
 
     useEffect(() => {
-        const _capTable = ERC1400.connect(address)
+        const _capTable = erc1400.connect(address)
         setCapTable(_capTable)
-    }, [address])
+    }, [erc1400, address])
 
 
     return (

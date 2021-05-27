@@ -16,8 +16,8 @@ export const AccountPage: React.FC<Props> = ({ ...props }) => {
     const { path } = useRouteMatch()
     const history = useHistory()
     const [hasProvider, setHasProvider] = useState(false);
-    const [hasAccount, setHasAccount] = useState(false);
-    const [hasChainId, setHasChainId] = useState(false);
+    const [hasAccount] = useState(false);
+    const [hasChainId] = useState(false);
     const { init } = useContext(SymfoniContext)
     const ready = hasProvider && hasAccount && hasChainId
     const checkAll = () => {

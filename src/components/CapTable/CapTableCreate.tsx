@@ -1,4 +1,4 @@
-import axios, { AxiosError, AxiosResponse } from 'axios';
+import axios, { AxiosError } from 'axios';
 import { ethers } from 'ethers';
 import { Box, Button, Grid, Select, Text } from 'grommet';
 import { Search } from 'grommet-icons';
@@ -33,7 +33,7 @@ interface ApiRespons {
 const DEFAULT_DATA: OrgData[] = [{ "orgnr": 911724758, "navn": "BLOCKCHAIN BROKERS AS", "kapital": 30000, "aksjer": 200, "vedtektsdato": "28.02.2018" }, { "orgnr": 915772137, "navn": "BLOCKCHANGERS AS", "kapital": 40378, "aksjer": 40378, "vedtektsdato": "10.12.2018" }, { "orgnr": 915912028, "navn": "BLOCKBONDS AS", "kapital": 18455512, "aksjer": 18455512, "vedtektsdato": "06.12.2019" }, { "orgnr": 918917160, "navn": "BLOCKBRIDGE AS", "kapital": 30000, "aksjer": 30000, "vedtektsdato": "08.05.2017" }, { "orgnr": 919437235, "navn": "BLOCKTRADE AS", "kapital": 30000, "aksjer": 30000, "vedtektsdato": "01.08.2017" }, { "orgnr": 919526696, "navn": "BLOCKCHAIN AS", "kapital": 30000, "aksjer": 300000, "vedtektsdato": "22.08.2017" }, { "orgnr": 920415296, "navn": "BLOCKCHAIN INVEST AS", "kapital": 30000, "aksjer": 30000, "vedtektsdato": "19.04.2018" }, { "orgnr": 920596908, "navn": "BLOCKANDINAVIA AS", "kapital": 30000, "aksjer": 300, "vedtektsdato": "20.02.2018" }, { "orgnr": 920876501, "navn": "BLOCKCHAIN SOLUTIONS AS", "kapital": 30000, "aksjer": 200, "vedtektsdato": "02.05.2018" }, { "orgnr": 921209347, "navn": "BLOCKCHAIN TECHNOLOGY AS", "kapital": 900000, "aksjer": 90, "vedtektsdato": "10.05.2018" }]
 
 export const CapTableCreate: React.FC<Props> = ({ ...props }) => {
-    const { handleSubmit, watch, control, errors, setValue, formState, setError } = useForm<FormData>({
+    const { handleSubmit, watch, control, errors, formState, setError } = useForm<FormData>({
         defaultValues: {
             org: null,
         }
@@ -133,7 +133,6 @@ export const CapTableCreate: React.FC<Props> = ({ ...props }) => {
         }
     }
 
-    const [selected, setSelected] = useState<OrgData>();
     return (
         <Box>
             <form onSubmit={handleSubmit(onSubmit)}>

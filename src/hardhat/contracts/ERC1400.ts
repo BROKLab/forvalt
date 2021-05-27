@@ -1,5 +1,4 @@
 import { providers, Signer } from "ethers";
-import { SymfoniERC1400 } from "../ForvaltContext";
 import { ERC1400__factory } from "./../typechain/factories/ERC1400__factory";
 
 export function getERC1400(

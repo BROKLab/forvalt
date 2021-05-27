@@ -28,7 +28,7 @@ export const CapTableCreatePage: React.FC<Props> = ({ ...props }) => {
         2: []
     });
     const totalTransactions = Object.values(transactions).flat(1).length
-    const [capTableAddress, setCapTableAddress] = useState(ethers.constants.AddressZero);
+    const [, setCapTableAddress] = useState(ethers.constants.AddressZero);
     const erc1400 = useContext(ERC1400Context)
     const [capTable, setCapTable] = useState<ERC1400>();
     const [deploying, setDeploying] = useState(false);

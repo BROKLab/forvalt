@@ -1,11 +1,11 @@
 import { ethers } from 'ethers';
 import { Box, Button, Grid, Heading, Text } from 'grommet';
 import React, { useEffect, useState } from 'react';
-import { CapTableQue } from '../../../hardhat/typechain/CapTableQue';
-import { getStatus } from '../../../utils/que-helpers';
-import { QueAdmin } from '../../Que/QueAdmin';
-import { QueSelfApprove } from '../../Que/QueSelfApprove';
-import { Modal } from '../../ui/Modal';
+import { Modal } from './../ui/Modal';
+import { CapTableQue } from '../../hardhat/typechain/CapTableQue';
+import { getStatus } from '../../utils/que-helpers';
+import { QueAdmin } from './QueAdmin';
+import { QueSelfApprove } from './QueSelfApprove';
 
 interface Props {
     capTableQue: CapTableQue,
