@@ -2,7 +2,7 @@ import { ethers } from 'ethers';
 import { Box, Button, Grid, Heading, Text } from 'grommet';
 import React, { useEffect, useState } from 'react';
 import { Modal } from './../ui/Modal';
-import { CapTableQue } from '../../hardhat/typechain/CapTableQue';
+import { CapTableQue } from '@brok/captable-contracts';
 import { getStatus } from '../../utils/que-helpers';
 import { QueAdmin } from './QueAdmin';
 import { QueSelfApprove } from './QueSelfApprove';

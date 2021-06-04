@@ -9,7 +9,7 @@ import { AuthContext } from '../../utils/AuthContext';
 interface Props {
     onChange: (...event: any[]) => void
     value: string,
-    capTableAddress: string,
+    capTableAddress: string, // TODO Change to orgNr
     protocol: string
 }
 
@@ -121,7 +121,6 @@ export const SelectUser: React.FC<Props> = ({ ...props }) => {
                 {IDENTIFIER.DEFAULT !== identifier &&
                     < Text size="xsmall"><Waypoint size="small" color="green" style={{ marginRight: "5px", paddingTop: "3px" }}></Waypoint>Utsteder til {indetifierLabel()}</Text>
                 }
-
             </Box>
         </Box >
     )

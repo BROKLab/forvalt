@@ -1,14 +1,11 @@
-import { ethers } from 'ethers';
 import { Accordion, AccordionPanel, Box, Button, Heading, Paragraph, Text } from 'grommet';
 import { Checkmark } from 'grommet-icons';
 import React, { useContext, useEffect, useState } from 'react';
 import { useHistory } from 'react-router-dom';
-import { BatchIssue } from '../components/CapTable/BatchIssue';
-import { CapTableCreate } from '../components/CapTable/CapTableCreate';
+import { BatchIssue, BatchIssueData } from '../components/CapTable/BatchIssue';
+import { OrgData, SelectOrg } from '../components/CapTable/SelectOrg';
 import { Loading } from '../components/ui/Loading';
-import { ERC1400Context, SymfoniContext } from '../hardhat/ForvaltContext';
-import { ERC1400 } from '../hardhat/typechain/ERC1400';
-import { Transaction } from '../utils/ethers-helpers';
+import { SymfoniContext } from '../hardhat/ForvaltContext';
 
 interface Props {
 }
@@ -19,30 +16,24 @@ enum STEP {
     CONFIRM = 2
 }
 
+
 export const CapTableCreatePage: React.FC<Props> = ({ ...props }) => {
     const { init, signer } = useContext(SymfoniContext)
     const [step, setStep] = useState(STEP.SELECT_COMPANY);
-    const [transactions, setTransactions] = useState<{ [step in STEP]: Transaction[] }>({
-        0: [],
-        1: [],
-        2: []
-    });
-    const totalTransactions = Object.values(transactions).flat(1).length
-    const [, setCapTableAddress] = useState(ethers.constants.AddressZero);
-    const erc1400 = useContext(ERC1400Context)
-    const [capTable, setCapTable] = useState<ERC1400>();
     const [deploying, setDeploying] = useState(false);
+    const [orgData, setOrgData] = useState<OrgData>();
+    const [batchIssueData, setBatchIssueData] = useState<BatchIssueData>();
+    const [confirmed, setConfirmed] = useState<boolean>();
 
     const history = useHistory()
 
-    const handleCapTableTransactions = async (capTableAddress: string, txs: Transaction[]) => {
-        setCapTableAddress(capTableAddress)
-        setCapTable(erc1400.connect(capTableAddress))
-        handleTransactions(txs, STEP.SELECT_COMPANY)
-    }
-    const handleTransactions = async (txs: Transaction[], step: STEP) => {
+    const handleOrgData = (data: OrgData) => {
         setStep(step + 1)
-        setTransactions(old => ({ ...old, [step]: [...txs] }))
+        setOrgData(data)
+    }
+    const handleBatchIssueData = (data: BatchIssueData) => {
+        setStep(step + 1)
+        setBatchIssueData(data)
     }
     useEffect(() => {
         if (!signer) {
@@ -86,13 +77,13 @@ export const CapTableCreatePage: React.FC<Props> = ({ ...props }) => {
             <Accordion justify="start" activeIndex={step} gap="small">
                 <AccordionPanel label="1. Velg selskap" onClickCapture={() => setStep(STEP.SELECT_COMPANY)}>
                     <Box pad="small">
-                        <CapTableCreate capTableTransactions={handleCapTableTransactions}></CapTableCreate>
+                        <SelectOrg aggragateResult={(orgData) => handleOrgData(orgData)}></SelectOrg>
                     </Box>
                 </AccordionPanel>
                 <AccordionPanel label="2. Utsted aksjer" onClickCapture={() => setStep(STEP.ISSUE_SHARES)}>
                     <Box pad="medium">
-                        {capTable
-                            ? <BatchIssue transactions={(txs) => handleTransactions(txs, STEP.ISSUE_SHARES)} capTable={capTable}></BatchIssue>
+                        {orgData
+                            ? <BatchIssue aggregateResult={(batchIssueData) => handleBatchIssueData(batchIssueData)}></BatchIssue>
                             : <Paragraph fill>Vennligst velg en aksjeeierbok</Paragraph>
                         }
                     </Box>
@@ -117,11 +108,11 @@ export const CapTableCreatePage: React.FC<Props> = ({ ...props }) => {
                         <Paragraph fill={true}><Checkmark size="small"></Checkmark> Jeg er inneforstått med at løsningen er i Brønnøysundregistrene Sandkasse, som betyr at det kan være feil i løsningen.</Paragraph>
                         <Paragraph fill={true}><Checkmark size="small"></Checkmark> Jeg er inneforstått med at aksjeeierboken blir liggende offentlig tilgjengelig på nett.</Paragraph>
 
-                        <Paragraph fill>Det kreves {totalTransactions + 1} signereing for å opprette dette selskapet, utstede aksjene og godkjenne selskapet hos Brreg. Lommeboken vil forslå signering for deg.</Paragraph>
+                        {/* <Paragraph fill>Det kreves {totalTransactions + 1} signereing for å opprette dette selskapet, utstede aksjene og godkjenne selskapet hos Brreg. Lommeboken vil forslå signering for deg.</Paragraph> */}
                     </Box>
                 </AccordionPanel>
             </Accordion>
-            <Button size="large" label="Opprett aksjeeierbok" disabled={step !== STEP.CONFIRM || transactions[0].length !== 2 || deploying} onClick={() => deploy()}></Button>
+            <Button size="large" label="Opprett aksjeeierbok" disabled={step !== STEP.CONFIRM || !orgData || !batchIssueData || deploying} onClick={() => deploy()}></Button>
             {deploying &&
                 <Box align="center" >
                     <Loading size={50}></Loading>

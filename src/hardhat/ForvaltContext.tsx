@@ -9,30 +9,19 @@ import { Copy } from "grommet-icons";
 import React, { useCallback, useEffect, useState } from "react";
 import { Modal } from "../components/ui/Modal";
 import { getAuthProvider } from "./contracts/AuthProvider";
-import { getCapTableQue } from "./contracts/CapTableQue";
+import { getCapTableFactory } from "./contracts/CapTableFactory";
 import { getCapTableRegistry } from "./contracts/CapTableRegistry";
 import { getERC1400 } from "./contracts/ERC1400";
 import { getERC1400AuthValidator } from "./contracts/ERC1400AuthValidator";
 import { getERC1820Registry } from "./contracts/ERC1820Registry";
-import { AuthProvider } from "./typechain/AuthProvider";
-import { CapTableQue } from "./typechain/CapTableQue";
-import { CapTableRegistry } from "./typechain/CapTableRegistry";
-import { ERC1400 } from "./typechain/ERC1400";
-import { ERC1400AuthValidator } from "./typechain/ERC1400AuthValidator";
-import { ERC1820Registry } from "./typechain/ERC1820Registry";
-import { AuthProvider__factory } from "./typechain/factories/AuthProvider__factory";
-import { CapTableQue__factory } from "./typechain/factories/CapTableQue__factory";
-import { CapTableRegistry__factory } from "./typechain/factories/CapTableRegistry__factory";
-import { ERC1400AuthValidator__factory } from "./typechain/factories/ERC1400AuthValidator__factory";
-import { ERC1400__factory } from "./typechain/factories/ERC1400__factory";
-import { ERC1820Registry__factory } from "./typechain/factories/ERC1820Registry__factory";
 import QRCode from "qrcode.react";
+import { AuthProvider, AuthProvider__factory, CapTableFactory, CapTableFactory__factory, CapTableRegistry, CapTableRegistry__factory, ERC1400, ERC1400AuthValidator, ERC1400AuthValidator__factory, ERC1400__factory, ERC1820Registry, ERC1820Registry__factory } from "@brok/captable-contracts";
 
 export const SymfoniContext = React.createContext<SymfoniContextInterface>(undefined!);
 export const ERC1400Context = React.createContext<SymfoniERC1400>(undefined!);
 export const AuthProviderContext = React.createContext<SymfoniAuthProvider>(undefined!);
 export const ERC1820RegistryContext = React.createContext<SymfoniERC1820Registry>(undefined!);
-export const CapTableQueContext = React.createContext<SymfoniCapTableQue>(undefined!);
+export const CapTableFactoryContext = React.createContext<SymfoniCapTableFactory>(undefined!);
 export const CapTableRegistryContext = React.createContext<SymfoniCapTableRegistry>(undefined!);
 export const ERC1400AuthValidatorContext = React.createContext<SymfoniERC1400AuthValidator>(undefined!);
 
@@ -59,10 +48,10 @@ export interface SymfoniERC1820Registry {
     factory?: ERC1820Registry__factory;
     connect: (address: string) => ERC1820Registry
 }
-export interface SymfoniCapTableQue {
-    instance?: CapTableQue;
-    factory?: CapTableQue__factory;
-    connect: (address: string) => CapTableQue
+export interface SymfoniCapTableFactory {
+    instance?: CapTableFactory;
+    factory?: CapTableFactory__factory;
+    connect: (address: string) => CapTableFactory
 }
 export interface SymfoniCapTableRegistry {
     instance?: CapTableRegistry;
@@ -135,7 +124,7 @@ export const Symfoni: React.FC<SymfoniProps> = ({
     const [ERC1400, setERC1400] = useState<SymfoniERC1400>(undefined!);
     const [AuthProvider, setAuthProvider] = useState<SymfoniAuthProvider>(undefined!);
     const [ERC1820Registry, setERC1820Registry] = useState<SymfoniERC1820Registry>(undefined!);
-    const [CapTableQue, setCapTableQue] = useState<SymfoniCapTableQue>(undefined!);
+    const [CapTableFactory, setCapTableFactory] = useState<SymfoniCapTableFactory>(undefined!);
     const [CapTableRegistry, setCapTableRegistry] = useState<SymfoniCapTableRegistry>(undefined!);
     const [ERC1400AuthValidator, setERC1400AuthValidator] = useState<SymfoniERC1400AuthValidator>(undefined!);
 
@@ -255,7 +244,7 @@ export const Symfoni: React.FC<SymfoniProps> = ({
                     setERC1400(getERC1400(_provider, _chainId, _signer))
                     setAuthProvider(getAuthProvider(_provider, _chainId, _signer))
                     setERC1820Registry(getERC1820Registry(_provider, _chainId, _signer))
-                    setCapTableQue(getCapTableQue(_provider, _chainId, _signer))
+                    setCapTableFactory(getCapTableFactory(_provider, _chainId, _signer))
                     setCapTableRegistry(getCapTableRegistry(_provider, _chainId, _signer))
                     setERC1400AuthValidator(getERC1400AuthValidator(_provider, _chainId, _signer))
                     setState(_signer ? STATE.PROVIDER_SIGNER_READY : STATE.PROVIDER_READY)
@@ -290,7 +279,7 @@ export const Symfoni: React.FC<SymfoniProps> = ({
             <AuthProviderContext.Provider value={AuthProvider}>
                 <ERC1400Context.Provider value={ERC1400}>
                     <ERC1820RegistryContext.Provider value={ERC1820Registry}>
-                        <CapTableQueContext.Provider value={CapTableQue}>
+                        <CapTableFactoryContext.Provider value={CapTableFactory}>
                             <CapTableRegistryContext.Provider value={CapTableRegistry}>
                                 <ERC1400AuthValidatorContext.Provider value={ERC1400AuthValidator}>
                                     {!provider &&
@@ -342,7 +331,7 @@ export const Symfoni: React.FC<SymfoniProps> = ({
                                     }
                                 </ERC1400AuthValidatorContext.Provider >
                             </CapTableRegistryContext.Provider >
-                        </CapTableQueContext.Provider >
+                        </CapTableFactoryContext.Provider >
                     </ERC1820RegistryContext.Provider >
                 </ERC1400Context.Provider >
             </AuthProviderContext.Provider >

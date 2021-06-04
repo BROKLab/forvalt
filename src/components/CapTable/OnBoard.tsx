@@ -1,7 +1,7 @@
 import React from 'react';
 import { Box, Paragraph, Heading, Text } from 'grommet';
 import { BatchIssue } from './BatchIssue';
-import { ERC1400 } from '../../hardhat/typechain/ERC1400';
+import { ERC1400 } from '@brok/captable-contracts';
 import { Checkmark } from 'grommet-icons';
 
 interface Props {

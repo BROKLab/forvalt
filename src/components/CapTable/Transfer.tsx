@@ -2,7 +2,7 @@ import { BytesLike, ethers } from 'ethers';
 import { Box, Button, Select, Text, TextInput } from 'grommet';
 import React, { useContext, useEffect, useState } from 'react';
 import { SymfoniContext } from '../../hardhat/ForvaltContext';
-import { ERC1400 } from '../../hardhat/typechain/ERC1400';
+import { ERC1400 } from '@brok/captable-contracts';
 import { SelectUser } from '../ui/SelectUser';
 
 interface Props {

@@ -13,9 +13,22 @@ import { Home } from "./pages/Home";
 import { Auth } from "./utils/AuthContext";
 
 
+import { request, gql } from "graphql-request" // TODO Use https://www.npmjs.com/package/graphql-hooks#useSubscription
+
+
 
 function App() {
-
+  const query = gql`{
+    capTables{
+      name
+    }
+  }`;
+  if (!process.env.REACT_APP_BROK_CAPTABLE_GRAPHQL) {
+    throw Error("Please set process.env.REACT_APP_BROK_CAPTABLE_GRAPHQL")
+  }
+  request(process.env.REACT_APP_BROK_CAPTABLE_GRAPHQL, query).then((data) =>
+    console.log(data)
+  );
   return (
     <BrowserRouter basename={process.env.PUBLIC_URL}>
       <Grommet theme={Theme} full={true}>

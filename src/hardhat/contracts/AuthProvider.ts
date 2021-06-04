@@ -1,6 +1,6 @@
 import { providers, Signer } from "ethers";
 import { SymfoniAuthProvider } from "../ForvaltContext";
-import { AuthProvider__factory } from "../typechain/factories/AuthProvider__factory";
+import { AuthProvider__factory } from "@brok/captable-contracts";
 
 export function getAuthProvider(
   provider: providers.Provider,

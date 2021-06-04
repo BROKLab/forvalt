@@ -1,8 +1,8 @@
 import { ethers } from 'ethers';
 import { Box, Grid, Text } from 'grommet';
 import React, { useContext, useEffect, useState } from 'react';
-import { CapTableQueContext, CapTableRegistryContext, SymfoniContext } from '../../hardhat/ForvaltContext';
-import { ERC1400 } from '../../hardhat/typechain/ERC1400';
+import { CapTableRegistryContext, SymfoniContext } from '../../hardhat/ForvaltContext';
+import { ERC1400 } from '@brok/captable-contracts';
 import { CapTableQueDetails } from './../Que/CapTableQueDetails';
 
 interface Props {
@@ -24,7 +24,6 @@ export const Info: React.FC<Props> = ({ capTable, ...pops }) => {
     const [data, setData] = useState<CapTableData>();
     const [registryData, setRegistryData] = useState<CapTableRegistryData>();
     const capTableRegistry = useContext(CapTableRegistryContext)
-    const capTableQue = useContext(CapTableQueContext)
     const { address: currentAddress } = useContext(SymfoniContext)
 
 

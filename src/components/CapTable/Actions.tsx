@@ -1,6 +1,6 @@
 import React, { useContext, useState } from 'react';
 import { Box, Button } from 'grommet';
-import { ERC1400 } from '../../hardhat/typechain/ERC1400';
+import { ERC1400 } from '@brok/captable-contracts';
 import { Modal } from '../ui/Modal';
 import { Transfer } from './Transfer';
 import { SymfoniContext } from '../../hardhat/ForvaltContext';

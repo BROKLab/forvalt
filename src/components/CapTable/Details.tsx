@@ -1,7 +1,7 @@
 import { Box, Heading } from 'grommet';
 import React, { useContext } from 'react';
 import { SymfoniContext } from '../../hardhat/ForvaltContext';
-import { ERC1400 } from '../../hardhat/typechain/ERC1400';
+import { ERC1400 } from '@brok/captable-contracts';
 import { Actions } from './Actions';
 import { Balances } from './Balances';
 import { Info } from './Info';

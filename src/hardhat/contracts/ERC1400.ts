@@ -1,5 +1,5 @@
 import { providers, Signer } from "ethers";
-import { ERC1400__factory } from "./../typechain/factories/ERC1400__factory";
+import { ERC1400__factory } from "@brok/captable-contracts";
 
 export function getERC1400(
   provider: providers.Provider,

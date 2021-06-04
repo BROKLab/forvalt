@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@brok/captable-contracts": "^1.2.7",
     "@symfoni/walletconnect-v2-ethers-signer": "^0.0.23",
     "@testing-library/jest-dom": "^4.2.4",
     "@testing-library/react": "^9.3.2",
@@ -15,6 +16,8 @@
     "axios": "^0.21.0",
     "clipboard-copy": "^4.0.1",
     "ethers": "^5.1.4",
+    "graphql": "^15.5.0",
+    "graphql-request": "^3.4.0",
     "grommet": "^2.17.2",
     "grommet-icons": "^4.5.0",
     "norwegian-national-id-validator": "^3.0.0",

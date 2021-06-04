@@ -1,6 +1,9 @@
 import { providers, Signer } from "ethers";
 import { SymfoniCapTableRegistry } from "../ForvaltContext";
-import { CapTableRegistry__factory } from "../typechain/factories/CapTableRegistry__factory";
+import {
+  CapTableRegistry__factory,
+  Deployments,
+} from "@brok/captable-contracts";
 
 export function getCapTableRegistry(
   provider: providers.Provider,
@@ -9,7 +12,8 @@ export function getCapTableRegistry(
   address?: string
 ): SymfoniCapTableRegistry {
   const addresses: { [chainId: number]: string } = {
-    31337: "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0",
+    [Deployments.BrokStage.chainId]:
+      Deployments.BrokStage.contracts.CapTableRegistry.address,
     2018: "0x7904564de273FB207d6D3525620eCa390E93bE1B",
     7766: "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0",
   };

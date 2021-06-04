@@ -1,6 +1,6 @@
 import { providers, Signer } from "ethers";
 import { SymfoniERC1400AuthValidator } from "../ForvaltContext";
-import { ERC1400AuthValidator__factory } from "../typechain/factories/ERC1400AuthValidator__factory";
+import { ERC1400AuthValidator__factory } from "@brok/captable-contracts";
 
 export function getERC1400AuthValidator(
   provider: providers.Provider,

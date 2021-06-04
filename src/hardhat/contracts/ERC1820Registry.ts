@@ -1,6 +1,6 @@
 import { providers, Signer } from "ethers";
 import { SymfoniERC1820Registry } from "../ForvaltContext";
-import { ERC1820Registry__factory } from "../typechain/factories/ERC1820Registry__factory";
+import { ERC1820Registry__factory } from "@brok/captable-contracts";
 
 export function getERC1820Registry(
   provider: providers.Provider,

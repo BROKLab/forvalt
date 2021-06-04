@@ -1,5 +1,5 @@
 import { BigNumber, BytesLike } from "ethers";
-import { ERC1400 } from "../hardhat/typechain/ERC1400";
+import { ERC1400 } from "@brok/captable-contracts";
 
 export interface CollateralDetail {
   cToken: {

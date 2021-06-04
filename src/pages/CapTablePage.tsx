@@ -4,7 +4,7 @@ import { Route, Switch, useParams, useRouteMatch } from 'react-router-dom';
 import { Details } from '../components/CapTable/Details';
 import { Loading } from '../components/ui/Loading';
 import { ERC1400Context } from '../hardhat/ForvaltContext';
-import { ERC1400 } from '../hardhat/typechain/ERC1400';
+import { ERC1400 } from '@brok/captable-contracts';
 
 interface Props {
 }

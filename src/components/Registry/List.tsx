@@ -3,7 +3,7 @@ import { Box, Button, DataTable, Text } from 'grommet';
 import { More } from 'grommet-icons';
 import React, { useEffect, useState } from 'react';
 import { useHistory } from 'react-router-dom';
-import { CapTableRegistry } from '../../hardhat/typechain/CapTableRegistry';
+import { CapTableRegistry } from '@brok/captable-contracts';
 
 interface Props {
     capTableRegistry: CapTableRegistry

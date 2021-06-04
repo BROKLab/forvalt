@@ -1,7 +1,7 @@
 import { BigNumber, BytesLike, ethers } from 'ethers';
 import { Box, DataTable, Select, Text } from 'grommet';
 import React, { useEffect, useState } from 'react';
-import { ERC1400 } from '../../hardhat/typechain/ERC1400';
+import { ERC1400 } from '@brok/captable-contracts';
 import { getERC1400Addresses } from '../../utils/erc1400-helpers';
 import { formatBN } from '../../utils/numbers';
 import { FormatAddress } from '../ui/FormatAddress';
