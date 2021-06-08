@@ -10,22 +10,13 @@ interface Props {
     capTable: ERC1400
 }
 
-interface CapTableData {
-    name: string
-    totalSupply: string
-}
-interface CapTableRegistryData {
-    uuid: string
-    active: boolean
-}
-
 interface TokenHolder {
     address: string,
     partition: BytesLike,
     balance: BigNumber
 }
 
-export const Balances: React.FC<Props> = ({ ...props }) => {
+export const BalancesSmartContract: React.FC<Props> = ({ ...props }) => {
     const [partitions, setPartitions] = useState<string[]>([]);
     const [tokenHolders, setTokenHolders] = useState<TokenHolder[]>();
     const [partitionFilter, setPartitionFilter] = useState<BytesLike>();

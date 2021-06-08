@@ -1,10 +1,8 @@
 import { Box, Button, Text } from 'grommet';
 import React, { useContext } from 'react';
 import { SymfoniContext } from '../../hardhat/ForvaltContext';
-import { CapTableQue } from '../../hardhat/typechain/CapTableQue';
 
 interface Props {
-    capTableQue: CapTableQue,
     capTableAddress: string,
     done?: () => void
 }

@@ -1,3 +1,4 @@
+import { ethers } from 'ethers';
 import { Accordion, AccordionPanel, Box, Button, Heading, Paragraph, Text } from 'grommet';
 import { Checkmark } from 'grommet-icons';
 import React, { useContext, useEffect, useState } from 'react';
@@ -5,7 +6,7 @@ import { useHistory } from 'react-router-dom';
 import { BatchIssue, BatchIssueData } from '../components/CapTable/BatchIssue';
 import { OrgData, SelectOrg } from '../components/CapTable/SelectOrg';
 import { Loading } from '../components/ui/Loading';
-import { SymfoniContext } from '../hardhat/ForvaltContext';
+import { CapTableFactoryContext, SymfoniContext } from '../hardhat/ForvaltContext';
 
 interface Props {
 }
@@ -23,7 +24,7 @@ export const CapTableCreatePage: React.FC<Props> = ({ ...props }) => {
     const [deploying, setDeploying] = useState(false);
     const [orgData, setOrgData] = useState<OrgData>();
     const [batchIssueData, setBatchIssueData] = useState<BatchIssueData>();
-    const [confirmed, setConfirmed] = useState<boolean>();
+    const capTableFactory = useContext(CapTableFactoryContext)
 
     const history = useHistory()
 
@@ -43,19 +44,30 @@ export const CapTableCreatePage: React.FC<Props> = ({ ...props }) => {
 
     const deploy = async () => {
         if (!signer) return init({ forceSigner: true })
+        if (!capTableFactory.instance) {
+            throw Error("CapTable Factory not initialized")
+        }
+        if (!orgData) {
+            throw Error("Du må velge selskap først")
+        }
+        if (!batchIssueData) {
+            throw Error
+        }
         setDeploying(true)
-        let deployedContract: string | undefined = undefined
-        await Object.values(transactions).reduce(async (prev, txs) => {
-            await prev
-            for (const tx of txs) {
-                const txRes = await signer.sendTransaction(tx)
-                const receipt = await txRes.wait()
-                if (receipt.contractAddress) {
-                    deployedContract = receipt.contractAddress
-                }
-            }
-            return Promise.resolve()
-        }, Promise.resolve())
+        let deployedContract: string | undefined
+        const deployTx = await capTableFactory.instance.createCapTable(
+            ethers.utils.formatBytes32String(orgData.orgnr.toString()),
+            orgData.navn,
+            orgData.navn.substr(0, 3),
+            batchIssueData.address,
+            batchIssueData.amount
+        )
+        await deployTx.wait()
+        try {
+            deployedContract = await capTableFactory.instance.getLastQuedAddress(ethers.utils.formatBytes32String(orgData.orgnr.toString()))
+        } catch (error) {
+            throw Error("Could not getLastQuedAddress on uuid " + orgData.orgnr.toString())
+        }
         if ("request" in signer) {
             await signer.request("oracle_data", [{
                 method: "approve_captable",

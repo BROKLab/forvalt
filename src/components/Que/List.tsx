@@ -1,13 +1,12 @@
-import { BigNumber, BytesLike, ethers } from 'ethers';
+import { BigNumber, BytesLike } from 'ethers';
+import { useQuery } from 'graphql-hooks';
 import { Box, Button, DataTable, Text } from 'grommet';
 import { More } from 'grommet-icons';
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { useHistory } from 'react-router-dom';
-import { CapTableQue } from '@brok/captable-contracts';
-import { getStatus } from '../../utils/que-helpers';
+import { Loading } from '../ui/Loading';
 
 interface Props {
-    capTableQue: CapTableQue
 }
 
 interface QueListData {
@@ -16,74 +15,80 @@ interface QueListData {
     address: string
 }
 
+
+const CAP_TABLES_QUERY = `{
+    capTables {
+      name
+      orgnr
+      status
+    }
+  }`
+
+
 export const List: React.FC<Props> = ({ ...props }) => {
     const history = useHistory();
-    const [list, setList] = useState<string[]>([]);
-    const [listData, setListData] = useState<QueListData[]>([]);
+    const { loading, error, data } = useQuery<{
 
-    // Get list
-    useEffect(() => {
-        let subscribed = true
-        const doAsync = async () => {
-            const list = await props.capTableQue.list()
-            if (subscribed) {
-                const listReveresed = list.slice().reverse()
-                setList(listReveresed)
-            }
-        };
-        doAsync();
-        return () => { subscribed = false }
-    }, [props.capTableQue])
+        capTables: {
+            name: string
+            orgnr: string
+            address: string
+            status: string
+        }[]
 
-    // get data
-    useEffect(() => {
-        let subscribed = true
-        const doAsync = async () => {
-            list.forEach(async address => {
-                if (Object.keys(list).indexOf(address) === -1) {
-                    const info = await props.capTableQue.info(address)
-                    if (subscribed) {
-                        setListData(old => [...old, {
-                            status: info.status,
-                            uuid: info.uuid,
-                            address: address
-                        }])
-                    }
-                }
-            })
+    }>(CAP_TABLES_QUERY, {
+        variables: {
+            limit: 10
         }
-        doAsync();
-        return () => { subscribed = false }
-    }, [list, props.capTableQue])
+    })
+
+    // TODO: ADD possiblity to retrive list from smart contract also
+    // // get data
+    // useEffect(() => {
+    //     let subscribed = true
+    //     const doAsync = async () => {
+    //         list.forEach(async address => {
+    //             if (Object.keys(list).indexOf(address) === -1) {
+    //                 const info = await props.capTableQue.info(address)
+    //                 if (subscribed) {
+    //                     setListData(old => [...old, {
+    //                         status: info.status,
+    //                         uuid: info.uuid,
+    //                         address: address
+    //                     }])
+    //                 }
+    //             }
+    //         })
+    //     }
+    //     doAsync();
+    //     return () => { subscribed = false }
+    // }, [list, props.capTableQue])
+
+
+    if (loading) return <Loading>Laster..</Loading>
+    if (error) return <Box><p>Noe galt skjedde</p></Box>
 
     return (
         <Box>
             <DataTable
-                data={listData}
+                data={data ? data.capTables : []}
                 primaryKey={"address"}
                 columns={[
                     {
                         property: 'uuid',
                         header: <Text>Orgnr</Text>,
-                        render: (data) => ethers.utils.parseBytes32String(data.uuid)
+                        render: (data) => data.orgnr
                     },
-                    // {
-                    //     property: 'address',
-                    //     header: <Text truncate>Address</Text>,
-                    //     primary: true,
-                    //     render: (row) => <FormatAddress address={data[row.]}></FormatAddress>
-                    // },
+                    {
+                        property: 'name',
+                        header: <Text truncate>Address</Text>,
+                        render: (data) => data.name
+                    },
                     {
                         property: 'status',
                         header: <Text>Status</Text>,
-                        render: (data) => getStatus(data.status.toNumber())
+                        render: (data) => data.status
                     },
-                    // {
-                    //     property: 'address',
-                    //     header: <Text>Identifikator</Text>,
-                    //     primary: true,
-                    //     render: (data) => FormatAddress({ address: data.address })
-                    // },
                     {
                         property: 'actions',
                         header: <Text>...</Text>,

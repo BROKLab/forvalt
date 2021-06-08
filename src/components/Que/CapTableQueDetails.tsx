@@ -2,13 +2,13 @@ import { ethers } from 'ethers';
 import { Box, Button, Grid, Heading, Text } from 'grommet';
 import React, { useEffect, useState } from 'react';
 import { Modal } from './../ui/Modal';
-import { CapTableQue } from '@brok/captable-contracts';
+import { CapTableRegistry } from '@brok/captable-contracts';
 import { getStatus } from '../../utils/que-helpers';
 import { QueAdmin } from './QueAdmin';
 import { QueSelfApprove } from './QueSelfApprove';
 
 interface Props {
-    capTableQue: CapTableQue,
+    capTableRegistry: CapTableRegistry,
     capTableAddress: string,
 }
 
@@ -26,7 +26,8 @@ export const CapTableQueDetails: React.FC<Props> = ({ ...props }) => {
     useEffect(() => {
         let subscribed = true
         const doAsync = async () => {
-            const { status, uuid } = await props.capTableQue.info(props.capTableAddress)
+            const status = await props.capTableRegistry.getStatus(props.capTableAddress)
+            const uuid = await props.capTableRegistry.getUuid(props.capTableAddress)
             if (subscribed) {
                 setInfo({
                     uuid: uuid !== ethers.constants.HashZero ? ethers.utils.parseBytes32String(uuid) : "Inget OrgNr.",
@@ -36,7 +37,7 @@ export const CapTableQueDetails: React.FC<Props> = ({ ...props }) => {
         };
         doAsync();
         return () => { subscribed = false }
-    }, [props.capTableQue, props.capTableAddress])
+    }, [props.capTableAddress, props.capTableRegistry])
 
 
     return (
@@ -65,10 +66,10 @@ export const CapTableQueDetails: React.FC<Props> = ({ ...props }) => {
                 }
             </Box>
             <Modal show={showQueAdmin} setShow={setShowQueAdmin} >
-                <QueAdmin capTableQue={props.capTableQue} capTableAddress={props.capTableAddress}></QueAdmin>
+                <QueAdmin capTableRegistry={props.capTableRegistry} capTableAddress={props.capTableAddress}></QueAdmin>
             </Modal>
             <Modal show={showQueSelfApprove} setShow={setShowQueSelfApprove} >
-                <QueSelfApprove done={() => setShowQueSelfApprove(!showQueSelfApprove)} capTableQue={props.capTableQue} capTableAddress={props.capTableAddress}></QueSelfApprove>
+                <QueSelfApprove done={() => setShowQueSelfApprove(!showQueSelfApprove)} capTableAddress={props.capTableAddress}></QueSelfApprove>
             </Modal>
         </Box>
     )

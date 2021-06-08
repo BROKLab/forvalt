@@ -1,5 +1,5 @@
 import { BytesLike, ethers } from 'ethers';
-import { Box, Button, Grid, Select, Text, TextInput } from 'grommet';
+import { Box, Button, Grid, Select, Text, TextInput } from "grommet";
 import React, { useContext, useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useHistory } from 'react-router-dom';
@@ -143,7 +143,7 @@ export const BatchIssue: React.FC<Props> = ({ ...props }) => {
                     {createArrayWithNumbers(rows).map((rowNr) =>
                         <Grid columns={COLUMNS} fill="horizontal" gap="small" key={rowNr}>
                             <Box >
-                                <Controller render={({ onChange, value }) => <SelectUser onChange={onChange} value={value} capTableAddress={props.capTable.address} protocol={"ERC1400:BRREG:DEMO"}></SelectUser>} name={`address[${rowNr}]`} control={control} rules={{ required: true }} defaultValue={""} />
+                                <Controller render={({ onChange, value }) => <SelectUser onChange={onChange} value={value} capTableAddress={"fdgd"} protocol={"ERC1400:BRREG:DEMO"}></SelectUser>} name={`address[${rowNr}]`} control={control} rules={{ required: true }} defaultValue={""} />
                                 {errors["address"] && errors["address"][rowNr] && <Text color="red" size="xsmall">* {errors["address"][rowNr]?.type}</Text>}
                             </Box>
                             <Box >

@@ -1,18 +1,24 @@
-import { Box, Heading } from 'grommet';
-import React, { useContext } from 'react';
+import { Box, Text, CheckBox, Heading } from 'grommet';
+import React, { useContext, useState } from 'react';
 import { SymfoniContext } from '../../hardhat/ForvaltContext';
 import { ERC1400 } from '@brok/captable-contracts';
 import { Actions } from './Actions';
-import { Balances } from './Balances';
+import { BalancesSmartContract } from './BalancesSmartContract';
+import { BalancesGraph } from './BalancesGraph';
 import { Info } from './Info';
+import { CapTableTypes } from './CapTable.types';
 
 
 interface Props {
     capTable: ERC1400
 }
 
+
+
 export const Details: React.FC<Props> = ({ ...props }) => {
     const { signer } = useContext(SymfoniContext)
+    const [useSmartContract, setUseSmartContract] = useState(false);
+
     return (
         <Box>
             <Heading level={3}>Nøkkelopplysninger</Heading>
@@ -23,8 +29,15 @@ export const Details: React.FC<Props> = ({ ...props }) => {
                     <Actions capTable={props.capTable}></Actions>
                 </>
             }
-            <Heading level={3}>Aksjeliste</Heading>
-            <Balances capTable={props.capTable}></Balances>
+            <Box direction="row" gap="small">
+                <Heading level={3}>Aksjeliste</Heading>
+                <CheckBox toggle={true} onChange={(e) => setUseSmartContract(e.target.checked)}></CheckBox>
+                <Text size="xsmall" alignSelf="center">Rå data</Text>
+            </Box>
+            {useSmartContract
+                ? <BalancesSmartContract capTable={props.capTable}></BalancesSmartContract>
+                : <BalancesGraph capTableAddress={props.capTable.address}></BalancesGraph>
+            }
         </Box>
     )
 }

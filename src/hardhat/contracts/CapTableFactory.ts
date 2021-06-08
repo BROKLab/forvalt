@@ -15,7 +15,6 @@ export function getCapTableFactory(
     [Deployments.BrokStage.chainId]:
       Deployments.BrokStage.contracts.CapTableFactory.address,
     2018: "0xDDBe41f46E7eBb86d9Ac7053cde4b41E5b30aF93",
-    7766: "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512",
   };
   if (address) {
     addresses[chainId] = address;

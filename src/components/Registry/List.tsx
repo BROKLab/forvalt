@@ -24,7 +24,7 @@ export const List: React.FC<Props> = ({ ...props }) => {
     useEffect(() => {
         let subscribed = true
         const doAsync = async () => {
-            const list = await props.capTableRegistry.list()
+            const list = await props.capTableRegistry.getList()
             if (subscribed) {
                 const listReveresed = list.slice().reverse()
                 setList(listReveresed)
@@ -40,14 +40,14 @@ export const List: React.FC<Props> = ({ ...props }) => {
         const doAsync = async () => {
             list.forEach(async address => {
                 if (Object.keys(list).indexOf(address) === -1) {
-                    const info = await props.capTableRegistry.info(address)
-                    if (subscribed) {
-                        setListData(old => [...old, {
-                            active: info.active,
-                            uuid: info.uuid,
-                            address: address
-                        }])
-                    }
+                    // const info = await props.capTableRegistry.info(address)
+                    // if (subscribed) {
+                    //     setListData(old => [...old, {
+                    //         active: info.active,
+                    //         uuid: info.uuid,
+                    //         address: address
+                    //     }])
+                    // }
                 }
             })
         }
@@ -68,22 +68,11 @@ export const List: React.FC<Props> = ({ ...props }) => {
                         header: <Text>Orgnr</Text>,
                         render: (data) => ethers.utils.parseBytes32String(data.uuid)
                     },
-                    // {
-                    //     property: 'address',
-                    //     header: <Text truncate>Address</Text>,
-                    //     primary: true,
-                    //     render: (row) => <FormatAddress address={data[row.]}></FormatAddress>
-                    // },
                     {
                         property: 'status',
                         header: <Text>Status</Text>,
                         render: (data) => data.active ? "Aktivt" : "Slettet"
                     },
-                    // {
-                    //     property: 'address',
-                    //     header: <Text>Addresse</Text>,
-                    //     render: (data) => FormatAddress({ address: data.address })
-                    // },
                     {
                         property: 'actions',
                         header: <Text>...</Text>,
