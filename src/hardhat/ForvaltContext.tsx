@@ -3,35 +3,25 @@
 /* eslint-disable */
 import { SIGNER_EVENTS, WalletConnectSigner } from "@symfoni/walletconnect-v2-ethers-signer";
 import copy from "clipboard-copy";
-import { ethers, providers, Signer as EthersSigner } from "ethers";
+import { ethers, providers, Signer as EthersSigner, Wallet } from "ethers";
 import { Box, Button, Grid, Image, Text, TextInput } from "grommet";
 import { Copy } from "grommet-icons";
 import React, { useCallback, useEffect, useState } from "react";
 import { Modal } from "../components/ui/Modal";
 import { getAuthProvider } from "./contracts/AuthProvider";
-import { getCapTableQue } from "./contracts/CapTableQue";
+import { getCapTableFactory } from "./contracts/CapTableFactory";
 import { getCapTableRegistry } from "./contracts/CapTableRegistry";
 import { getERC1400 } from "./contracts/ERC1400";
 import { getERC1400AuthValidator } from "./contracts/ERC1400AuthValidator";
 import { getERC1820Registry } from "./contracts/ERC1820Registry";
-import { AuthProvider } from "./typechain/AuthProvider";
-import { CapTableQue } from "./typechain/CapTableQue";
-import { CapTableRegistry } from "./typechain/CapTableRegistry";
-import { ERC1400 } from "./typechain/ERC1400";
-import { ERC1400AuthValidator } from "./typechain/ERC1400AuthValidator";
-import { ERC1820Registry } from "./typechain/ERC1820Registry";
-import { AuthProvider__factory } from "./typechain/factories/AuthProvider__factory";
-import { CapTableQue__factory } from "./typechain/factories/CapTableQue__factory";
-import { CapTableRegistry__factory } from "./typechain/factories/CapTableRegistry__factory";
-import { ERC1400AuthValidator__factory } from "./typechain/factories/ERC1400AuthValidator__factory";
-import { ERC1400__factory } from "./typechain/factories/ERC1400__factory";
-import { ERC1820Registry__factory } from "./typechain/factories/ERC1820Registry__factory";
+import QRCode from "qrcode.react";
+import { AuthProvider, AuthProvider__factory, CapTableFactory, CapTableFactory__factory, CapTableRegistry, CapTableRegistry__factory, ERC1400, ERC1400AuthValidator, ERC1400AuthValidator__factory, ERC1400__factory, ERC1820Registry, ERC1820Registry__factory } from "@brok/captable-contracts";
 
 export const SymfoniContext = React.createContext<SymfoniContextInterface>(undefined!);
 export const ERC1400Context = React.createContext<SymfoniERC1400>(undefined!);
 export const AuthProviderContext = React.createContext<SymfoniAuthProvider>(undefined!);
 export const ERC1820RegistryContext = React.createContext<SymfoniERC1820Registry>(undefined!);
-export const CapTableQueContext = React.createContext<SymfoniCapTableQue>(undefined!);
+export const CapTableFactoryContext = React.createContext<SymfoniCapTableFactory>(undefined!);
 export const CapTableRegistryContext = React.createContext<SymfoniCapTableRegistry>(undefined!);
 export const ERC1400AuthValidatorContext = React.createContext<SymfoniERC1400AuthValidator>(undefined!);
 
@@ -58,10 +48,10 @@ export interface SymfoniERC1820Registry {
     factory?: ERC1820Registry__factory;
     connect: (address: string) => ERC1820Registry
 }
-export interface SymfoniCapTableQue {
-    instance?: CapTableQue;
-    factory?: CapTableQue__factory;
-    connect: (address: string) => CapTableQue
+export interface SymfoniCapTableFactory {
+    instance?: CapTableFactory;
+    factory?: CapTableFactory__factory;
+    connect: (address: string) => CapTableFactory
 }
 export interface SymfoniCapTableRegistry {
     instance?: CapTableRegistry;
@@ -83,6 +73,7 @@ export interface InitOpts {
     provider?: ProviderTypes,
     forceSigner?: boolean
 }
+const BROWSER_WALLET_URL = process.env.REACT_APP_BROWSER_WALLET
 
 type Signer = EthersSigner | WalletConnectSigner
 export enum STATE {
@@ -133,7 +124,7 @@ export const Symfoni: React.FC<SymfoniProps> = ({
     const [ERC1400, setERC1400] = useState<SymfoniERC1400>(undefined!);
     const [AuthProvider, setAuthProvider] = useState<SymfoniAuthProvider>(undefined!);
     const [ERC1820Registry, setERC1820Registry] = useState<SymfoniERC1820Registry>(undefined!);
-    const [CapTableQue, setCapTableQue] = useState<SymfoniCapTableQue>(undefined!);
+    const [CapTableFactory, setCapTableFactory] = useState<SymfoniCapTableFactory>(undefined!);
     const [CapTableRegistry, setCapTableRegistry] = useState<SymfoniCapTableRegistry>(undefined!);
     const [ERC1400AuthValidator, setERC1400AuthValidator] = useState<SymfoniERC1400AuthValidator>(undefined!);
 
@@ -151,7 +142,7 @@ export const Symfoni: React.FC<SymfoniProps> = ({
             return new ethers.providers.JsonRpcProvider({
                 url: "https://e0mvr9jrs7-e0iwsftiw5-rpc.de0-aws.kaleido.io/",
                 user: "e0ri5j5fp2",
-                password: "pA0jrXjkbgdltvu2iaXE7q9NjQy57S1AIF-v0FXyuJ4"
+                password: "pA0jrXjkbgdltvu2iaXE7q9NjQy57S1AIF-v0FXyuJ4",
             });
         }
         if (selectedProvider === "hardhat") {
@@ -163,46 +154,58 @@ export const Symfoni: React.FC<SymfoniProps> = ({
     };
 
     const getSigner = useCallback(async (_provider: providers.Provider, _forceSigner?: boolean) => {
-        return new Promise<Signer | undefined>(async (resolve) => {
-            console.log("getSigner with force ", forceSigner)
-            let resolved = false
-            if (signer) {
-                return resolve(signer)
-            }
-            const _signer = new WalletConnectSigner({
-                methods: ['eth_sendTransaction', 'personal_sign', 'eth_signTypedData', 'eth_signTransaction', 'oracle_data']
-            }).connect(_provider);
+        if (selectedSigner === "walletConnectV2") {
+            return new Promise<Signer | undefined>(async (resolve) => {
+                console.log("getSigner with force ", forceSigner)
+                let resolved = false
+                if (signer) {
+                    return resolve(signer)
+                }
+                const _signer = new WalletConnectSigner({
+                    methods: ['eth_sendTransaction', 'personal_sign', 'eth_signTypedData', 'eth_signTransaction', 'oracle_data'],
+                }).connect(_provider);
 
-            if (forceSigner) {
-                _signer.on(SIGNER_EVENTS.uri, (uri: any) => {
-                    console.log("NEED URI QR CODE")
-                    console.log(uri)
-                    setWalletConnectURI(uri)
-                    setShowWalletConnectLogin(true)
-                });
+                if (forceSigner) {
+                    _signer.on(SIGNER_EVENTS.uri, (uri: any) => {
+                        console.log("NEED URI QR CODE")
+                        console.log(uri)
+                        setWalletConnectURI(uri)
+                        setShowWalletConnectLogin(true)
+                    });
 
-                _signer.on(SIGNER_EVENTS.statusUpdate, (uri: any) => {
-                    setShowWalletConnectLogin(false)
-                    resolve(_signer)
-                });
-            } else {
-                _signer.on(SIGNER_EVENTS.statusUpdate, (session: any) => {
-                    if (!resolved) {
-                        resolved = true
-                        return resolve(_signer)
-                    }
-                });
-                setTimeout(() => {
-                    console.log("TImeout", forceSigner)
-                    if (!resolved && !forceSigner) {
-                        console.log(`No signer received within ${SIGNER_TIMEOUT / 1000} seconds, proceeding without signer`)
-                        resolved = true
-                        return resolve(undefined)
-                    }
-                }, SIGNER_TIMEOUT)
-            }
-            _signer.open({ onlyReconnect: !forceSigner })
-        })
+                    _signer.on(SIGNER_EVENTS.statusUpdate, (uri: any) => {
+                        setShowWalletConnectLogin(false)
+                        resolve(_signer)
+                    });
+                } else {
+                    _signer.on(SIGNER_EVENTS.statusUpdate, (session: any) => {
+                        if (!resolved) {
+                            resolved = true
+                            return resolve(_signer)
+                        }
+                    });
+                    setTimeout(() => {
+                        console.log("TImeout", forceSigner)
+                        if (!resolved && !forceSigner) {
+                            console.log(`No signer received within ${SIGNER_TIMEOUT / 1000} seconds, proceeding without signer`)
+                            resolved = true
+                            return resolve(undefined)
+                        }
+                    }, SIGNER_TIMEOUT)
+                }
+                _signer.open({ onlyReconnect: !forceSigner })
+            })
+        } else if (selectedSigner === "prompt") {
+            return new Promise<Signer | undefined>(async (resolve) => {
+                console.log("getSigner with force ", forceSigner)
+                let resolved = false
+                if (signer) {
+                    return resolve(signer)
+                }
+                const _signer = new Wallet("ac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80").connect(_provider);
+                resolve(_signer)
+            })
+        }
     }, [forceSigner]);
 
     const init = async (opts: InitOpts = {}) => {
@@ -241,7 +244,7 @@ export const Symfoni: React.FC<SymfoniProps> = ({
                     setERC1400(getERC1400(_provider, _chainId, _signer))
                     setAuthProvider(getAuthProvider(_provider, _chainId, _signer))
                     setERC1820Registry(getERC1820Registry(_provider, _chainId, _signer))
-                    setCapTableQue(getCapTableQue(_provider, _chainId, _signer))
+                    setCapTableFactory(getCapTableFactory(_provider, _chainId, _signer))
                     setCapTableRegistry(getCapTableRegistry(_provider, _chainId, _signer))
                     setERC1400AuthValidator(getERC1400AuthValidator(_provider, _chainId, _signer))
                     setState(_signer ? STATE.PROVIDER_SIGNER_READY : STATE.PROVIDER_READY)
@@ -276,7 +279,7 @@ export const Symfoni: React.FC<SymfoniProps> = ({
             <AuthProviderContext.Provider value={AuthProvider}>
                 <ERC1400Context.Provider value={ERC1400}>
                     <ERC1820RegistryContext.Provider value={ERC1820Registry}>
-                        <CapTableQueContext.Provider value={CapTableQue}>
+                        <CapTableFactoryContext.Provider value={CapTableFactory}>
                             <CapTableRegistryContext.Provider value={CapTableRegistry}>
                                 <ERC1400AuthValidatorContext.Provider value={ERC1400AuthValidator}>
                                     {!provider &&
@@ -301,13 +304,24 @@ export const Symfoni: React.FC<SymfoniProps> = ({
                                                     <Box gap="small">
                                                         {/* TODO : Fix this, not safe */}
                                                         <Text truncate>For å se denne nettsiden må du logge inn med en Lommebok</Text>
-                                                        <Image alignSelf="center" height="200px" width="200px" src={`${"https://chart.googleapis.com/chart?cht=qr&chs=200x200&chl=" + walletConnectURI}`} ></Image>
+                                                        {/* TODO VERY NOT SAFE, just for testing */}
+                                                        <Grid columns={["1/2", "1/2"]}>
+                                                            <Box align="center">
+                                                                <Text size="xsmall">WC Deeplink</Text>
+                                                                <QRCode size={200} value={`${walletConnectURI}`}></QRCode>
+
+                                                            </Box>
+                                                            <Box align="center">
+                                                                <Text size="xsmall">Symfoni Browser Wallet URL</Text>
+                                                                <QRCode size={200} value={`${BROWSER_WALLET_URL + "?wc-uri=" + encodeURIComponent(walletConnectURI) + "&callback-url=" + encodeURIComponent(document.URL)}`}></QRCode>
+                                                            </Box>
+                                                        </Grid>
                                                         <Grid columns={["2/3", "1/3"]}>
                                                             <TextInput size="small" value={walletConnectURI}></TextInput>
-                                                            <Button size="small" icon={<Copy></Copy>} label="Copy" onClick={(e) => copy(walletConnectURI)}></Button>
+                                                            <Button size="small" icon={<Copy></Copy>} label="Copy" onClick={() => copy(walletConnectURI)}></Button>
                                                         </Grid>
                                                         <Grid columns={"1/2"} gap="small">
-                                                            <Button size="medium" label="Symfoni Browser Test Wallet" target={"_blank"} href={"https://symfoni-browser-wallet-stage.herokuapp.com/wallet-connect?wc-uri=" + encodeURIComponent(walletConnectURI) + "&callback-url=" + encodeURIComponent(document.URL)}></Button>
+                                                            <Button size="medium" label="Symfoni Browser Test Wallet" target={"_blank"} href={BROWSER_WALLET_URL + "?wc-uri=" + encodeURIComponent(walletConnectURI) + "&callback-url=" + encodeURIComponent(document.URL)}></Button>
                                                         </Grid>
                                                     </Box>
                                                     : <Text>No Wallet Connect URI found</Text>
@@ -317,7 +331,7 @@ export const Symfoni: React.FC<SymfoniProps> = ({
                                     }
                                 </ERC1400AuthValidatorContext.Provider >
                             </CapTableRegistryContext.Provider >
-                        </CapTableQueContext.Provider >
+                        </CapTableFactoryContext.Provider >
                     </ERC1820RegistryContext.Provider >
                 </ERC1400Context.Provider >
             </AuthProviderContext.Provider >

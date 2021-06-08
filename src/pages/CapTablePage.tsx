@@ -4,7 +4,9 @@ import { Route, Switch, useParams, useRouteMatch } from 'react-router-dom';
 import { Details } from '../components/CapTable/Details';
 import { Loading } from '../components/ui/Loading';
 import { ERC1400Context } from '../hardhat/ForvaltContext';
-import { ERC1400 } from '../hardhat/typechain/ERC1400';
+import { ERC1400 } from '@brok/captable-contracts';
+import { useQuery } from 'graphql-hooks';
+import { CapTableTypes } from '../components/CapTable/CapTable.types';
 
 interface Props {
 }
@@ -15,13 +17,19 @@ interface RouteParams {
 export const CapTablePage: React.FC<Props> = ({ ...props }) => {
     const { address } = useParams<RouteParams>();
     const { path } = useRouteMatch()
-    const ERC1400 = useContext(ERC1400Context);
+    const erc1400 = useContext(ERC1400Context);
     const [capTable, setCapTable] = useState<ERC1400>();
+    // const { loading, error, data } = useQuery<CapTableTypes.Types.CapTable>(CapTableTypes.Queries.CAP_TABLE_QUERY(address), {
+    //     variables: {
+    //         limit: 10
+    //     }
+    // })
+
 
     useEffect(() => {
-        const _capTable = ERC1400.connect(address)
+        const _capTable = erc1400.connect(address)
         setCapTable(_capTable)
-    }, [address])
+    }, [erc1400, address])
 
 
     return (
@@ -39,7 +47,6 @@ export const CapTablePage: React.FC<Props> = ({ ...props }) => {
                         <Route path={`${path}`} exact={true} render={() => <Details capTable={capTable} />} />
                     </>
                 }
-                {/* <Route path={`${path}/onboard`} exact={true} render={() => <OnBoard capTable={capTable} />} /> */}
             </Switch>
         </Box >
     )

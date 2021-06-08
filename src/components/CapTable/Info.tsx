@@ -1,19 +1,15 @@
 import { ethers } from 'ethers';
 import { Box, Grid, Text } from 'grommet';
 import React, { useContext, useEffect, useState } from 'react';
-import { CapTableQueContext, CapTableRegistryContext, SymfoniContext } from '../../hardhat/ForvaltContext';
-import { ERC1400 } from '../../hardhat/typechain/ERC1400';
-import { CapTableQueDetails } from './Que/CapTableQueDetails';
+import { CapTableRegistryContext, SymfoniContext } from '../../hardhat/ForvaltContext';
+import { ERC1400 } from '@brok/captable-contracts';
+import { CapTableQueDetails } from './../Que/CapTableQueDetails';
 
 interface Props {
     capTable: ERC1400
 }
 
-interface CapTableData {
-    name: string
-    totalSupply: string,
-    isController: boolean
-}
+
 interface CapTableRegistryData {
     uuid: string
     active: boolean
@@ -21,10 +17,11 @@ interface CapTableRegistryData {
 
 
 export const Info: React.FC<Props> = ({ capTable, ...pops }) => {
-    const [data, setData] = useState<CapTableData>();
+    const [name, setName] = useState<string>();
+    const [isController, setIsController] = useState<boolean>();
+    const [totalSupply, setTotalSupply] = useState<string>();
     const [registryData, setRegistryData] = useState<CapTableRegistryData>();
     const capTableRegistry = useContext(CapTableRegistryContext)
-    const capTableQue = useContext(CapTableQueContext)
     const { address: currentAddress } = useContext(SymfoniContext)
 
 
@@ -34,19 +31,24 @@ export const Info: React.FC<Props> = ({ capTable, ...pops }) => {
             const name = await capTable.name().catch(() => "No company found");
             const totalSupplyBN = await capTable
                 .totalSupply()
-                .catch(() => ethers.constants.Zero);
-            const totalSupply = ethers.utils.formatEther(totalSupplyBN);
             const isController = await (await capTable.controllers()).findIndex(address => address === currentAddress) !== -1
             if (subscribed) {
-                setData({ name, totalSupply, isController });
+                setName(name)
+                setTotalSupply(totalSupplyBN.toString())
+                setIsController(isController)
             }
             if (capTableRegistry.instance) {
-                const { uuid, active } = await capTableRegistry.instance.info(capTable.address)
-                if (subscribed) {
-                    setRegistryData({
-                        uuid: uuid === ethers.constants.HashZero ? ethers.utils.formatBytes32String("Ikke opprettet") : uuid,
-                        active: active
-                    })
+                try {
+                    const status = await capTableRegistry.instance.getStatus(capTable.address)
+                    const uuid = await capTableRegistry.instance.getUuid(capTable.address)
+                    if (subscribed) {
+                        setRegistryData({
+                            uuid: uuid === ethers.constants.HashZero ? ethers.utils.formatBytes32String("Ikke opprettet") : uuid,
+                            active: status.toString() === "2"
+                        })
+                    }
+                } catch (error) {
+                    console.log(error)
                 }
             }
         };
@@ -56,10 +58,10 @@ export const Info: React.FC<Props> = ({ capTable, ...pops }) => {
 
     return (
         <Box gap="small">
-            {data &&
+            {name &&
                 <Grid columns={["small", "flex"]}>
                     <Text>Foretaksnavn</Text>
-                    <Text weight="bold">{data.name}</Text>
+                    <Text weight="bold">{name}</Text>
                 </Grid>
             }
             {registryData &&
@@ -74,20 +76,20 @@ export const Info: React.FC<Props> = ({ capTable, ...pops }) => {
                     <Text weight="bold">{registryData.active ? "Ja" : "Nei"}</Text>
                 </Grid>
             }
-            {data &&
+            {totalSupply &&
                 <Grid columns={["small", "flex"]}>
                     <Text >Antall aksjer</Text>
-                    <Text weight="bold">{data.totalSupply.slice(0, -2)}</Text>
+                    <Text weight="bold">{totalSupply}</Text>
                 </Grid>
             }
-            {data &&
+            {isController &&
                 <Grid columns={["small", "flex"]}>
                     <Text >Skrive rettigheter</Text>
-                    <Text weight="bold">{data.isController ? "Ja" : "Nei"}</Text>
+                    <Text weight="bold">{isController ? "Ja" : "Nei"}</Text>
                 </Grid>
             }
-            {registryData && !registryData.active && capTableQue.instance &&
-                <CapTableQueDetails capTableQue={capTableQue.instance} capTableAddress={capTable.address}></CapTableQueDetails>
+            {registryData && !registryData.active && capTableRegistry.instance &&
+                <CapTableQueDetails capTableRegistry={capTableRegistry.instance} capTableAddress={capTable.address}></CapTableQueDetails>
             }
 
         </Box>

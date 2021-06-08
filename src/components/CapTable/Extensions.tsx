@@ -3,7 +3,7 @@ import { Box, Button, Card, CardBody, CardFooter, Heading, Paragraph, Text } fro
 import { UserPolice } from 'grommet-icons';
 import React, { useContext, useEffect } from 'react';
 import { ERC1400AuthValidatorContext, ERC1820RegistryContext } from '../../hardhat/ForvaltContext';
-import { ERC1400 } from '../../hardhat/typechain/ERC1400';
+import { ERC1400 } from "@brok/captable-contracts";
 
 interface Props {
     capTable: ERC1400

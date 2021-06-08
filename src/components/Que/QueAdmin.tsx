@@ -1,12 +1,12 @@
+import { CapTableRegistry } from '@brok/captable-contracts';
 import { ethers } from 'ethers';
 import { Box, Button, Grid, Text, TextInput } from 'grommet';
 import { Checkmark, Clear } from 'grommet-icons';
 import React, { useContext, useEffect, useState } from 'react';
 import { SymfoniContext } from '../../hardhat/ForvaltContext';
-import { CapTableQue } from '../../hardhat/typechain/CapTableQue';
 
 interface Props {
-    capTableQue: CapTableQue,
+    capTableRegistry: CapTableRegistry,
     capTableAddress: string,
 }
 
@@ -19,20 +19,24 @@ export const QueAdmin: React.FC<Props> = ({ ...props }) => {
     useEffect(() => {
         let subscribed = true
         const doAsync = async () => {
-            const controllers = await props.capTableQue.controllers()
+            const controllers = await props.capTableRegistry.controllers()
             if (subscribed && currentAddress) {
                 setIsAdmin(controllers.indexOf(currentAddress) !== -1)
             }
         };
         doAsync();
         return () => { subscribed = false }
-    }, [currentAddress, props.capTableQue])
+    }, [currentAddress, props.capTableRegistry])
 
-    const processQue = async (decision: boolean) => {
-        const reasonBytes32 = ethers.utils.formatBytes32String(reason)
-
-        const tx = await props.capTableQue.process(props.capTableAddress, decision, reasonBytes32)
-        await tx.wait()
+    const processQue = async (approved: boolean) => {
+        if (approved) {
+            const tx = await props.capTableRegistry.approve(props.capTableAddress)
+            await tx.wait()
+        } else {
+            const reasonBytes32 = ethers.utils.formatBytes32String(reason)
+            const tx = await props.capTableRegistry.decline(props.capTableAddress, reason)
+            await tx.wait()
+        }
         init()
     }
 

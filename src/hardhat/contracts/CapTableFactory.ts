@@ -1,20 +1,20 @@
 import { providers, Signer } from "ethers";
-import { SymfoniCapTableRegistry } from "../ForvaltContext";
+import { SymfoniCapTableFactory } from "../ForvaltContext";
 import {
-  CapTableRegistry__factory,
+  CapTableFactory__factory,
   Deployments,
 } from "@brok/captable-contracts";
 
-export function getCapTableRegistry(
+export function getCapTableFactory(
   provider: providers.Provider,
   chainId: number,
   signer?: Signer,
   address?: string
-): SymfoniCapTableRegistry {
+): SymfoniCapTableFactory {
   const addresses: { [chainId: number]: string } = {
     [Deployments.BrokStage.chainId]:
-      Deployments.BrokStage.contracts.CapTableRegistry.address,
-    2018: "0x7904564de273FB207d6D3525620eCa390E93bE1B",
+      Deployments.BrokStage.contracts.CapTableFactory.address,
+    2018: "0xDDBe41f46E7eBb86d9Ac7053cde4b41E5b30aF93",
   };
   if (address) {
     addresses[chainId] = address;
@@ -22,18 +22,18 @@ export function getCapTableRegistry(
   const instance = () => {
     if (chainId in addresses) {
       return signer
-        ? CapTableRegistry__factory.connect(addresses[chainId], signer)
-        : CapTableRegistry__factory.connect(addresses[chainId], provider);
+        ? CapTableFactory__factory.connect(addresses[chainId], signer)
+        : CapTableFactory__factory.connect(addresses[chainId], provider);
     }
     return undefined;
   };
   const factory = () => {
-    return signer ? new CapTableRegistry__factory(signer) : undefined;
+    return signer ? new CapTableFactory__factory(signer) : undefined;
   };
   const connect = (address: string) => {
     return signer
-      ? CapTableRegistry__factory.connect(address, signer)
-      : CapTableRegistry__factory.connect(address, provider);
+      ? CapTableFactory__factory.connect(address, signer)
+      : CapTableFactory__factory.connect(address, provider);
   };
   return {
     instance: instance(),

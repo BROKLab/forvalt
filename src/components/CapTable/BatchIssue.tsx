@@ -1,23 +1,32 @@
 import { BytesLike, ethers } from 'ethers';
-import { Box, Button, Grid, Select, Text, TextInput } from 'grommet';
+import { Box, Button, Grid, Select, Text, TextInput } from "grommet";
 import React, { useContext, useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useHistory } from 'react-router-dom';
 import { SymfoniContext } from '../../hardhat/ForvaltContext';
-import { ERC1400 } from '../../hardhat/typechain/ERC1400';
-import { Transaction } from '../../utils/ethers-helpers';
+import { ERC1400 } from '@brok/captable-contracts';
 import { SelectUser } from '../ui/SelectUser';
 
-interface Props {
+type PropsAggregate = {
+    capTable?: ERC1400,
+    done?: () => void
+    actions?: React.ReactNode
+    aggregateResult: (batchIssueData: BatchIssueData) => void
+}
+type PropsSend = {
     capTable: ERC1400,
     done?: () => void
-    transactions?: (tx: Transaction[]) => void,
     actions?: React.ReactNode
+    aggregateResult?: never
 }
-interface FormData {
+type Props = PropsAggregate | PropsSend
+export interface BatchIssueData {
     address: string[]
     amount: string[]
     partition: string[]
+}
+interface FormData extends BatchIssueData {
+
 }
 
 const createArrayWithNumbers = (length: number) => {
@@ -51,13 +60,15 @@ export const BatchIssue: React.FC<Props> = ({ ...props }) => {
     useEffect(() => {
         let subscribed = true
         const doAsync = async () => {
-            const partitionsBytes32 = await props.capTable.totalPartitions().catch(() => [])
-            try {
-                if (subscribed) {
-                    setPartitions(old => [...old, ...partitionsBytes32.filter(a => old.indexOf(a) === -1)])
+            if (props.capTable) {
+                try {
+                    const partitionsBytes32 = await props.capTable.totalPartitions().catch(() => [])
+                    if (subscribed) {
+                        setPartitions(old => [...old, ...partitionsBytes32.filter(a => old.indexOf(a) === -1)])
+                    }
+                } catch (error) {
+                    console.debug("Could not retrive partitions from capTable")
                 }
-            } catch (error) {
-                // console.error(error)
             }
         };
         doAsync();
@@ -70,15 +81,17 @@ export const BatchIssue: React.FC<Props> = ({ ...props }) => {
             return init({ forceSigner: true })
         }
         const txData = "0x11"
-        if (props.transactions) {
-            const txs = await Promise.all(createArrayWithNumbers(rows).map(async rowNr => {
-                return props.capTable.populateTransaction.issueByPartition(data.partition[rowNr], data.address[rowNr], ethers.utils.parseEther(data.amount[rowNr]), txData, { gasLimit: 254955 * 1.2 })
-            }))
-            return props.transactions(txs)
+        if (props.aggregateResult) {
+            return props.aggregateResult(data)
         } else {
-            // ISSUE SHARES
+            if (!props.capTable) {
+                throw Error("CapTable must be set when not aggregate result")
+            }
             await createArrayWithNumbers(rows)
                 .reduce(async (prev, rowNr) => {
+                    if (!props.capTable) {
+                        throw Error("CapTable must be set when not aggregate result")
+                    }
                     await prev
                     // TODO : Handle CDP
                     const tx = await props.capTable.issueByPartition(data.partition[rowNr], data.address[rowNr], ethers.utils.parseEther(data.amount[rowNr]), txData)
@@ -120,7 +133,7 @@ export const BatchIssue: React.FC<Props> = ({ ...props }) => {
                     <Text size="small">Partisjoner blir først lagret når du utsteder en aksje på den.</Text>
                 </Box>
             }
-            <form id={props.capTable.address} onSubmit={handleSubmit(onSubmitBatchIssue)}>
+            <form /* id={props.capTable.address} */ onSubmit={handleSubmit(onSubmitBatchIssue)}>
                 <Box gap="small">
                     <Grid columns={COLUMNS} fill="horizontal" gap="small">
                         <Text size="small" weight="bold" truncate>Fødselsnummer</Text>
@@ -130,7 +143,7 @@ export const BatchIssue: React.FC<Props> = ({ ...props }) => {
                     {createArrayWithNumbers(rows).map((rowNr) =>
                         <Grid columns={COLUMNS} fill="horizontal" gap="small" key={rowNr}>
                             <Box >
-                                <Controller render={({ onChange, value }) => <SelectUser onChange={onChange} value={value} capTableAddress={props.capTable.address} protocol={"ERC1400:BRREG:DEMO"}></SelectUser>} name={`address[${rowNr}]`} control={control} rules={{ required: true }} defaultValue={""} />
+                                <Controller render={({ onChange, value }) => <SelectUser onChange={onChange} value={value} capTableAddress={"fdgd"} protocol={"ERC1400:BRREG:DEMO"}></SelectUser>} name={`address[${rowNr}]`} control={control} rules={{ required: true }} defaultValue={""} />
                                 {errors["address"] && errors["address"][rowNr] && <Text color="red" size="xsmall">* {errors["address"][rowNr]?.type}</Text>}
                             </Box>
                             <Box >
@@ -171,7 +184,7 @@ export const BatchIssue: React.FC<Props> = ({ ...props }) => {
                         <Button color="black" label="Legg til ny rad" onClick={() => setRows(rows + 1)} style={{ borderRadius: "0px" }}></Button>
                         <Button color="red" label="Fjern nederste rad" onClick={() => setRows(rows - 1)} disabled={rows === 1} style={{ borderRadius: "0px" }}></Button>
                         {props.actions}
-                        <Button color="black" label={props.transactions ? "Lagre og gå videre" : "Utested"} type="submit" /* disabled={!formState.isValid} */ style={{ borderRadius: "0px" }}></Button>
+                        <Button color="black" label={props.aggregateResult ? "Lagre og gå videre" : "Utsted aksjer"} type="submit" /* disabled={!formState.isValid} */ style={{ borderRadius: "0px" }}></Button>
                     </Box>
                 </Box>
             </form>
