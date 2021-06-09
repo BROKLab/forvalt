@@ -33,8 +33,8 @@ export const QueAdmin: React.FC<Props> = ({ ...props }) => {
             const tx = await props.capTableRegistry.approve(props.capTableAddress)
             await tx.wait()
         } else {
-            const reasonBytes32 = ethers.utils.formatBytes32String(reason)
-            const tx = await props.capTableRegistry.decline(props.capTableAddress, reason)
+            const reasonBytes32 = ethers.utils.formatBytes32String("Declined from Forvalt")
+            const tx = await props.capTableRegistry.decline(props.capTableAddress, reasonBytes32)
             await tx.wait()
         }
         init()

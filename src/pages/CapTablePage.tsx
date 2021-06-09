@@ -1,12 +1,10 @@
+import { ERC1400 } from '@brok/captable-contracts';
 import { Box, Text } from 'grommet';
 import React, { useContext, useEffect, useState } from 'react';
 import { Route, Switch, useParams, useRouteMatch } from 'react-router-dom';
 import { Details } from '../components/CapTable/Details';
 import { Loading } from '../components/ui/Loading';
 import { ERC1400Context } from '../hardhat/ForvaltContext';
-import { ERC1400 } from '@brok/captable-contracts';
-import { useQuery } from 'graphql-hooks';
-import { CapTableTypes } from '../components/CapTable/CapTable.types';
 
 interface Props {
 }

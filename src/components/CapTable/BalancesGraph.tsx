@@ -1,10 +1,8 @@
-import { ethers } from 'ethers';
-import { Box, DataTable, Select, Text } from 'grommet';
-import React, { useState } from 'react';
-import { formatBN } from '../../utils/numbers';
+import { useQuery } from 'graphql-hooks';
+import { Box, DataTable, Text } from 'grommet';
+import React from 'react';
 import { FormatAddress } from '../ui/FormatAddress';
 import { Loading } from '../ui/Loading';
-import { useQuery } from 'graphql-hooks';
 import { CapTableTypes } from './CapTable.types';
 
 
@@ -14,7 +12,7 @@ interface Props {
 
 
 export const BalancesGraph: React.FC<Props> = ({ ...props }) => {
-    const [partitionFilter, setPartitionFilter] = useState<string>();
+    // const [partitionFilter, setPartitionFilter] = useState<string>();
     const { loading, error, data } = useQuery<CapTableTypes.BalancesQuery.RootObject>(CapTableTypes.Queries.BALANCES_QUERY(props.capTableAddress), {
         variables: {
             limit: 10

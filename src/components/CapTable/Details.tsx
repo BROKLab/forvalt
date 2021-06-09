@@ -1,19 +1,15 @@
-import { Box, Text, CheckBox, Heading } from 'grommet';
+import { ERC1400 } from '@brok/captable-contracts';
+import { Box, CheckBox, Heading, Text } from 'grommet';
 import React, { useContext, useState } from 'react';
 import { SymfoniContext } from '../../hardhat/ForvaltContext';
-import { ERC1400 } from '@brok/captable-contracts';
 import { Actions } from './Actions';
-import { BalancesSmartContract } from './BalancesSmartContract';
 import { BalancesGraph } from './BalancesGraph';
+import { BalancesSmartContract } from './BalancesSmartContract';
 import { Info } from './Info';
-import { CapTableTypes } from './CapTable.types';
-
 
 interface Props {
     capTable: ERC1400
 }
-
-
 
 export const Details: React.FC<Props> = ({ ...props }) => {
     const { signer } = useContext(SymfoniContext)

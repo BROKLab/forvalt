@@ -7,7 +7,6 @@ import { Controller, useForm } from "react-hook-form";
 import { useHistory } from 'react-router-dom';
 import { SpinnerDiamond } from 'spinners-react/lib/esm/SpinnerDiamond';
 import { CapTableFactoryContext, ERC1400Context, SymfoniContext } from "../../hardhat/ForvaltContext";
-import { Transaction } from '../../utils/ethers-helpers';
 import { formatCurrency } from '../../utils/numbers';
 import { removePassword } from '../../utils/passwordBlockAPI';
 
