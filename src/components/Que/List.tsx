@@ -17,22 +17,22 @@ interface QueListData {
 
 
 const CAP_TABLES_QUERY = `{
-    capTables {
+    capTables(where: {status: QUED}) {
       name
       orgnr
       status
+      id
     }
-  }`
-
+  }
+`
 
 export const List: React.FC<Props> = ({ ...props }) => {
     const history = useHistory();
     const { loading, error, data } = useQuery<{
-
         capTables: {
             name: string
             orgnr: string
-            address: string
+            id: string
             status: string
         }[]
 
@@ -92,7 +92,7 @@ export const List: React.FC<Props> = ({ ...props }) => {
                     {
                         property: 'actions',
                         header: <Text>...</Text>,
-                        render: (data) => <Button size="small" hoverIndicator={true} focusIndicator={false} icon={<More></More>} onClick={() => history.push("/captable/" + data.address)}></Button>
+                        render: (data) => <Button size="small" hoverIndicator={true} focusIndicator={false} icon={<More></More>} onClick={() => history.push("/captable/" + data.id)}></Button>
                     },
 
                 ]}

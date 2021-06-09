@@ -1,87 +1,109 @@
-import { BytesLike, ethers } from 'ethers';
-import { Box, Button, DataTable, Text } from 'grommet';
+import { BigNumber, BytesLike } from 'ethers';
+import { useQuery } from 'graphql-hooks';
+import { Box, Button, DataTable, Paragraph, Text } from 'grommet';
 import { More } from 'grommet-icons';
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { useHistory } from 'react-router-dom';
-import { CapTableRegistry } from '@brok/captable-contracts';
+import { Loading } from '../ui/Loading';
 
 interface Props {
-    capTableRegistry: CapTableRegistry
 }
 
 interface QueListData {
-    active: boolean,
+    status: BigNumber,
     uuid: BytesLike,
     address: string
 }
 
+
+const CAP_TABLES_QUERY = `{
+    capTables(where: {status: APPROVED}) {
+      name
+      orgnr
+      status
+      id
+    }
+  }
+`
+
 export const List: React.FC<Props> = ({ ...props }) => {
     const history = useHistory();
-    const [list, setList] = useState<string[]>([]);
-    const [listData, setListData] = useState<QueListData[]>([]);
+    const { loading, error, data } = useQuery<{
+        capTables: {
+            name: string
+            orgnr: string
+            id: string
+            status: string
+        }[]
 
-    // Get list
-    useEffect(() => {
-        let subscribed = true
-        const doAsync = async () => {
-            const list = await props.capTableRegistry.getList()
-            if (subscribed) {
-                const listReveresed = list.slice().reverse()
-                setList(listReveresed)
-            }
-        };
-        doAsync();
-        return () => { subscribed = false }
-    }, [props.capTableRegistry])
-
-    // get data
-    useEffect(() => {
-        let subscribed = true
-        const doAsync = async () => {
-            list.forEach(async address => {
-                if (Object.keys(list).indexOf(address) === -1) {
-                    // const info = await props.capTableRegistry.info(address)
-                    // if (subscribed) {
-                    //     setListData(old => [...old, {
-                    //         active: info.active,
-                    //         uuid: info.uuid,
-                    //         address: address
-                    //     }])
-                    // }
-                }
-            })
+    }>(CAP_TABLES_QUERY, {
+        variables: {
+            limit: 10
         }
-        doAsync();
-        return () => { subscribed = false }
-    }, [list, props.capTableRegistry])
+    })
+
+    // TODO: ADD possiblity to retrive list from smart contract also
+    // // get data
+    // useEffect(() => {
+    //     let subscribed = true
+    //     const doAsync = async () => {
+    //         list.forEach(async address => {
+    //             if (Object.keys(list).indexOf(address) === -1) {
+    //                 const info = await props.capTableQue.info(address)
+    //                 if (subscribed) {
+    //                     setListData(old => [...old, {
+    //                         status: info.status,
+    //                         uuid: info.uuid,
+    //                         address: address
+    //                     }])
+    //                 }
+    //             }
+    //         })
+    //     }
+    //     doAsync();
+    //     return () => { subscribed = false }
+    // }, [list, props.capTableQue])
 
 
+    if (loading) return <Loading>Laster..</Loading>
+    if (error) return <Box><p>Noe galt skjedde</p></Box>
 
     return (
         <Box>
-            <DataTable
-                data={listData}
-                primaryKey={"address"}
-                columns={[
-                    {
-                        property: 'uuid',
-                        header: <Text>Orgnr</Text>,
-                        render: (data) => ethers.utils.parseBytes32String(data.uuid)
-                    },
-                    {
-                        property: 'status',
-                        header: <Text>Status</Text>,
-                        render: (data) => data.active ? "Aktivt" : "Slettet"
-                    },
-                    {
-                        property: 'actions',
-                        header: <Text>...</Text>,
-                        render: (data) => <Button size="small" hoverIndicator={true} focusIndicator={false} icon={<More></More>} onClick={() => history.push("/captable/" + data.address)}></Button>
-                    },
+            {(!data || data.capTables.length === 0) &&
+                <Paragraph>Fant ingen aksjeeierbøker</Paragraph>
+            }
+            {data && data.capTables.length > 0 &&
 
-                ]}
+                <DataTable
+                    data={data.capTables}
+                    primaryKey={"address"}
+                    columns={[
+                        {
+                            property: 'uuid',
+                            header: <Text>Orgnr</Text>,
+                            render: (data) => data.orgnr
+                        },
+                        {
+                            property: 'name',
+                            header: <Text truncate>Address</Text>,
+                            render: (data) => data.name
+                        },
+                        {
+                            property: 'status',
+                            header: <Text>Status</Text>,
+                            render: (data) => data.status
+                        },
+                        {
+                            property: 'actions',
+                            header: <Text>...</Text>,
+                            render: (data) => <Button size="small" hoverIndicator={true} focusIndicator={false} icon={<More></More>} onClick={() => history.push("/captable/" + data.id)}></Button>
+                        },
 
-            />
+                    ]}
+
+                />
+            }
         </Box>
     )
 }

@@ -12,10 +12,13 @@ export function getCapTableFactory(
   address?: string
 ): SymfoniCapTableFactory {
   const addresses: { [chainId: number]: string } = {
-    [Deployments.BrokStage.chainId]:
-      Deployments.BrokStage.contracts.CapTableFactory.address,
     2018: "0xDDBe41f46E7eBb86d9Ac7053cde4b41E5b30aF93",
   };
+  const BROK_ENVIROMENT = process.env.REACT_APP_BROK_ENVIROMENT;
+  if (BROK_ENVIROMENT === "brokStage" || BROK_ENVIROMENT === "brokTest") {
+    addresses[parseInt(Deployments[BROK_ENVIROMENT].chainId)] =
+      Deployments[BROK_ENVIROMENT].contracts.CapTableFactory.address;
+  }
   if (address) {
     addresses[chainId] = address;
   }

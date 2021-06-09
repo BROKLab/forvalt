@@ -28,7 +28,7 @@ export const CapTableRegistryPage: React.FC<Props> = ({ ...props }) => {
             {capTableRegistry.instance &&
                 <Switch>
                     <Route path={`${path}/list`} exact={true} >
-                        <List capTableRegistry={capTableRegistry.instance} />
+                        <List />
                     </Route>
                 </Switch>
             }
