@@ -13,6 +13,7 @@ export function getCapTableRegistry(
 ): SymfoniCapTableRegistry {
   const addresses: { [chainId: number]: string } = {
     2018: "0x7904564de273FB207d6D3525620eCa390E93bE1B",
+    31337: "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0",
   };
   const BROK_ENVIROMENT = process.env.REACT_APP_BROK_ENVIROMENT;
   if (BROK_ENVIROMENT === "brokStage" || BROK_ENVIROMENT === "brokTest") {

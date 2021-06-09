@@ -12,6 +12,7 @@ export function getCapTableFactory(
   address?: string
 ): SymfoniCapTableFactory {
   const addresses: { [chainId: number]: string } = {
+    31337: "0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9",
     2018: "0xDDBe41f46E7eBb86d9Ac7053cde4b41E5b30aF93",
   };
   const BROK_ENVIROMENT = process.env.REACT_APP_BROK_ENVIROMENT;

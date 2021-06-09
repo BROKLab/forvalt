@@ -60,7 +60,7 @@ export const CapTableCreatePage: React.FC<Props> = ({ ...props }) => {
             orgData.navn,
             orgData.navn.substr(0, 3),
             batchIssueData.address,
-            batchIssueData.amount
+            batchIssueData.amount.map(number => ethers.utils.parseEther(number))
         )
         await deployTx.wait()
         try {
