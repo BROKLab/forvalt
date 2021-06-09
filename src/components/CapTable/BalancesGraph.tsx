@@ -1,3 +1,4 @@
+import { ethers } from 'ethers';
 import { useQuery } from 'graphql-hooks';
 import { Box, DataTable, Text } from 'grommet';
 import React from 'react';
@@ -13,7 +14,7 @@ interface Props {
 
 export const BalancesGraph: React.FC<Props> = ({ ...props }) => {
     // const [partitionFilter, setPartitionFilter] = useState<string>();
-    const { loading, error, data } = useQuery<CapTableTypes.BalancesQuery.RootObject>(CapTableTypes.Queries.BALANCES_QUERY(props.capTableAddress), {
+    const { loading, error, data } = useQuery<CapTableTypes.BalancesQuery.RootObject>(CapTableTypes.Queries.BALANCES_QUERY(props.capTableAddress.toLowerCase()), {
         variables: {
             limit: 10
         }
@@ -53,7 +54,7 @@ export const BalancesGraph: React.FC<Props> = ({ ...props }) => {
                     {
                         property: 'balance',
                         header: <Text>Aksjer</Text>,
-                        render: data => data.amount
+                        render: data => ethers.utils.formatEther(data.amount)
                     },
                     {
                         property: 'balanceByPartition',

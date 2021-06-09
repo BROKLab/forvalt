@@ -34,7 +34,7 @@ export const Info: React.FC<Props> = ({ capTable, ...pops }) => {
             const isController = await (await capTable.controllers()).findIndex(address => address === currentAddress) !== -1
             if (subscribed) {
                 setName(name)
-                setTotalSupply(totalSupplyBN.toString())
+                setTotalSupply(ethers.utils.formatEther(totalSupplyBN.toString()))
                 setIsController(isController)
             }
             if (capTableRegistry.instance) {

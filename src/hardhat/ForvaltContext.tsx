@@ -131,7 +131,7 @@ export const Symfoni: React.FC<SymfoniProps> = ({
     const [showWalletConnectLogin, setShowWalletConnectLogin] = useState(false);
     const [walletConnectURI, setWalletConnectURI] = useState<string>();
 
-    const SIGNER_TIMEOUT = 500
+    const SIGNER_TIMEOUT = 900
 
 
     const getProvider = async () => {

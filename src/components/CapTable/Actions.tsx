@@ -21,7 +21,7 @@ export const Actions: React.FC<Props> = ({ ...props }) => {
         <Box gap="small" direction="row">
             <Button size="small" label={"Overføre"} onClick={() => setShowTransfers(!showTransfers)}></Button>
             <Button size="small" label={"Utestede"} onClick={() => setShowIssue(!showTransfers)}></Button>
-            <Button size="small" label={"Utvidelser"} onClick={() => setShowExtensions(!showExtensions)}></Button>
+            {/* <Button size="small" label={"Utvidelser"} onClick={() => setShowExtensions(!showExtensions)}></Button> */}
             <Modal show={showTransfers} setShow={setShowTransfers}>
                 <Transfer capTable={props.capTable} done={() => {
                     setShowTransfers(false)
