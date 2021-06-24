@@ -73,7 +73,6 @@ export interface InitOpts {
     provider?: ProviderTypes,
     forceSigner?: boolean
 }
-const BROWSER_WALLET_URL = process.env.REACT_APP_BROWSER_WALLET
 
 type Signer = EthersSigner | WalletConnectSigner
 export enum STATE {
@@ -130,6 +129,7 @@ export const Symfoni: React.FC<SymfoniProps> = ({
 
     const [showWalletConnectLogin, setShowWalletConnectLogin] = useState(false);
     const [walletConnectURI, setWalletConnectURI] = useState<string>();
+    const BROWSER_WALLET_URL = process.env.REACT_APP_BROWSER_WALLET
 
     const SIGNER_TIMEOUT = 900
 
