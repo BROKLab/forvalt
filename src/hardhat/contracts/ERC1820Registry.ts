@@ -12,6 +12,7 @@ export function getERC1820Registry(
     31337: "0x1820a4B7618BdE71Dce8cdc73aAB6C95905faD24",
     2018: "0x1820a4B7618BdE71Dce8cdc73aAB6C95905faD24",
     7766: "0x1820a4B7618BdE71Dce8cdc73aAB6C95905faD24",
+    421611: "0x1820a4B7618BdE71Dce8cdc73aAB6C95905faD24",
   };
   if (address) {
     addresses[chainId] = address;

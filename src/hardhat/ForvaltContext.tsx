@@ -140,9 +140,7 @@ export const Symfoni: React.FC<SymfoniProps> = ({
         }
         if (selectedProvider === "walletConnectV2") {
             return new ethers.providers.JsonRpcProvider({
-                url: "https://e0mvr9jrs7-e0iwsftiw5-rpc.de0-aws.kaleido.io/",
-                user: "e0ri5j5fp2",
-                password: "pA0jrXjkbgdltvu2iaXE7q9NjQy57S1AIF-v0FXyuJ4",
+                url: "https://arbitrum-rinkeby.infura.io/v3/eaa35471bb7947adb685b17daa1030d4"
             });
         }
         if (selectedProvider === "hardhat") {
@@ -163,6 +161,10 @@ export const Symfoni: React.FC<SymfoniProps> = ({
                 }
                 const _signer = new WalletConnectSigner({
                     methods: ['eth_sendTransaction', 'personal_sign', 'eth_signTypedData', 'eth_signTransaction', 'oracle_data'],
+                    chainId: 421611,
+                    walletConnectOpts: {
+                        relayProvider: "wss://localhost:5555"
+                    }
                 }).connect(_provider);
 
                 if (forceSigner) {
