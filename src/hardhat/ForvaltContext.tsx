@@ -166,7 +166,7 @@ export const Symfoni: React.FC<SymfoniProps> = ({
                         metadata: {
                             icons: ["https://pbs.twimg.com/profile_images/1201845955215147012/mRA_Whgj_400x400.jpg"],
                             description: "Åpen, tillitsfull og integrert aksjeeierbok.",
-                            name: "Forvalg Brreg",
+                            name: "Brønnøysundregistrene Forvalt",
                             url: "https://www.brreg.no"
                         }
                     }
