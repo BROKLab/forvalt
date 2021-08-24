@@ -163,8 +163,16 @@ export const Symfoni: React.FC<SymfoniProps> = ({
                     methods: ['eth_sendTransaction', 'personal_sign', 'eth_signTypedData', 'eth_signTransaction', 'oracle_data'],
                     chainId: 421611,
                     walletConnectOpts: {
-                        relayProvider: "wss://localhost:5555"
+                        metadata: {
+                            icons: ["https://pbs.twimg.com/profile_images/1201845955215147012/mRA_Whgj_400x400.jpg"],
+                            description: "Åpen, tillitsfull og integrert aksjeeierbok.",
+                            name: "Forvalg Brreg",
+                            url: "https://www.brreg.no"
+                        }
                     }
+                    // walletConnectOpts: {
+                    //     relayProvider: "wss://localhost:5555"
+                    // }
                 }).connect(_provider);
 
                 if (forceSigner) {
