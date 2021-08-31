@@ -32,7 +32,7 @@ interface ApiRespons {
 export const DEFAULT_ORG_DATA: OrgData[] = [{ "orgnr": 911724758, "navn": "BLOCKCHAIN BROKERS AS", "kapital": 30000, "aksjer": 200, "vedtektsdato": "28.02.2018" }, { "orgnr": 915772137, "navn": "BLOCKCHANGERS AS", "kapital": 40378, "aksjer": 40378, "vedtektsdato": "10.12.2018" }, { "orgnr": 915912028, "navn": "BLOCKBONDS AS", "kapital": 18455512, "aksjer": 18455512, "vedtektsdato": "06.12.2019" }, { "orgnr": 918917160, "navn": "BLOCKBRIDGE AS", "kapital": 30000, "aksjer": 30000, "vedtektsdato": "08.05.2017" }, { "orgnr": 919437235, "navn": "BLOCKTRADE AS", "kapital": 30000, "aksjer": 30000, "vedtektsdato": "01.08.2017" }, { "orgnr": 919526696, "navn": "BLOCKCHAIN AS", "kapital": 30000, "aksjer": 300000, "vedtektsdato": "22.08.2017" }, { "orgnr": 920415296, "navn": "BLOCKCHAIN INVEST AS", "kapital": 30000, "aksjer": 30000, "vedtektsdato": "19.04.2018" }, { "orgnr": 920596908, "navn": "BLOCKANDINAVIA AS", "kapital": 30000, "aksjer": 300, "vedtektsdato": "20.02.2018" }, { "orgnr": 920876501, "navn": "BLOCKCHAIN SOLUTIONS AS", "kapital": 30000, "aksjer": 200, "vedtektsdato": "02.05.2018" }, { "orgnr": 921209347, "navn": "BLOCKCHAIN TECHNOLOGY AS", "kapital": 900000, "aksjer": 90, "vedtektsdato": "10.05.2018" }]
 
 export const SelectOrg: React.FC<Props> = ({ ...props }) => {
-    const { handleSubmit, watch, control, errors, formState, setError } = useForm<FormData>({
+    const { handleSubmit, watch, control, formState, setError } = useForm<FormData>({
         defaultValues: {
             org: null,
         }
@@ -78,7 +78,7 @@ export const SelectOrg: React.FC<Props> = ({ ...props }) => {
 
                 setIsSearchingBrreg(false)
             } catch (error) {
-                setError("org", { message: error.message })
+                // setError("org", { message: error.message })
                 setOrgList([])
                 setIsSearchingBrreg(false)
             }
@@ -130,10 +130,10 @@ export const SelectOrg: React.FC<Props> = ({ ...props }) => {
                         <Text>Søk</Text>
                         <Grid columns={["flex", "auto"]}>
                             <Controller
-                                render={({ value, onChange }) =>
+                                render={({ field: { value, onChange } }) =>
                                     <Select
                                         options={orgList}
-                                        value={value}
+                                        value={value ? value : ""} // TODO - FIX
                                         size="small"
                                         placeholder="Velg et selskap"
                                         emptySearchMessage={isSearchingBrreg ? "Søker..." : "Søk etter selskap med navn eller org nr."}
@@ -152,9 +152,10 @@ export const SelectOrg: React.FC<Props> = ({ ...props }) => {
 
                             <Button size="small" icon={isSearchingBrreg ? <SpinnerDiamond color="brand" size="20"></SpinnerDiamond> : <Search></Search>}></Button>
                         </Grid>
-                        <Box>
+                        {/* TODO _ FIX */}
+                        {/* <Box>
                             {errors.org && <Text color="red" size="small">* {errors.org.message}</Text>}
-                        </Box>
+                        </Box> */}
 
 
                         {orgWatch && !isSearchingBrreg &&

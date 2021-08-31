@@ -3,7 +3,6 @@ import { Box, Button, Select, Text, TextInput } from 'grommet';
 import React, { useContext, useEffect, useState } from 'react';
 import { SymfoniContext } from '../../hardhat/ForvaltContext';
 import { ERC1400 } from '@brok/captable-contracts';
-import { SelectUser } from '../ui/SelectUser';
 
 interface Props {
     capTable: ERC1400
@@ -54,7 +53,7 @@ export const Transfer: React.FC<Props> = ({ ...props }) => {
                         value={to}
                         onChange={event => setTo(event.target.value)}
                     /> */}
-                    <SelectUser onChange={setTo} value={to} orgNr={props.capTable.address} ></SelectUser>
+                    {/* TODO - Add a Select User type */}
                 </Box>
 
             </Box>

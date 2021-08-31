@@ -1,72 +1,85 @@
+import { ERC1400 } from '@brok/captable-contracts';
 import { BytesLike, ethers } from 'ethers';
 import { Box, Button, Grid, Select, Text, TextInput } from "grommet";
-import React, { useContext, useEffect, useState } from 'react';
-import { Controller, useForm } from 'react-hook-form';
-import { useHistory } from 'react-router-dom';
-import { SymfoniContext } from '../../hardhat/ForvaltContext';
-import { ERC1400 } from '@brok/captable-contracts';
-import { SelectUser } from '../ui/SelectUser';
+import { Trash } from 'grommet-icons';
+import React, { useEffect, useState } from 'react';
+import { useFieldArray, useForm } from 'react-hook-form';
 
 type PropsAggregate = {
     capTable?: never,
-    orgNr: string
     done?: () => void
-    actions?: React.ReactNode
-    aggregateResult: (batchIssueData: BatchIssueData) => void
+    aggregateResult: (batchIssueData: BatchIssueData[]) => void
 }
 type PropsSend = {
     capTable: ERC1400,
-    orgNr: string
     done?: () => void
-    actions?: React.ReactNode
     aggregateResult?: never
 }
 type Props = PropsAggregate | PropsSend
 export interface BatchIssueData {
-    address: string[]
-    amount: string[]
-    partition: string[]
-    identifier: string[]
-    name: string[]
-    streetAddress: string[]
-    postalcode: string[]
-    email: string[]
+    address: string
+    amount: string
+    partition: string
+    identifier: string
+    name: string
+    streetAddress: string
+    postalcode: string
+    email: string
+    id: string
 }
-interface FormData extends BatchIssueData {
-
-}
-
-const createArrayWithNumbers = (length: number) => {
-    return Array.from({ length }, (_, k) => k);
+interface FormData {
+    test: BatchIssueData,
+    production: BatchIssueData
 }
 
-const DEFAULT_PARTITIONS = [ethers.utils.formatBytes32String("ordinære")]
-const DEFAULT_ROW = {
-    address: process.env.NODE_ENV === "development" ? ["0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266"] : [],
-    amount: [""],
-    partition: [DEFAULT_PARTITIONS[0]],
-    identifier: [""],
-    name: [""],
-    streetAddress: [""],
-    postalcode: [""],
-    email: [""],
-}
+const DEFAULT_PARTITION = ethers.utils.formatBytes32String("ordinære")
+
+const defaultValues = {
+    test: [
+        {
+            identifier: "17107292926",
+            address: "",
+            amount: "1000",
+            partition: DEFAULT_PARTITION,
+            name: "Robin Testesen",
+            streetAddress: "Testveien 55",
+            postalcode: "0123",
+            email: "rob@test.com",
+        },
+    ],
+    production: [
+        {
+            identifier: "",
+            address: "",
+            amount: "",
+            partition: DEFAULT_PARTITION,
+            name: "",
+            streetAddress: "",
+            postalcode: "",
+            email: "",
+        },
+    ]
+};
 
 export const BatchIssue: React.FC<Props> = ({ ...props }) => {
-    const { handleSubmit, control, errors, setValue, watch } = useForm<FormData>({
-        defaultValues: DEFAULT_ROW
+    const { control, watch, register, setValue } = useForm({ defaultValues });
+    const enviroment = process.env.NODE_ENV === "development" ? "test" : "production"
+    const { fields, append, remove } = useFieldArray({
+        control,
+        name: enviroment
     });
-    const [rows, setRows] = useState(1);
-    const history = useHistory()
-    const [partitions, setPartitions] = useState<BytesLike[]>(DEFAULT_PARTITIONS);
+    const watchFieldArray = watch(enviroment);
+    const controlledFields = fields.map((field, index) => {
+        return {
+            ...field,
+            ...watchFieldArray[index]
+        };
+    });
+    // const history = useHistory()
+    const [partitions, setPartitions] = useState<BytesLike[]>([DEFAULT_PARTITION]);
     const [newPartition, setNewPartition] = useState("");
     const [useDefaultPartitions, setUseDefaultPartitions] = useState(true);
-    const { init, signer } = useContext(SymfoniContext)
-    const all = watch()
-
-    useEffect(() => {
-        console.log("All addresses", all.address)
-    }, [all])
+    // const { init, signer } = useContext(SymfoniContext)
 
     // Get partitions if capTable is set
     useEffect(() => {
@@ -87,33 +100,30 @@ export const BatchIssue: React.FC<Props> = ({ ...props }) => {
         return () => { subscribed = false }
     }, [props.capTable])
 
-    const onSubmitBatchIssue = async (data: FormData) => {
-        console.log("onSubmit=>", data);
-        if (!signer) {
-            return init({ forceSigner: true })
-        }
-        const txData = "0x11"
+    const onSubmitBatchIssue = async () => {
         if (props.aggregateResult) {
-            return props.aggregateResult(data)
-        } else {
-            if (!props.capTable) {
-                throw Error("CapTable must be set when not aggregate result")
-            }
-            await createArrayWithNumbers(rows)
-                .reduce(async (prev, rowNr) => {
-                    if (!props.capTable) {
-                        throw Error("CapTable must be set when not aggregate result")
-                    }
-                    await prev
-                    // TODO : Handle CDP
-                    const tx = await props.capTable.issueByPartition(data.partition[rowNr], data.address[rowNr], ethers.utils.parseEther(data.amount[rowNr]), txData)
-                    await tx.wait()
-                    return Promise.resolve()
-                }, Promise.resolve())
-
-            history.push("/captable/" + props.capTable.address)
-            if (props.done) props.done()
+            return props.aggregateResult(controlledFields)
         }
+        // else {
+        //     if (!props.capTable) {
+        //         throw Error("CapTable must be set when not aggregate result")
+        //     }
+        // const txData = "0x11"
+        //     await createArrayWithNumbers(rows)
+        //         .reduce(async (prev, rowNr) => {
+        //             if (!props.capTable) {
+        //                 throw Error("CapTable must be set when not aggregate result")
+        //             }
+        //             await prev
+        //             // TODO : Handle CDP
+        //             const tx = await props.capTable.issueByPartition(data.partition[rowNr], data.address[rowNr], ethers.utils.parseEther(data.amount[rowNr]), txData)
+        //             await tx.wait()
+        //             return Promise.resolve()
+        //         }, Promise.resolve())
+
+        //     history.push("/captable/" + props.capTable.address)
+        //     if (props.done) props.done()
+        // }
 
     }
 
@@ -141,89 +151,77 @@ export const BatchIssue: React.FC<Props> = ({ ...props }) => {
                         <TextInput size="small" value={newPartition} onChange={(e) => setNewPartition(e.target.value)} placeholder="Navn på partisjon feks. a-aksje"></TextInput>
                         <Button size="small" label="Foreslå partisjon" onClick={() => handleNewPartition()}></Button>
                     </Grid>
-                    <Text size="small">Partisjoner blir først lagret når du utsteder en aksje på den.</Text>
+                    <Text size="xsmall">*Partisjoner blir først opprettet når du utsteder en aksje på den.</Text>
                 </Box>
             }
-            <form /* id={props.capTable.address} */ onSubmit={handleSubmit(onSubmitBatchIssue)}>
-                <Box gap="small">
-                    <Grid columns={{ count: 7, size: "xsmall" }} fill="horizontal" gap="small">
-                        <Text size="small" weight="bold" truncate>Fødselsnummer</Text>
-                        <Text size="small" weight="bold" truncate>Navn</Text>
-                        <Text size="small" weight="bold" truncate>Veiadresse</Text>
-                        <Text size="small" weight="bold" truncate>Postnummer</Text>
-                        <Text size="small" weight="bold" truncate>Epost</Text>
-                        <Text size="small" weight="bold" truncate>Antall aksjer</Text>
-                        <Text style={{ display: useDefaultPartitions ? "none" : "inherit" }} size="small" weight="bold" truncate>Partisjon</Text>
+
+            <Box gap="small">
+                <Grid columns={{ count: 8, size: "xsmall" }} fill="horizontal" gap="small">
+                    <Text size="small" weight="bold" truncate>Fødselsnummer</Text>
+                    <Text size="small" weight="bold" truncate>Navn</Text>
+                    <Text size="small" weight="bold" truncate>Veiadresse</Text>
+                    <Text size="small" weight="bold" truncate>Postnummer</Text>
+                    <Text size="small" weight="bold" truncate>Epost</Text>
+                    <Text size="small" weight="bold" truncate>Antall aksjer</Text>
+                    <Text style={{ display: useDefaultPartitions ? "none" : "inherit" }} size="small" weight="bold" truncate>Partisjon</Text>
+                </Grid>
+
+                {controlledFields.map((field, index) => (
+                    <Grid columns={{ count: 8, size: "xsmall" }} fill="horizontal" gap="small" key={index} >
+                        <Box>
+                            <TextInput {...register(`${enviroment}.${index}.identifier` as const)} placeholder="Fødselsnummer" size="small"  ></TextInput>
+                        </Box>
+                        <Box>
+                            <TextInput {...register(`${enviroment}.${index}.name` as const)} placeholder={"Navn"} size="small" ></TextInput>
+                        </Box>
+                        <Box>
+                            <TextInput {...register(`${enviroment}.${index}.streetAddress` as const)} placeholder={"Veiadresse"} size="small"  ></TextInput>
+                        </Box>
+                        <Box>
+                            <TextInput {...register(`${enviroment}.${index}.postalcode` as const)} placeholder={"Postnummer"} size="small"  ></TextInput>
+                        </Box>
+                        <Box>
+                            <TextInput {...register(`${enviroment}.${index}.email` as const)} placeholder={"Epost"} size="small"  ></TextInput>
+                        </Box>
+                        <Box>
+                            <TextInput {...register(`${enviroment}.${index}.amount` as const)} type="number" placeholder={"Antall"} size="small"  ></TextInput>
+                        </Box>
+                        <Box style={{ display: useDefaultPartitions ? "none" : "inherit" }}>
+                            <Select
+                                {...register(`${enviroment}.${index}.partition` as const)}
+                                options={partitions}
+                                size="small"
+                                alignSelf="start"
+                                labelKey={(option) => ethers.utils.parseBytes32String(option)}
+                                emptySearchMessage={"Foreslå en partisjon ovenfor"}
+                                onChange={({ option }) => {
+                                    setValue(`${enviroment}.${index}.partition`, option)
+                                    return option
+                                }}
+                            ></Select>
+                        </Box>
+                        <Box>
+                            <Button onClick={() => remove(index)} icon={<Trash color="red"></Trash>}></Button>
+                        </Box>
                     </Grid>
-                    {createArrayWithNumbers(rows).map((rowNr) =>
-                        <Grid columns={{ count: 7, size: "xsmall" }} fill="horizontal" gap="small" key={rowNr}>
+                ))}
+                {/* address: "",
+            amount: "",
+            partition: "",
+            identifier: "",
+            name: "",
+            streetAddress: "",
+            postalcode: "",
+            email: "", */}
 
-                            <Box >
-                                <Controller render={({ onChange, value }) => <TextInput placeholder="Fødselnummer" onChange={onChange} value={value} size="small" ></TextInput>} name={`identifier[${rowNr}]`} control={control} rules={{ required: true }} defaultValue={""} />
-                                {errors["identifier"] && errors["identifier"][rowNr] && <Text color="red" size="xsmall">* {errors["identifier"][rowNr]?.type}</Text>}
-                            </Box>
-                            <Box >
-                                <Controller render={({ onChange, value }) => <TextInput placeholder="Navn" onChange={onChange} value={value} size="small" ></TextInput>} name={`name[${rowNr}]`} control={control} rules={{ required: true }} defaultValue={""} />
-                                {errors["name"] && errors["name"][rowNr] && <Text color="red" size="xsmall">* {errors["name"][rowNr]?.type}</Text>}
-                            </Box>
 
-                            <Box >
-                                <Controller render={({ onChange, value }) => <TextInput placeholder="Veiadresse" onChange={onChange} value={value} size="small" ></TextInput>} name={`streetAddress[${rowNr}]`} control={control} rules={{ required: true }} defaultValue={""} />
-                                {errors["streetAddress"] && errors["streetAddress"][rowNr] && <Text color="red" size="xsmall">* {errors["streetAddress"][rowNr]?.type}</Text>}
-                            </Box>
 
-                            <Box >
-                                <Controller render={({ onChange, value }) => <TextInput placeholder="Postkode" onChange={onChange} value={value} size="small" ></TextInput>} name={`postalcode[${rowNr}]`} control={control} rules={{ required: true }} defaultValue={""} />
-                                {errors["postalcode"] && errors["postalcode"][rowNr] && <Text color="red" size="xsmall">* {errors["postalcode"][rowNr]?.type}</Text>}
-                            </Box>
-
-                            <Box >
-                                <Controller render={({ onChange, value }) => <TextInput placeholder="Epost" onChange={onChange} value={value} size="small" ></TextInput>} name={`email[${rowNr}]`} control={control} rules={{ required: true }} defaultValue={""} />
-                                {errors["email"] && errors["email"][rowNr] && <Text color="red" size="xsmall">* {errors["email"][rowNr]?.type}</Text>}
-                            </Box>
-
-                            <Box >
-                                <Controller render={({ onChange, value }) => <TextInput onChange={onChange} value={value} size="small" type={"number"} />} name={`amount[${rowNr}]`} control={control} rules={{ required: true }} defaultValue={""} />
-                                {errors["amount"] && errors["amount"][rowNr] && <Text color="red" size="xsmall">* {errors["amount"][rowNr]?.type}</Text>}
-                            </Box>
-                            <Box style={{ display: useDefaultPartitions ? "none" : "inherit" }}>
-                                {partitions &&
-                                    <Controller
-                                        render={({ onChange, value }) => <Select
-                                            alignSelf="start"
-                                            options={partitions}
-                                            size="small"
-                                            labelKey={(option) => ethers.utils.parseBytes32String(option)}
-                                            emptySearchMessage={"Foreslå en partisjon ovenfor"}
-                                            onChange={({ option }) => {
-                                                setValue(`partition[${rowNr}]`, option)
-                                                return option
-                                            }}
-                                            value={value}
-                                            multiple={false}
-                                        />}
-                                        name={`partition[${rowNr}]`}
-                                        control={control}
-                                        rules={{ required: false }}
-                                        defaultValue={DEFAULT_PARTITIONS[0]}
-
-                                    />
-                                }
-
-                                {errors["partition"] && errors["partition"][rowNr] && <Text color="red" size="xsmall">* {errors["partition"][rowNr]?.type}</Text>}
-                            </Box>
-                        </Grid>
-                    )}
-
-                    <Box gap="small" alignSelf="end" direction="row-responsive" align="end">
-                        <Button color="black" label="Legg til ny rad" onClick={() => setRows(rows + 1)} style={{ borderRadius: "0px" }}></Button>
-                        <Button color="red" label="Fjern nederste rad" onClick={() => setRows(rows - 1)} disabled={rows === 1} style={{ borderRadius: "0px" }}></Button>
-                        {props.actions}
-                        <Button color="black" label={props.aggregateResult ? "Lagre og gå videre" : "Utsted aksjer"} type="submit" /* disabled={!formState.isValid} */ style={{ borderRadius: "0px" }}></Button>
-                    </Box>
+                <Box gap="small" alignSelf="end" direction="row-responsive" align="end">
+                    <Button color="black" label="Legg til aksjeeier" onClick={() => append(defaultValues[enviroment])} style={{ borderRadius: "0px" }}></Button>
+                    <Button color="black" label={props.aggregateResult ? "Lagre og gå videre" : "Utsted aksjer"} onClick={() => onSubmitBatchIssue()}/* disabled={!formState.isValid} */ style={{ borderRadius: "0px" }}></Button>
                 </Box>
-            </form>
-        </Box>
+            </Box>
+        </Box >
 
     )
 }

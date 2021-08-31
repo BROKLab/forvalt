@@ -1,6 +1,8 @@
+import axios, { AxiosError } from 'axios';
 import { ethers } from 'ethers';
 import { Accordion, AccordionPanel, Box, Button, Heading, Paragraph, Text } from 'grommet';
 import { Checkmark } from 'grommet-icons';
+import { validateNorwegianIdNumber } from 'norwegian-national-id-validator';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { useHistory } from 'react-router-dom';
 import { BatchIssue, BatchIssueData } from '../components/CapTable/BatchIssue';
@@ -23,7 +25,7 @@ export const CapTableCreatePage: React.FC<Props> = ({ ...props }) => {
     const [step, setStep] = useState(STEP.ISSUE_SHARES); // TODO Set to SELECT_COMPANY
     const [deploying, setDeploying] = useState(false);
     const [orgData, setOrgData] = useState<OrgData>(DEFAULT_ORG_DATA[0]); // Set to none
-    const [batchIssueData, setBatchIssueData] = useState<BatchIssueData>();
+    const [batchIssueData, setBatchIssueData] = useState<BatchIssueData[]>();
     const capTableFactory = useContext(CapTableFactoryContext)
 
     const history = useHistory()
@@ -34,7 +36,7 @@ export const CapTableCreatePage: React.FC<Props> = ({ ...props }) => {
     }, [step])
 
 
-    const handleBatchIssueData = useCallback((data: BatchIssueData) => {
+    const handleBatchIssueData = useCallback((data: BatchIssueData[]) => {
         setStep(step + 1)
         setBatchIssueData(data)
     }, [step])
@@ -43,6 +45,45 @@ export const CapTableCreatePage: React.FC<Props> = ({ ...props }) => {
             init({ forceSigner: true })
         }
     }, [init, signer])
+
+    const resolveIdentifierToAddress = async (params: { name: string, streetAddress: string, postalcode: string, email: string, identifier: string, orgnr: string }) => {
+        if (!signer || !("request" in signer)) throw Error("Must have a signer resolve address from identifier")
+        const BROK_HELPERS_URL = process.env.REACT_APP_BROK_HELPERS_URL
+        const BROK_HELPERS_VERIFIER = process.env.REACT_APP_BROK_HELPERS_VERIFIER
+        if (!BROK_HELPERS_URL || !BROK_HELPERS_VERIFIER) throw Error("BROK_HELPERS_URL and BROK_HELPERS_VERIFIER must be decleared in enviroment")
+        const vpJWT = await signer.request("did_createVerifiableCredential", [{
+            verifier: BROK_HELPERS_VERIFIER,
+            payload: {
+                name: params.name,
+                streetAddress: params.streetAddress,
+                postalcode: params.postalcode,
+                email: params.email,
+                identifier: params.identifier,
+                orgnr: params.orgnr,
+            }
+        }])
+        console.log("vpJWT", vpJWT)
+        const res = await axios
+            .post<{ blockchainAccount: string }>(
+                `${true ? "http://localhost:3004" : BROK_HELPERS_URL
+                }/brreg/unclaimed/create`,
+                {
+                    jwt: vpJWT,
+                }
+            )
+            .catch(
+                (error: AxiosError<{ message: string; code: number }>) => {
+                    if (error.response && error.response.data.message) {
+                        throw Error(error.response.data.message);
+                    }
+                    throw Error(error.message);
+                }
+            );
+        if (!res.data.blockchainAccount) {
+            throw Error("/brreg/unclaimed/create should return a blockchainAccount ")
+        }
+        return res.data.blockchainAccount
+    }
 
     const deploy = async () => {
         if (!signer) return init({ forceSigner: true })
@@ -56,13 +97,45 @@ export const CapTableCreatePage: React.FC<Props> = ({ ...props }) => {
             throw Error
         }
         setDeploying(true)
+        console.log("batchIssueData", batchIssueData)
+        const resolvedFieldPromises = batchIssueData.map(async field => {
+            if (field.identifier.substr(0, 2) === "0x") {
+                if (ethers.utils.isAddress(field.identifier)) {
+                    return { ...field, address: field.identifier }
+                }
+            }
+            if (validateNorwegianIdNumber(field.identifier)) {
+                console.log(1)
+                console.log({
+                    email: field.name + Math.random().toString(),
+                    identifier: field.identifier,
+                    name: field.name,
+                    postalcode: field.postalcode,
+                    streetAddress: field.streetAddress,
+                    orgnr: orgData.orgnr.toString(),
+                })
+                const address = await resolveIdentifierToAddress({
+                    email: field.name + Math.random().toString(),
+                    identifier: field.identifier,
+                    name: field.name,
+                    postalcode: field.postalcode,
+                    streetAddress: field.streetAddress,
+                    orgnr: orgData.orgnr.toString(),
+                })
+                console.log(2)
+                return { ...field, address: address }
+            }
+            throw Error("Identifier was not Norwegian ID number or an Ethereum address")
+        })
+        const resolvedFields = await Promise.all(resolvedFieldPromises)
+
         let deployedContract: string | undefined
         const deployTx = await capTableFactory.instance.createCapTable(
             ethers.utils.formatBytes32String(orgData.orgnr.toString()),
             orgData.navn,
             orgData.navn.substr(0, 3),
-            batchIssueData.address,
-            batchIssueData.amount.map(number => ethers.utils.parseEther(number))
+            resolvedFields.map(a => a.address),
+            resolvedFields.map(a => ethers.utils.parseEther(a.amount))
         )
         await deployTx.wait()
         try {
@@ -98,7 +171,7 @@ export const CapTableCreatePage: React.FC<Props> = ({ ...props }) => {
                 <AccordionPanel label="2. Utsted aksjer" onClickCapture={() => setStep(STEP.ISSUE_SHARES)}>
                     <Box pad="medium">
                         {orgData
-                            ? <BatchIssue orgNr={orgData.orgnr.toString()} aggregateResult={(batchIssueData) => handleBatchIssueData(batchIssueData)}></BatchIssue>
+                            ? <BatchIssue aggregateResult={(batchIssueData) => handleBatchIssueData(batchIssueData)}></BatchIssue>
                             : <Paragraph fill>Vennligst velg en aksjeeierbok</Paragraph>
                         }
                     </Box>
@@ -127,7 +200,7 @@ export const CapTableCreatePage: React.FC<Props> = ({ ...props }) => {
                     </Box>
                 </AccordionPanel>
             </Accordion>
-            <Button size="large" label="Opprett aksjeeierbok" disabled={step !== STEP.CONFIRM || !orgData || !batchIssueData || deploying} onClick={() => deploy()}></Button>
+            <Button size="large" label="Opprett aksjeeierbok" disabled={step !== STEP.CONFIRM || !orgData || !batchIssueData /* || deploying */} onClick={() => deploy()}></Button>
             {deploying &&
                 <Box align="center" >
                     <Loading size={50}></Loading>
