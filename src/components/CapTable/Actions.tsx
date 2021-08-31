@@ -4,7 +4,7 @@ import { ERC1400 } from '@brok/captable-contracts';
 import { Modal } from '../ui/Modal';
 import { Transfer } from './Transfer';
 import { SymfoniContext } from '../../hardhat/ForvaltContext';
-import { BatchIssue } from './BatchIssue';
+// import { BatchIssue } from './BatchIssue';
 import { Extensions } from './Extensions';
 
 interface Props {
@@ -29,10 +29,11 @@ export const Actions: React.FC<Props> = ({ ...props }) => {
                 }}></Transfer>
             </Modal>
             <Modal show={showIssue} setShow={setShowIssue}>
-                <BatchIssue capTable={props.capTable} done={() => {
+                {/* TODO - Readd this */}
+                {/* <BatchIssue capTable={props.capTable} done={() => {
                     setShowTransfers(false)
                     init()
-                }}></BatchIssue>
+                }}></BatchIssue> */}
             </Modal>
             <Modal show={showExtensions} setShow={setShowExtensions}>
                 <Extensions capTable={props.capTable} done={() => {

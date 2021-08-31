@@ -54,7 +54,7 @@ export const Transfer: React.FC<Props> = ({ ...props }) => {
                         value={to}
                         onChange={event => setTo(event.target.value)}
                     /> */}
-                    <SelectUser onChange={setTo} value={to} capTableAddress={props.capTable.address} protocol={"ERC1400:BRREG:TRANSFER"}></SelectUser>
+                    <SelectUser onChange={setTo} value={to} orgNr={props.capTable.address} ></SelectUser>
                 </Box>
 
             </Box>

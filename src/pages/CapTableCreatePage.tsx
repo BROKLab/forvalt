@@ -1,10 +1,10 @@
 import { ethers } from 'ethers';
 import { Accordion, AccordionPanel, Box, Button, Heading, Paragraph, Text } from 'grommet';
 import { Checkmark } from 'grommet-icons';
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { useHistory } from 'react-router-dom';
 import { BatchIssue, BatchIssueData } from '../components/CapTable/BatchIssue';
-import { OrgData, SelectOrg } from '../components/CapTable/SelectOrg';
+import { DEFAULT_ORG_DATA, OrgData, SelectOrg } from '../components/CapTable/SelectOrg';
 import { Loading } from '../components/ui/Loading';
 import { CapTableFactoryContext, SymfoniContext } from '../hardhat/ForvaltContext';
 
@@ -20,22 +20,24 @@ enum STEP {
 
 export const CapTableCreatePage: React.FC<Props> = ({ ...props }) => {
     const { init, signer } = useContext(SymfoniContext)
-    const [step, setStep] = useState(STEP.SELECT_COMPANY);
+    const [step, setStep] = useState(STEP.ISSUE_SHARES); // TODO Set to SELECT_COMPANY
     const [deploying, setDeploying] = useState(false);
-    const [orgData, setOrgData] = useState<OrgData>();
+    const [orgData, setOrgData] = useState<OrgData>(DEFAULT_ORG_DATA[0]); // Set to none
     const [batchIssueData, setBatchIssueData] = useState<BatchIssueData>();
     const capTableFactory = useContext(CapTableFactoryContext)
 
     const history = useHistory()
 
-    const handleOrgData = (data: OrgData) => {
+    const handleOrgData = useCallback((data: OrgData) => {
         setStep(step + 1)
         setOrgData(data)
-    }
-    const handleBatchIssueData = (data: BatchIssueData) => {
+    }, [step])
+
+
+    const handleBatchIssueData = useCallback((data: BatchIssueData) => {
         setStep(step + 1)
         setBatchIssueData(data)
-    }
+    }, [step])
     useEffect(() => {
         if (!signer) {
             init({ forceSigner: true })
@@ -55,7 +57,6 @@ export const CapTableCreatePage: React.FC<Props> = ({ ...props }) => {
         }
         setDeploying(true)
         let deployedContract: string | undefined
-        console.log("LOLOLO")
         const deployTx = await capTableFactory.instance.createCapTable(
             ethers.utils.formatBytes32String(orgData.orgnr.toString()),
             orgData.navn,
@@ -97,7 +98,7 @@ export const CapTableCreatePage: React.FC<Props> = ({ ...props }) => {
                 <AccordionPanel label="2. Utsted aksjer" onClickCapture={() => setStep(STEP.ISSUE_SHARES)}>
                     <Box pad="medium">
                         {orgData
-                            ? <BatchIssue aggregateResult={(batchIssueData) => handleBatchIssueData(batchIssueData)}></BatchIssue>
+                            ? <BatchIssue orgNr={orgData.orgnr.toString()} aggregateResult={(batchIssueData) => handleBatchIssueData(batchIssueData)}></BatchIssue>
                             : <Paragraph fill>Vennligst velg en aksjeeierbok</Paragraph>
                         }
                     </Box>

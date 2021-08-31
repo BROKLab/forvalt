@@ -1,16 +1,15 @@
+import axios, { AxiosError } from 'axios';
 import { ethers } from 'ethers';
-import { Box, Button, Grid, Text, TextInput } from 'grommet';
-import { Checkmark, Close, Lock, Unlock, Waypoint } from 'grommet-icons';
+import { Button, TextInput } from 'grommet';
 import { validateNorwegianIdNumber } from 'norwegian-national-id-validator';
 import React, { useContext, useEffect, useState } from 'react';
-import { AuthContext } from '../../utils/AuthContext';
+import { SymfoniContext } from '../../hardhat/ForvaltContext';
 
 
 interface Props {
-    onChange: (...event: any[]) => void
+    onChange: (...event: any[]) => void,
     value: string,
-    capTableAddress: string, // TODO Change to orgNr
-    protocol: string
+    orgNr: string,
 }
 
 enum IDENTIFIER {
@@ -22,10 +21,13 @@ enum IDENTIFIER {
 export const SelectUser: React.FC<Props> = ({ ...props }) => {
 
     const [identifier, setIdentifier] = useState(IDENTIFIER.DEFAULT);
-    const [searchInput, setSearchInput] = useState(props.value);
+    const [userInput, setUserInput] = useState(props.value);
     const [address, setAddress] = useState<string | null>("");
     const [name, setName] = useState<string>("");
-    const { user, resolveAddressOrUUID } = useContext(AuthContext)
+    const [streetAddress, setStreetAddress] = useState("");
+    const [postalcode, setPostalcode] = useState("");
+    const [email, setEmail] = useState("");
+    const { signer } = useContext(SymfoniContext)
 
 
     useEffect(() => {
@@ -35,7 +37,7 @@ export const SelectUser: React.FC<Props> = ({ ...props }) => {
 
 
     useEffect(() => {
-        const input = searchInput.toLowerCase()
+        const input = userInput.toLowerCase()
         if (input.substr(0, 2) === "0x") {
             if (ethers.utils.isAddress(input)) {
                 setAddress(input)
@@ -53,75 +55,61 @@ export const SelectUser: React.FC<Props> = ({ ...props }) => {
         setName("")
         return setIdentifier(IDENTIFIER.DEFAULT)
         // eslint-disable-next-line
-    }, [searchInput])
+    }, [userInput])
 
-    const indetifierLabel = () => {
-        switch (identifier) {
-            case IDENTIFIER.ADDRESS: {
-                return "addresse"
+    const resolve = async () => {
+        if (!signer || !("request" in signer)) throw Error("Must have a signer resolve address from identifier")
+        const BROK_HELPERS_URL = process.env.REACT_APP_BROK_HELPERS_URL
+        const BROK_HELPERS_VERIFIER = process.env.REACT_APP_BROK_HELPERS_VERIFIER
+        if (!BROK_HELPERS_URL || !BROK_HELPERS_VERIFIER) throw Error("BROK_HELPERS_URL and BROK_HELPERS_VERIFIER must be decleared in enviroment")
+        if (identifier !== IDENTIFIER.UUID) throw Error("Can only resolve identfiers")
+        const vpJWT = await signer.request("did_createVerifiableCredential", [{
+            verifier: BROK_HELPERS_VERIFIER,
+            payload: {
+                name,
+                streetAddress,
+                postalcode,
+                email,
+                identifier: userInput,
+                orgnr: props.orgNr,
             }
-            case IDENTIFIER.UUID: {
-                return "fødselsnummer"
-            }
-            case IDENTIFIER.DEFAULT: {
-                return "ukjent"
-            }
+        }])
+        console.log("vpJWT", vpJWT)
+        const res = await axios
+            .post<{ blockchainAccount: string }>(
+                `${true ? "http://localhost:3004" : BROK_HELPERS_URL
+                }/brreg/unclaimed/create`,
+                {
+                    jwt: vpJWT,
+                }
+            )
+            .catch(
+                (error: AxiosError<{ message: string; code: number }>) => {
+                    if (error.response && error.response.data.message) {
+                        throw Error(error.response.data.message);
+                    }
+                    throw Error(error.message);
+                }
+            );
+        if (!res.data.blockchainAccount) {
+            throw Error("/brreg/unclaimed/create should return a blockchainAccount ")
         }
-    }
-    const resolveUuidAndName = async () => {
-        if (!resolveAddressOrUUID) {
-            throw Error("AuthContext not ready")
-        }
-        console.log(address)
+        setAddress(res.data.blockchainAccount)
+
         if (address !== null) {
             setName("")
             setAddress(null)
-        } else {
-            const address = await resolveAddressOrUUID(props.capTableAddress, props.protocol, searchInput, name)
-            setAddress(address)
         }
     }
 
-
-    const acceptedName = () => {
-        // TODO Maybe there is a better way to determine accepted name, then just length of 3.
-        return name.length > 2
-    }
-
-    const validAddress = () => {
-        return address !== null && address !== ""
-    }
-
-    const nameResolvedIcon = () => {
-        let color = acceptedName() ? "orange" : "red"
-        color = validAddress() ? "green" : color;
-        return validAddress() ? <Lock color={color}></Lock> : <Unlock color={color}></Unlock>
-    }
-
-
     return (
-        <Box gap="small">
-            <TextInput size="small" onChange={(e) => setSearchInput(e.target.value)} placeholder="Fødselsnummer" value={searchInput} />
-            <Box gap="small">
-                {IDENTIFIER.UUID === identifier &&
-                    <Grid columns={["flex", "xxsmall"]}>
-                        <TextInput size="small" placeholder="Navn..." onChange={(e) => setName(e.target.value)} disabled={validAddress()} value={name}></TextInput>
-                        <Button onClick={() => resolveUuidAndName()} size="small" focusIndicator={false} icon={nameResolvedIcon()}></Button>
-                    </Grid>
-                }
-                {user &&
-                    <Text size="xsmall"><Checkmark size="small" color="green" style={{ marginRight: "5px", paddingTop: "3px" }}></Checkmark>Din bruker kan utstede til fødselsnummer.</Text>
-                }
-                {!user &&
-                    <Text size="xsmall"><Close size="small" color="red" style={{ marginRight: "5px", paddingTop: "3px" }}></Close>Din bruker kan IKKE utstede til fødselsnummer.</Text>
-                }
-                {IDENTIFIER.DEFAULT === identifier &&
-                    <Text size="xsmall"><Waypoint size="small" color="red" style={{ marginRight: "5px", paddingTop: "3px" }}></Waypoint>Ukjent indentifisering, vennligst tast {user ? "fødselsnummer eller " : ""}Ethereum addresse.</Text>
-                }
-                {IDENTIFIER.DEFAULT !== identifier &&
-                    < Text size="xsmall"><Waypoint size="small" color="green" style={{ marginRight: "5px", paddingTop: "3px" }}></Waypoint>Utsteder til {indetifierLabel()}</Text>
-                }
-            </Box>
-        </Box >
+        <>
+            <TextInput size="small" onChange={(e) => setUserInput(e.target.value)} placeholder="Fødselsnummer" value={userInput} />
+            <TextInput size="small" onChange={(e) => setName(e.target.value)} value={name} placeholder="Navn" disabled={identifier === IDENTIFIER.ADDRESS}></TextInput>
+            <TextInput size="small" onChange={(e) => setStreetAddress(e.target.value)} placeholder="Veiadresse" value={streetAddress} disabled={identifier === IDENTIFIER.ADDRESS} />
+            <TextInput size="small" onChange={(e) => setPostalcode(e.target.value)} placeholder="Postnummer" value={postalcode} disabled={identifier === IDENTIFIER.ADDRESS} />
+            <TextInput size="small" onChange={(e) => setEmail(e.target.value)} placeholder="Epost" value={email} disabled={identifier === IDENTIFIER.ADDRESS} />
+            <Button color="black" style={{ borderRadius: "0px", border: "2px" }} size="small" onClick={() => resolve()}>Kontroll</Button>
+        </>
     )
 }

@@ -160,7 +160,7 @@ export const Symfoni: React.FC<SymfoniProps> = ({
                     return resolve(signer)
                 }
                 const _signer = new WalletConnectSigner({
-                    methods: ['eth_sendTransaction', 'personal_sign', 'eth_signTypedData', 'eth_signTransaction', 'oracle_data'],
+                    methods: ['eth_sendTransaction', 'personal_sign', 'eth_signTypedData', 'eth_signTransaction', 'oracle_data', 'did_createVerifiableCredential'],
                     chainId: 421611,
                     walletConnectOpts: {
                         metadata: {

@@ -8,13 +8,15 @@ import { ERC1400 } from '@brok/captable-contracts';
 import { SelectUser } from '../ui/SelectUser';
 
 type PropsAggregate = {
-    capTable?: ERC1400,
+    capTable?: never,
+    orgNr: string
     done?: () => void
     actions?: React.ReactNode
     aggregateResult: (batchIssueData: BatchIssueData) => void
 }
 type PropsSend = {
     capTable: ERC1400,
+    orgNr: string
     done?: () => void
     actions?: React.ReactNode
     aggregateResult?: never
@@ -24,6 +26,11 @@ export interface BatchIssueData {
     address: string[]
     amount: string[]
     partition: string[]
+    identifier: string[]
+    name: string[]
+    streetAddress: string[]
+    postalcode: string[]
+    email: string[]
 }
 interface FormData extends BatchIssueData {
 
@@ -38,6 +45,11 @@ const DEFAULT_ROW = {
     address: process.env.NODE_ENV === "development" ? ["0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266"] : [],
     amount: [""],
     partition: [DEFAULT_PARTITIONS[0]],
+    identifier: [""],
+    name: [""],
+    streetAddress: [""],
+    postalcode: [""],
+    email: [""],
 }
 
 export const BatchIssue: React.FC<Props> = ({ ...props }) => {
@@ -53,10 +65,10 @@ export const BatchIssue: React.FC<Props> = ({ ...props }) => {
     const all = watch()
 
     useEffect(() => {
-        console.log("all addr", all.address)
+        console.log("All addresses", all.address)
     }, [all])
 
-    // Get partitions
+    // Get partitions if capTable is set
     useEffect(() => {
         let subscribed = true
         const doAsync = async () => {
@@ -112,10 +124,9 @@ export const BatchIssue: React.FC<Props> = ({ ...props }) => {
         }
     }
 
-    const COLUMNS = { count: 3, size: "auto" }
     return (
         <Box gap="medium">
-            <Box gap="small">
+            <Box gap="small" >
                 <Grid columns="1" fill="horizontal" gap="small">
                     <Text size="small" weight="bold" truncate>Har selskapet aksjeklasser?</Text>
                 </Grid>
@@ -125,7 +136,7 @@ export const BatchIssue: React.FC<Props> = ({ ...props }) => {
                 </Box>
             </Box>
             {!useDefaultPartitions &&
-                <Box gap="small">
+                <Box gap="small" elevation="medium" pad="small">
                     <Grid columns={["medium", "small"]}>
                         <TextInput size="small" value={newPartition} onChange={(e) => setNewPartition(e.target.value)} placeholder="Navn på partisjon feks. a-aksje"></TextInput>
                         <Button size="small" label="Foreslå partisjon" onClick={() => handleNewPartition()}></Button>
@@ -135,19 +146,44 @@ export const BatchIssue: React.FC<Props> = ({ ...props }) => {
             }
             <form /* id={props.capTable.address} */ onSubmit={handleSubmit(onSubmitBatchIssue)}>
                 <Box gap="small">
-                    <Grid columns={COLUMNS} fill="horizontal" gap="small">
+                    <Grid columns={{ count: 7, size: "xsmall" }} fill="horizontal" gap="small">
                         <Text size="small" weight="bold" truncate>Fødselsnummer</Text>
+                        <Text size="small" weight="bold" truncate>Navn</Text>
+                        <Text size="small" weight="bold" truncate>Veiadresse</Text>
+                        <Text size="small" weight="bold" truncate>Postnummer</Text>
+                        <Text size="small" weight="bold" truncate>Epost</Text>
                         <Text size="small" weight="bold" truncate>Antall aksjer</Text>
                         <Text style={{ display: useDefaultPartitions ? "none" : "inherit" }} size="small" weight="bold" truncate>Partisjon</Text>
                     </Grid>
                     {createArrayWithNumbers(rows).map((rowNr) =>
-                        <Grid columns={COLUMNS} fill="horizontal" gap="small" key={rowNr}>
+                        <Grid columns={{ count: 7, size: "xsmall" }} fill="horizontal" gap="small" key={rowNr}>
+
                             <Box >
-                                <Controller render={({ onChange, value }) => <SelectUser onChange={onChange} value={value} capTableAddress={"fdgd"} protocol={"ERC1400:BRREG:DEMO"}></SelectUser>} name={`address[${rowNr}]`} control={control} rules={{ required: true }} defaultValue={""} />
-                                {errors["address"] && errors["address"][rowNr] && <Text color="red" size="xsmall">* {errors["address"][rowNr]?.type}</Text>}
+                                <Controller render={({ onChange, value }) => <TextInput placeholder="Fødselnummer" onChange={onChange} value={value} size="small" ></TextInput>} name={`identifier[${rowNr}]`} control={control} rules={{ required: true }} defaultValue={""} />
+                                {errors["identifier"] && errors["identifier"][rowNr] && <Text color="red" size="xsmall">* {errors["identifier"][rowNr]?.type}</Text>}
                             </Box>
                             <Box >
-                                <Controller as={<TextInput size="small" type={"number"} />} name={`amount[${rowNr}]`} control={control} rules={{ required: true }} defaultValue={""} />
+                                <Controller render={({ onChange, value }) => <TextInput placeholder="Navn" onChange={onChange} value={value} size="small" ></TextInput>} name={`name[${rowNr}]`} control={control} rules={{ required: true }} defaultValue={""} />
+                                {errors["name"] && errors["name"][rowNr] && <Text color="red" size="xsmall">* {errors["name"][rowNr]?.type}</Text>}
+                            </Box>
+
+                            <Box >
+                                <Controller render={({ onChange, value }) => <TextInput placeholder="Veiadresse" onChange={onChange} value={value} size="small" ></TextInput>} name={`streetAddress[${rowNr}]`} control={control} rules={{ required: true }} defaultValue={""} />
+                                {errors["streetAddress"] && errors["streetAddress"][rowNr] && <Text color="red" size="xsmall">* {errors["streetAddress"][rowNr]?.type}</Text>}
+                            </Box>
+
+                            <Box >
+                                <Controller render={({ onChange, value }) => <TextInput placeholder="Postkode" onChange={onChange} value={value} size="small" ></TextInput>} name={`postalcode[${rowNr}]`} control={control} rules={{ required: true }} defaultValue={""} />
+                                {errors["postalcode"] && errors["postalcode"][rowNr] && <Text color="red" size="xsmall">* {errors["postalcode"][rowNr]?.type}</Text>}
+                            </Box>
+
+                            <Box >
+                                <Controller render={({ onChange, value }) => <TextInput placeholder="Epost" onChange={onChange} value={value} size="small" ></TextInput>} name={`email[${rowNr}]`} control={control} rules={{ required: true }} defaultValue={""} />
+                                {errors["email"] && errors["email"][rowNr] && <Text color="red" size="xsmall">* {errors["email"][rowNr]?.type}</Text>}
+                            </Box>
+
+                            <Box >
+                                <Controller render={({ onChange, value }) => <TextInput onChange={onChange} value={value} size="small" type={"number"} />} name={`amount[${rowNr}]`} control={control} rules={{ required: true }} defaultValue={""} />
                                 {errors["amount"] && errors["amount"][rowNr] && <Text color="red" size="xsmall">* {errors["amount"][rowNr]?.type}</Text>}
                             </Box>
                             <Box style={{ display: useDefaultPartitions ? "none" : "inherit" }}>
@@ -160,7 +196,6 @@ export const BatchIssue: React.FC<Props> = ({ ...props }) => {
                                             labelKey={(option) => ethers.utils.parseBytes32String(option)}
                                             emptySearchMessage={"Foreslå en partisjon ovenfor"}
                                             onChange={({ option }) => {
-                                                setValue("org", option)
                                                 setValue(`partition[${rowNr}]`, option)
                                                 return option
                                             }}
