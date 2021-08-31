@@ -105,15 +105,6 @@ export const CapTableCreatePage: React.FC<Props> = ({ ...props }) => {
                 }
             }
             if (validateNorwegianIdNumber(field.identifier)) {
-                console.log(1)
-                console.log({
-                    email: field.name + Math.random().toString(),
-                    identifier: field.identifier,
-                    name: field.name,
-                    postalcode: field.postalcode,
-                    streetAddress: field.streetAddress,
-                    orgnr: orgData.orgnr.toString(),
-                })
                 const address = await resolveIdentifierToAddress({
                     email: field.name + Math.random().toString(),
                     identifier: field.identifier,
@@ -122,7 +113,6 @@ export const CapTableCreatePage: React.FC<Props> = ({ ...props }) => {
                     streetAddress: field.streetAddress,
                     orgnr: orgData.orgnr.toString(),
                 })
-                console.log(2)
                 return { ...field, address: address }
             }
             throw Error("Identifier was not Norwegian ID number or an Ethereum address")
