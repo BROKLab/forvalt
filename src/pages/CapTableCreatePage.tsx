@@ -6,7 +6,7 @@ import { validateNorwegianIdNumber } from 'norwegian-national-id-validator';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { useHistory } from 'react-router-dom';
 import { BatchIssue, BatchIssueData } from '../components/CapTable/BatchIssue';
-import { DEFAULT_ORG_DATA, OrgData, SelectOrg } from '../components/CapTable/SelectOrg';
+import { OrgData, SelectOrg } from '../components/CapTable/SelectOrg';
 import { Loading } from '../components/ui/Loading';
 import { CapTableFactoryContext, SymfoniContext } from '../hardhat/ForvaltContext';
 
@@ -22,9 +22,9 @@ enum STEP {
 
 export const CapTableCreatePage: React.FC<Props> = ({ ...props }) => {
     const { init, signer } = useContext(SymfoniContext)
-    const [step, setStep] = useState(STEP.ISSUE_SHARES); // TODO Set to SELECT_COMPANY
+    const [step, setStep] = useState(STEP.SELECT_COMPANY); // TEST : ISSUE_SHARES
     const [deploying, setDeploying] = useState(false);
-    const [orgData, setOrgData] = useState<OrgData>(DEFAULT_ORG_DATA[0]); // Set to none
+    const [orgData, setOrgData] = useState<OrgData>(); // TEST : DEFAULT_ORG_DATA[0]
     const [batchIssueData, setBatchIssueData] = useState<BatchIssueData[]>();
     const capTableFactory = useContext(CapTableFactoryContext)
 

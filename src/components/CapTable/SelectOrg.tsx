@@ -1,12 +1,10 @@
 import axios, { AxiosError } from 'axios';
-import { ethers } from 'ethers';
 import { Box, Button, Grid, Select, Text } from 'grommet';
 import { Search } from 'grommet-icons';
 import React, { useContext, useEffect, useState } from 'react';
 import { Controller, useForm } from "react-hook-form";
-import { useHistory } from 'react-router-dom';
 import { SpinnerDiamond } from 'spinners-react/lib/esm/SpinnerDiamond';
-import { CapTableFactoryContext, ERC1400Context, SymfoniContext } from "../../hardhat/ForvaltContext";
+import { CapTableFactoryContext, SymfoniContext } from "../../hardhat/ForvaltContext";
 import { formatCurrency } from '../../utils/numbers';
 import { removePassword } from '../../utils/passwordBlockAPI';
 
@@ -37,10 +35,8 @@ export const SelectOrg: React.FC<Props> = ({ ...props }) => {
             org: null,
         }
     });
-    const history = useHistory();
     const [orgList, setOrgList] = useState<OrgData[]>(DEFAULT_ORG_DATA);
     const [isSearchingBrreg, setIsSearchingBrreg] = useState(false);
-    const erc1400 = useContext(ERC1400Context)
     const capTableFactory = useContext(CapTableFactoryContext)
     const orgWatch = watch("org")
     const [searchQuery, setSearchQuery] = useState("");
