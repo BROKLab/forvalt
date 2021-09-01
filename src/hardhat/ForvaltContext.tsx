@@ -174,7 +174,6 @@ export const Symfoni: React.FC<SymfoniProps> = ({
                     //     relayProvider: "wss://localhost:5555"
                     // }
                 }).connect(_provider);
-
                 if (forceSigner) {
                     _signer.on(SIGNER_EVENTS.uri, (uri: any) => {
                         console.log("NEED URI QR CODE")
@@ -203,6 +202,7 @@ export const Symfoni: React.FC<SymfoniProps> = ({
                         }
                     }, SIGNER_TIMEOUT)
                 }
+                console.log("!forceSigner,", !forceSigner)
                 _signer.open({ onlyReconnect: !forceSigner })
             })
         } else if (selectedSigner === "prompt") {

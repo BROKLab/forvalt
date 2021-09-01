@@ -1,14 +1,11 @@
 
 
-import { Anchor, Box, Button, DropButton, Grid, Image, Paragraph, Select, Text } from 'grommet';
-import { User } from 'grommet-icons';
+import { Box, Button, Grid, Image, Paragraph, Select, Text } from 'grommet';
 import React, { useContext, useState } from 'react';
-import { Link } from 'react-router-dom';
 import { SymfoniContext } from '../../hardhat/ForvaltContext';
-import { AuthContext } from '../../utils/AuthContext';
 import { Modal } from './Modal';
 
-interface Props { }
+interface Props {}
 
 const SHOW_PROVIDER_SWITCH = localStorage.getItem("PROVIDER_SWITCH") === "true" /* || process.env.NODE_ENV === "development" ? "true" : "false" */
 export const Account: React.FC<Props> = () => {
@@ -16,7 +13,6 @@ export const Account: React.FC<Props> = () => {
 
     const { init, selectedProvider, providers, loading, address } = useContext(SymfoniContext)
     const [newProvider, setNewProvider] = useState();
-    const { user, logOut } = useContext(AuthContext)
 
     // fund account
 
@@ -43,42 +39,6 @@ export const Account: React.FC<Props> = () => {
                         }
                     </Box>
                     <Button label="Signer" onClick={() => init({ forceSigner: true })}></Button>
-                </Box>
-            }
-            {
-                !SHOW_PROVIDER_SWITCH &&
-                <Box align="center">
-                    {!user && (
-                        <Link to="/account/onboard">
-                            <Button size="small" label="Logg inn" hoverIndicator focusIndicator={false} />
-                        </Link>
-                    )}
-                    {user && (
-                        <Box pad="small">
-
-                            <DropButton
-                                label={user ? user.name : address ? `${address.substr(0, 4)}..` : "Fant ingen"}
-                                icon={<User></User>}
-                                size="medium"
-                                reverse={true}
-                                dropAlign={{ top: 'bottom', right: 'right' }}
-                                dropContent={
-                                    <Box pad="small" elevation="large" align="start">
-                                        {logOut &&
-                                            <Anchor label="Log ut" onClick={() => logOut()}></Anchor>
-                                        }
-                                    </Box>
-                                }
-                            />
-                        </Box>
-                        // <Grid columns={["flex", "flex"]} gap="small">
-                        //     <Box border="all" alignContent="end" round={"full"}>
-
-                        //     </Box>
-                        //     {/* <Button size="small" icon={<User></User>} label={`${address.substr(0, 4)}..`} hoverIndicator={false} style={{ cursor: "not-allowed" }}></Button>
-                        //     <Button size="small" label={"Logg ut"} onClick={() => setShowDisconnect(true)}></Button> */}
-                        // </Grid>
-                    )}
                 </Box>
             }
             <Modal setShow={setShowDisconnect} show={showDisconnect}>

@@ -1,8 +1,7 @@
-import React, { useContext, useEffect, useState } from 'react';
-import { Box, Text, Button } from 'grommet';
 import Copy from "clipboard-copy";
+import { Box, Button, Text } from 'grommet';
 import { Copy as CopyIcon } from 'grommet-icons';
-import { AuthContext, NameContext } from '../../utils/AuthContext';
+import React, { useState } from 'react';
 
 interface Props {
   address: string
@@ -12,21 +11,20 @@ interface Props {
 
 export const FormatAddress: React.FC<Props> = ({ address, copy = true, size = "medium" }) => {
   const [color, setColor] = useState<string>("black");
-  const names = useContext(NameContext)
-  const { requestName } = useContext(AuthContext)
+  // const names = useContext(NameContext)
 
-  useEffect(() => {
-    if (requestName) {
-      requestName(address)
-    }
-    // Because we dont want to rerender when auth context changes on requestName
-    // eslint-disable-next-line
-  }, [address])
+  // useEffect(() => {
+  //   if (requestName) {
+  //     requestName(address)
+  //   }
+  //   // Because we dont want to rerender when auth context changes on requestName
+  //   // eslint-disable-next-line
+  // }, [address])
 
   const formatAddress = () => {
-    if (address in names && names[address] !== null) {
-      return names[address]
-    }
+    // if (address in names && names[address] !== null) {
+    //   return names[address]
+    // }
     return address.substr(0, 5) +
       ".." +
       address.substr(address.length - 2, address.length)
