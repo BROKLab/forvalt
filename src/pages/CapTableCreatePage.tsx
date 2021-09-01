@@ -6,7 +6,7 @@ import { validateNorwegianIdNumber } from 'norwegian-national-id-validator';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { useHistory } from 'react-router-dom';
 import { BatchIssue, BatchIssueData } from '../components/CapTable/BatchIssue';
-import { DEFAULT_ORG_DATA, OrgData, SelectOrg } from '../components/CapTable/SelectOrg';
+import { OrgData, SelectOrg } from '../components/CapTable/SelectOrg';
 import { Loading } from '../components/ui/Loading';
 import { CapTableFactoryContext, SymfoniContext } from '../hardhat/ForvaltContext';
 
