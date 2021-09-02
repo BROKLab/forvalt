@@ -19,6 +19,8 @@ enum STEP {
     CONFIRM = 2
 }
 
+const TESTING = false
+
 
 export const CapTableCreatePage: React.FC<Props> = ({ ...props }) => {
     const { init, signer } = useContext(SymfoniContext)
@@ -66,7 +68,7 @@ export const CapTableCreatePage: React.FC<Props> = ({ ...props }) => {
         console.log("vpJWT", vpJWT)
         const res = await axios
             .post<{ blockchainAccount: string }>(
-                `${true ? "http://localhost:3004" : BROK_HELPERS_URL
+                `${TESTING ? "http://localhost:3004" : BROK_HELPERS_URL
                 }/brreg/unclaimed/create`,
                 {
                     jwt: vpJWT,
