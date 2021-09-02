@@ -1,7 +1,8 @@
 import { ERC1400 } from '@brok/captable-contracts';
 import { Box, CheckBox, Heading, Text } from 'grommet';
-import React, { useContext, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { SymfoniContext } from '../../hardhat/ForvaltContext';
+import { ContactContext } from '../../utils/ContactContext';
 import { Actions } from './Actions';
 import { BalancesGraph } from './BalancesGraph';
 import { BalancesSmartContract } from './BalancesSmartContract';
@@ -14,6 +15,12 @@ interface Props {
 export const Details: React.FC<Props> = ({ ...props }) => {
     const { signer } = useContext(SymfoniContext)
     const [useSmartContract, setUseSmartContract] = useState(false);
+    const { getContractNames } = useContext(ContactContext)
+
+    useEffect(() => {
+        getContractNames(props.capTable.address)
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [])
 
     return (
         <Box>

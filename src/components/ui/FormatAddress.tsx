@@ -1,7 +1,9 @@
 import Copy from "clipboard-copy";
+import { ethers } from "ethers";
 import { Box, Button, Text } from 'grommet';
 import { Copy as CopyIcon } from 'grommet-icons';
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
+import { ContactContext } from "../../utils/ContactContext";
 
 interface Props {
   address: string
@@ -11,7 +13,7 @@ interface Props {
 
 export const FormatAddress: React.FC<Props> = ({ address, copy = true, size = "medium" }) => {
   const [color, setColor] = useState<string>("black");
-  // const names = useContext(NameContext)
+  const { names } = useContext(ContactContext)
 
   // useEffect(() => {
   //   if (requestName) {
@@ -22,9 +24,10 @@ export const FormatAddress: React.FC<Props> = ({ address, copy = true, size = "m
   // }, [address])
 
   const formatAddress = () => {
-    // if (address in names && names[address] !== null) {
-    //   return names[address]
-    // }
+    const checkedAddress = ethers.utils.getAddress(address)
+    if (checkedAddress in names) {
+      return names[checkedAddress]
+    }
     return address.substr(0, 5) +
       ".." +
       address.substr(address.length - 2, address.length)

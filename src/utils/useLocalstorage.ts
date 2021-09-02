@@ -1,8 +1,11 @@
-import { Dispatch, SetStateAction, useEffect, useState } from "react";
+import { Dispatch, SetStateAction, useState, useEffect } from "react";
 
 type SetValue<T> = Dispatch<SetStateAction<T>>;
 
-function useLocalStorage<T>(key: string, initialValue: T): [T, SetValue<T>] {
+export function useLocalStorage<T>(
+  key: string,
+  initialValue: T
+): [T, SetValue<T>] {
   // Get from local storage then
   // parse stored json or return initialValue
   const readValue = (): T => {
@@ -76,5 +79,3 @@ function useLocalStorage<T>(key: string, initialValue: T): [T, SetValue<T>] {
 
   return [storedValue, setValue];
 }
-
-export default useLocalStorage;

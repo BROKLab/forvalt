@@ -1,11 +1,6 @@
 import axios, { AxiosError } from 'axios';
-import { ethers } from 'ethers';
-import { validateNorwegianIdNumber } from 'norwegian-national-id-validator';
-import React, { useContext, useEffect, useState } from 'react';
-import { useCallback } from 'react';
-import { SymfoniContext } from '../hardhat/ForvaltContext';
-import { AuthProviderUser, GetBrregUnclaimedResponse, getChallengeToken, getUserMe, signChallengeAndVerify, unclaimed as _unclaimed, userNames } from './auth-provider';
-import useLocalStorage from './useLocalstorage';
+import React, { useCallback } from 'react';
+import { useLocalStorage } from './useLocalstorage';
 
 interface Props {}
 
@@ -20,8 +15,9 @@ export interface ContactContext {
 
 export const ContactContext = React.createContext<ContactContext>(undefined!)
 
+const TESTING = true
 
-export const Auth: React.FC<Props> = ({ ...props }) => {
+export const Contact: React.FC<Props> = ({ ...props }) => {
     const [names, setNames] = useLocalStorage<Address2Name>("address2name", {});
 
     const getContractNames = useCallback(async (contractAddress: string) => {
@@ -30,7 +26,7 @@ export const Auth: React.FC<Props> = ({ ...props }) => {
         if (!BROK_HELPERS_URL || !BROK_HELPERS_VERIFIER) throw Error("BROK_HELPERS_URL and BROK_HELPERS_VERIFIER must be decleared in enviroment")
         const res = await axios
             .post<Address2Name>(
-                `${true ? "http://localhost:3004" : BROK_HELPERS_URL
+                `${TESTING ? "http://localhost:3004" : BROK_HELPERS_URL
                 }/brreg/contract/erc1400/names`,
                 {
                     capTableAddress: contractAddress,
@@ -44,6 +40,7 @@ export const Auth: React.FC<Props> = ({ ...props }) => {
                     throw Error(error.message);
                 }
             );
+        console.log("brreg/contract/erc1400/names", res.data)
         if (!res.data) {
             throw Error("No data in POST request to /brreg/contract/erc1400/names")
         }

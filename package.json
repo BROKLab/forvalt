@@ -2,6 +2,10 @@
   "name": "frontend",
   "version": "0.1.0",
   "private": true,
+  "resolutions": {
+    "**/@typescript-eslint/eslint-plugin": "^4.1.1",
+    "**/@typescript-eslint/parser": "^4.1.1"
+  },
   "dependencies": {
     "@brok/captable-contracts": "^2.0.0",
     "@symfoni/walletconnect-v2-ethers-signer": "^0.1.3",
