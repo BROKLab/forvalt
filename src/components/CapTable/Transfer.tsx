@@ -1,8 +1,10 @@
-import { BytesLike, ethers } from 'ethers';
-import { Box, Button, Select, Text, TextInput } from 'grommet';
-import React, { useContext, useEffect, useState } from 'react';
-import { SymfoniContext } from '../../hardhat/ForvaltContext';
 import { ERC1400 } from '@brok/captable-contracts';
+import axios, { AxiosError } from 'axios';
+import { BytesLike, ethers } from 'ethers';
+import { Box, Text } from 'grommet';
+import React, { useContext, useEffect, useState } from 'react';
+import { CapTableRegistryContext, SymfoniContext } from '../../hardhat/ForvaltContext';
+import { PrivateUserData, SelectPrivateUser } from '../SelectPrivateUser';
 
 interface Props {
     capTable: ERC1400
@@ -11,76 +13,79 @@ interface Props {
 
 
 export const Transfer: React.FC<Props> = ({ ...props }) => {
-    const [partitions, setPartitions] = useState<BytesLike[]>([]);
-    const [partition, setPartition] = useState<BytesLike>();
-    const [to, setTo] = useState<string>("");
-    const [amount, setAmount] = useState<number>(0);
+    const registry = useContext(CapTableRegistryContext)
     const { init, signer } = useContext(SymfoniContext)
-    // const authProvider = useContext(AuthProviderContext).instance?.attach(process.env.REACT_APP_AUTH_PROVIDER_ADDRESS ? process.env.REACT_APP_AUTH_PROVIDER_ADDRESS : ethers.constants.AddressZero)
-    // Get partitions
-    useEffect(() => {
-        let subscribed = true
-        const doAsync = async () => {
-            const partitionsBytes32 = await props.capTable.totalPartitions()
-            if (subscribed) {
-                setPartitions(partitionsBytes32)
-            }
-        };
-        doAsync();
-        return () => { subscribed = false }
-    }, [props.capTable])
 
-    const transfer = async () => {
+
+    const transfer = async (privateUserData: PrivateUserData) => {
         if (!signer)
             return init()
-        if (!partition) return alert("Sett aksjeklasse")
-        if (!to) return alert("Sett til addresse")
-        const amountEther = ethers.utils.parseEther(amount.toString())
-        if (amountEther === ethers.constants.Zero) return alert("Kan ikke overføre 0 beløp")
-        const tx = await props.capTable.transferByPartition(partition, to, amountEther, "0x11",)
-        await tx.wait()
+        if ("request" in signer) {
+            const BROK_HELPERS_URL = process.env.REACT_APP_BROK_HELPERS_URL
+            const BROK_HELPERS_VERIFIER = process.env.REACT_APP_BROK_HELPERS_VERIFIER
+            if (!BROK_HELPERS_URL || !BROK_HELPERS_VERIFIER) throw Error("BROK_HELPERS_URL and BROK_HELPERS_VERIFIER must be decleared in enviroment")
+            if (!registry.instance) throw Error("Not cap table registry instance")
+
+            let orgnr: string | undefined = undefined
+            try {
+                const orgnrBytes32 = await registry.instance.getUuid(props.capTable.address)
+                orgnr = ethers.utils.parseBytes32String(orgnrBytes32)
+
+            } catch (error) {
+                console.error("Could not resolve orgnr")
+                throw error
+            }
+            const vpJWT = await signer.request("did_createVerifiableCredential", [{
+                verifier: BROK_HELPERS_VERIFIER,
+                payload: {
+                    name: privateUserData.name,
+                    streetAddress: privateUserData.streetAddress,
+                    postalcode: privateUserData.postalcode,
+                    email: privateUserData.email,
+                    identifier: privateUserData.identifier,
+                    orgnr: orgnr,
+                }
+            }])
+            const res = await axios
+                .post<{ blockchainAccount: string }>(
+                    `${true ? "http://localhost:3004" : BROK_HELPERS_URL
+                    }/brreg/unclaimed/create`,
+                    {
+                        jwt: vpJWT,
+                    }
+                )
+                .catch(
+                    (error: AxiosError<{ message: string; code: number }>) => {
+                        if (error.response && error.response.data.message) {
+                            throw Error(error.response.data.message);
+                        }
+                        throw Error(error.message);
+                    }
+                );
+            if (!res.data.blockchainAccount) {
+                throw Error("/brreg/unclaimed/create should return a blockchainAccount ")
+            }
+            const address = res.data.blockchainAccount
+
+            const amountEther = ethers.utils.parseEther(privateUserData.amount.toString())
+            if (amountEther === ethers.constants.Zero) return alert("Kan ikke overføre 0 beløp")
+            const tx = await props.capTable.transferByPartition(privateUserData.partition, address, amountEther, "0x11",)
+            await tx.wait()
+
+
+            if (props.done) {
+                props.done()
+            }
+        }
+
         if (props.done) props.done()
     }
 
     return (
         <Box gap="small">
-            <Box direction="row" gap="small">
-                <Box basis="100%">
-                    <Text size="small">Til fødselsnummer</Text>
-                    {/* <TextInput
-                        style={{ minWidth: "100%" }}
-                        placeholder="Til addresse"
-                        value={to}
-                        onChange={event => setTo(event.target.value)}
-                    /> */}
-                    {/* TODO - Add a Select User type */}
-                </Box>
+            <Text>Overfør aksjer til: </Text>
+            <SelectPrivateUser onSubmit={transfer} onSubmitButtonProps={{ label: "Overfør" }}></SelectPrivateUser>
 
-            </Box>
-            <Box direction="row" gap="small">
-                <Box basis="2/3">
-                    <Text size="small">Aksjeklasse</Text>
-                    <Select
-                        placeholder="Aksjeklasse"
-                        options={partitions}
-                        labelKey={option => ethers.utils.parseBytes32String(option)}
-                        onChange={({ option }) => setPartition(option)}
-                    />
-                </Box>
-                <Box basis="1/3">
-                    <Text size="small">Beløp</Text>
-                    <TextInput
-                        placeholder="Antall aksjer"
-                        value={amount}
-                        type="number"
-                        onChange={(event) => setAmount(event.target.valueAsNumber)}
-                    />
-                </Box>
-            </Box>
-
-            <Box>
-                <Button size="medium" label="Overfør aksjer" onClick={() => transfer()}></Button>
-            </Box>
         </Box>
     )
 }

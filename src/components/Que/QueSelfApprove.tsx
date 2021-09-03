@@ -16,7 +16,7 @@ export const QueSelfApprove: React.FC<Props> = ({ ...props }) => {
             return init({ forceSigner: true })
         }
         if ("request" in signer) {
-            await signer.request("oracle_data", [{
+            await signer.request("did_requestVerfiableCredential", [{
                 method: "approve_captable",
                 capTableAddress: props.capTableAddress
             }])

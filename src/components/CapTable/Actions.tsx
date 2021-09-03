@@ -13,7 +13,7 @@ interface Props {
 
 export const Actions: React.FC<Props> = ({ ...props }) => {
     const { init } = useContext(SymfoniContext)
-    const [showTransfers, setShowTransfers] = useState(false);
+    const [showTransfers, setShowTransfers] = useState(true);
     const [showIssue, setShowIssue] = useState(false);
     const [showExtensions, setShowExtensions] = useState(false);
 
@@ -22,25 +22,27 @@ export const Actions: React.FC<Props> = ({ ...props }) => {
             <Button size="small" label={"Overføre"} onClick={() => setShowTransfers(!showTransfers)}></Button>
             <Button size="small" label={"Utestede"} onClick={() => setShowIssue(!showTransfers)}></Button>
             {/* <Button size="small" label={"Utvidelser"} onClick={() => setShowExtensions(!showExtensions)}></Button> */}
-            <Modal show={showTransfers} setShow={setShowTransfers}>
-                <Transfer capTable={props.capTable} done={() => {
-                    setShowTransfers(false)
-                    init()
-                }}></Transfer>
-            </Modal>
-            <Modal show={showIssue} setShow={setShowIssue}>
-                {/* TODO - Readd this */}
-                {/* <BatchIssue capTable={props.capTable} done={() => {
+            <Box>
+                <Modal show={showTransfers} setShow={setShowTransfers}>
+                    <Transfer capTable={props.capTable} done={() => {
+                        setShowTransfers(false)
+                        init()
+                    }}></Transfer>
+                </Modal>
+                <Modal show={showIssue} setShow={setShowIssue}>
+                    {/* TODO - Readd this */}
+                    {/* <BatchIssue capTable={props.capTable} done={() => {
                     setShowTransfers(false)
                     init()
                 }}></BatchIssue> */}
-            </Modal>
-            <Modal show={showExtensions} setShow={setShowExtensions}>
-                <Extensions capTable={props.capTable} done={() => {
-                    setShowTransfers(false)
-                    init()
-                }}></Extensions>
-            </Modal>
+                </Modal>
+                <Modal show={showExtensions} setShow={setShowExtensions}>
+                    <Extensions capTable={props.capTable} done={() => {
+                        setShowTransfers(false)
+                        init()
+                    }}></Extensions>
+                </Modal>
+            </Box>
         </Box>
 
     )

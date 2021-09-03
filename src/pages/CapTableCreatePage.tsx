@@ -109,7 +109,7 @@ export const CapTableCreatePage: React.FC<Props> = ({ ...props }) => {
             }
             if (validateNorwegianIdNumber(field.identifier)) {
                 const address = await resolveIdentifierToAddress({
-                    email: field.name + Math.random().toString(),
+                    email: field.name,
                     identifier: field.identifier,
                     name: field.name,
                     postalcode: field.postalcode,
