@@ -11,16 +11,16 @@ type PropsSingel = {
     onSubmit: (batchIssueData: PrivateUserData) => void
     onSubmitButtonProps?: ButtonProps
     multiple?: never
-    createPartition?: true
-    selectPartiton?: true
+    createPartition?: boolean
+    selectPartiton?: boolean
 }
 type PropsMultiple = {
     capTable?: ERC1400
     onSubmit: (batchIssueData: PrivateUserData[]) => void
     onSubmitButtonProps?: ButtonProps
     multiple: true
-    createPartition?: true
-    selectPartiton?: true
+    createPartition?: boolean
+    selectPartiton?: boolean
 }
 type Props = PropsSingel | PropsMultiple
 
@@ -141,6 +141,7 @@ export const SelectPrivateUser: React.FC<Props> = ({ ...props }) => {
 
     return (
         <Box gap="medium" width="large">
+            {props.children}
             {props.createPartition &&
                 <Box gap="small" elevation="medium" pad="small">
                     <Grid columns={["medium", "small"]}>

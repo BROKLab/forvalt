@@ -1,12 +1,12 @@
 import axios, { AxiosError } from 'axios';
 import { ethers } from 'ethers';
-import { Accordion, AccordionPanel, Box, Button, Heading, Paragraph, Text } from 'grommet';
+import { Accordion, AccordionPanel, Box, Button, Grid, Heading, Paragraph, Text } from 'grommet';
 import { Checkmark } from 'grommet-icons';
 import { validateNorwegianIdNumber } from 'norwegian-national-id-validator';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { useHistory } from 'react-router-dom';
-import { BatchIssue, BatchIssueData } from '../components/CapTable/BatchIssue';
 import { OrgData, SelectOrg } from '../components/CapTable/SelectOrg';
+import { PrivateUserData, SelectPrivateUser } from '../components/SelectPrivateUser';
 import { Loading } from '../components/ui/Loading';
 import { CapTableFactoryContext, SymfoniContext } from '../hardhat/ForvaltContext';
 
@@ -19,7 +19,7 @@ enum STEP {
     CONFIRM = 2
 }
 
-const TESTING = false
+const TESTING = true
 
 
 export const CapTableCreatePage: React.FC<Props> = ({ ...props }) => {
@@ -27,8 +27,9 @@ export const CapTableCreatePage: React.FC<Props> = ({ ...props }) => {
     const [step, setStep] = useState(STEP.SELECT_COMPANY); // TEST - ISSUE_SHARES
     const [deploying, setDeploying] = useState(false);
     const [orgData, setOrgData] = useState<OrgData>(); // TEST - DEFAULT_ORG_DATA[0]
-    const [batchIssueData, setBatchIssueData] = useState<BatchIssueData[]>();
+    const [batchIssueData, setBatchIssueData] = useState<PrivateUserData[]>();
     const capTableFactory = useContext(CapTableFactoryContext)
+    const [useDefaultPartitions, setUseDefaultPartitions] = useState(true);
 
     const history = useHistory()
 
@@ -39,7 +40,7 @@ export const CapTableCreatePage: React.FC<Props> = ({ ...props }) => {
     }, [step])
 
 
-    const handleBatchIssueData = useCallback((data: BatchIssueData[]) => {
+    const handleBatchIssueData = useCallback((data: PrivateUserData[]) => {
         setStep(step + 1)
         setBatchIssueData(data)
     }, [step])
@@ -164,7 +165,17 @@ export const CapTableCreatePage: React.FC<Props> = ({ ...props }) => {
                 <AccordionPanel label="2. Utsted aksjer" onClickCapture={() => setStep(STEP.ISSUE_SHARES)}>
                     <Box pad="medium">
                         {orgData
-                            ? <BatchIssue aggregateResult={(batchIssueData) => handleBatchIssueData(batchIssueData)}></BatchIssue>
+                            ? <SelectPrivateUser onSubmitButtonProps={{ label: "Lagre og gå videre" }} multiple selectPartiton={useDefaultPartitions ? true : false} createPartition={useDefaultPartitions ? false : true} onSubmit={handleBatchIssueData}>
+                                <Box gap="small" >
+                                    <Grid columns="1" fill="horizontal" gap="small">
+                                        <Text size="small" weight="bold" truncate>Har selskapet aksjeklasser?</Text>
+                                    </Grid>
+                                    <Box gap="small" direction="row-responsive">
+                                        <Button size="small" hoverIndicator={false} focusIndicator={false} label="Ja, legg til aksjeklasser" onClick={() => setUseDefaultPartitions(false)} style={{ fontWeight: !useDefaultPartitions ? "bold" : "initial" }}></Button>
+                                        <Button size="small" hoverIndicator={false} focusIndicator={false} label="Nei, selskapet har kun ordinære aksjer" onClick={() => setUseDefaultPartitions(true)} style={{ fontWeight: useDefaultPartitions ? "bold" : "initial" }}></Button>
+                                    </Box>
+                                </Box>
+                            </SelectPrivateUser>
                             : <Paragraph fill>Vennligst velg en aksjeeierbok</Paragraph>
                         }
                     </Box>

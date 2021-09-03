@@ -12,7 +12,7 @@ interface Props {
 }
 
 
-export const Transfer: React.FC<Props> = ({ ...props }) => {
+export const Issue: React.FC<Props> = ({ ...props }) => {
     const registry = useContext(CapTableRegistryContext)
     const { init, signer } = useContext(SymfoniContext)
 
@@ -65,7 +65,7 @@ export const Transfer: React.FC<Props> = ({ ...props }) => {
         }
         return res.data.blockchainAccount
     }
-    const transfer = async (privateUserData: PrivateUserData) => {
+    const issue = async (privateUserData: PrivateUserData) => {
         if (!signer)
             return init()
 
@@ -73,7 +73,7 @@ export const Transfer: React.FC<Props> = ({ ...props }) => {
 
         const amountEther = ethers.utils.parseEther(privateUserData.amount.toString())
         if (amountEther === ethers.constants.Zero) return alert("Kan ikke overføre 0 beløp")
-        const tx = await props.capTable.transferByPartition(privateUserData.partition, address, amountEther, "0x11",)
+        const tx = await props.capTable.issueByPartition(privateUserData.partition, address, amountEther, "0x11",)
         await tx.wait()
 
 
@@ -87,8 +87,8 @@ export const Transfer: React.FC<Props> = ({ ...props }) => {
 
     return (
         <Box gap="small">
-            <Text>Overfør aksjer til: </Text>
-            <SelectPrivateUser onSubmit={transfer} onSubmitButtonProps={{ label: "Overfør" }}></SelectPrivateUser>
+            <Text>Utsted aksjer til: </Text>
+            <SelectPrivateUser onSubmit={issue} onSubmitButtonProps={{ label: "Utsted" }}></SelectPrivateUser>
 
         </Box>
     )

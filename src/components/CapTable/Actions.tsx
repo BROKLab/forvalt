@@ -6,6 +6,7 @@ import { Transfer } from './Transfer';
 import { SymfoniContext } from '../../hardhat/ForvaltContext';
 // import { BatchIssue } from './BatchIssue';
 import { Extensions } from './Extensions';
+import { Issue } from './Issue';
 
 interface Props {
     capTable: ERC1400
@@ -13,7 +14,7 @@ interface Props {
 
 export const Actions: React.FC<Props> = ({ ...props }) => {
     const { init } = useContext(SymfoniContext)
-    const [showTransfers, setShowTransfers] = useState(true);
+    const [showTransfers, setShowTransfers] = useState(false);
     const [showIssue, setShowIssue] = useState(false);
     const [showExtensions, setShowExtensions] = useState(false);
 
@@ -31,17 +32,17 @@ export const Actions: React.FC<Props> = ({ ...props }) => {
                 </Modal>
                 <Modal show={showIssue} setShow={setShowIssue}>
                     {/* TODO - Readd this */}
-                    {/* <BatchIssue capTable={props.capTable} done={() => {
-                    setShowTransfers(false)
-                    init()
-                }}></BatchIssue> */}
+                    <Issue capTable={props.capTable} done={() => {
+                        setShowIssue(false)
+                        init()
+                    }}></Issue>
                 </Modal>
-                <Modal show={showExtensions} setShow={setShowExtensions}>
+                {/* <Modal show={showExtensions} setShow={setShowExtensions}>
                     <Extensions capTable={props.capTable} done={() => {
                         setShowTransfers(false)
                         init()
                     }}></Extensions>
-                </Modal>
+                </Modal> */}
             </Box>
         </Box>
 
