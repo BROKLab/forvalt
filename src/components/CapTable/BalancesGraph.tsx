@@ -1,9 +1,16 @@
+import { ERC1400 } from "@brok/captable-contracts";
 import { ethers } from "ethers";
 import { useQuery } from "graphql-hooks";
+<<<<<<< HEAD
 import { Box, Button, DataTable, Text } from "grommet";
 import { Edit } from "grommet-icons";
 import React, { useContext, useState } from "react";
 import { SymfoniContext } from "../../hardhat/ForvaltContext";
+=======
+import { Box, DataTable, Text } from "grommet";
+import React, { useEffect, useState } from "react";
+import { Export } from "../Export";
+>>>>>>> 1d61ddf (Naming of file and send captable to component to get name date)
 import { FormatAddress } from "../ui/FormatAddress";
 import { Loading } from "../ui/Loading";
 import { Modal } from "../ui/Modal";
@@ -11,22 +18,42 @@ import { EntityUpdate } from "../User/EntityUpdate";
 import { CapTableTypes } from "./CapTable.types";
 
 interface Props {
-  capTableAddress: string;
+  capTable: ERC1400;
 }
 
-export const BalancesGraph: React.FC<Props> = ({ ...props }) => {
+export const BalancesGraph: React.FC<Props> = ({ capTable, ...props }) => {
   // const [partitionFilter, setPartitionFilter] = useState<string>();
   const [editEntity, setEditEntity] = useState<string>();
   const { loading, error, data } =
     useQuery<CapTableTypes.BalancesQuery.RootObject>(
-      CapTableTypes.Queries.BALANCES_QUERY(props.capTableAddress.toLowerCase()),
+      CapTableTypes.Queries.BALANCES_QUERY(capTable.address.toLowerCase()),
       {
         variables: {
           limit: 20,
         },
       }
     );
+<<<<<<< HEAD
   const { address } = useContext(SymfoniContext);
+=======
+
+  const [name, setName] = useState<string>("");
+
+  useEffect(() => {
+    let subscribed = true;
+    const doAsync = async () => {
+      const _name = await capTable.name().catch(() => "Ingen navn funnet");
+      if (subscribed) {
+        setName(_name);
+      }
+    };
+    doAsync();
+    return () => {
+      subscribed = false;
+    };
+  }, []);
+
+>>>>>>> 1d61ddf (Naming of file and send captable to component to get name date)
   if (loading) {
     return <Loading>Laster Balanser</Loading>;
   }
@@ -36,6 +63,21 @@ export const BalancesGraph: React.FC<Props> = ({ ...props }) => {
 
   return (
     <Box gap="small">
+<<<<<<< HEAD
+=======
+      {/* <Box direction="row" gap="small">
+                <Box gap="small">
+                    <Text>Partisjon</Text>
+                    <Select
+                        size="small"
+                        options={data.partitions}
+                        labelKey={option => ethers.utils.parseBytes32String(option)}
+                        onChange={event => setPartitionFilter(event.option)}
+                    ></Select>
+                </Box>
+            </Box> */}
+      {data && <Export capTableName={name} data={data} />}
+>>>>>>> 1d61ddf (Naming of file and send captable to component to get name date)
       <DataTable
         data={data ? data.balances : []}
         primaryKey={false}

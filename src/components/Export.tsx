@@ -12,7 +12,7 @@ interface FileType {
 }
 
 const CSV: FileType = {
-  value: "Csv",
+  value: "csv",
   metadata: "text/csv;charset=utf-8",
   bookType: "csv",
 };
@@ -25,13 +25,26 @@ const Excel: FileType = {
 
 interface Props {
   data: CapTableTypes.BalancesQuery.RootObject;
+  capTableName: string;
 }
+
+const getDateString = () => {
+  const date = new Date();
+
+  console.log(date);
+  const day = date.getDate();
+  const month = date.getMonth() + 1;
+  const year = date.getFullYear();
+  return `${day}-${month}-${year}`;
+};
 
 export const Export: React.FC<Props> = ({ ...props }) => {
   const [fileType, setFileType] = useState<FileType>(Excel);
 
   const exportToCSV = (balances: CapTableTypes.BalancesQuery.Balance[]) => {
-    const fileName = new Date().toDateString();
+    const fileName = `aksjeeierbok_${props.capTableName
+      .replaceAll(" ", "_")
+      .toLocaleLowerCase()}_${getDateString()}.`;
     const ws = XLSX.utils.json_to_sheet(
       balances.map((bl) => {
         return {
