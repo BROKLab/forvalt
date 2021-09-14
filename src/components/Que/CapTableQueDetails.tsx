@@ -69,7 +69,9 @@ export const CapTableQueDetails: React.FC<Props> = ({ ...props }) => {
                 <QueAdmin capTableRegistry={props.capTableRegistry} capTableAddress={props.capTableAddress}></QueAdmin>
             </Modal>
             <Modal show={showQueSelfApprove} setShow={setShowQueSelfApprove} >
-                <QueSelfApprove done={() => setShowQueSelfApprove(!showQueSelfApprove)} capTableAddress={props.capTableAddress}></QueSelfApprove>
+                {info &&
+                    <QueSelfApprove done={() => setShowQueSelfApprove(!showQueSelfApprove)} orgnr={info.uuid} capTableAddress={props.capTableAddress}></QueSelfApprove>
+                }
             </Modal>
         </Box>
     )

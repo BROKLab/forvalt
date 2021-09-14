@@ -167,7 +167,7 @@ export const Symfoni: React.FC<SymfoniProps> = ({
                         "eth_signTransaction",
                         "oracle_data",
                         "did_createVerifiableCredential",
-                        "did_requestVerfiableCredential",
+                        "did_requestVerifiableCredential",
                         "symfoni_privateTransferByPartition",
                     ],
                     chainId: 421611,

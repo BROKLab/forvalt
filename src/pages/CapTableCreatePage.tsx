@@ -1,4 +1,5 @@
 import axios, { AxiosError } from 'axios';
+import { normalizePresentation } from 'did-jwt-vc';
 import { ethers } from 'ethers';
 import { Accordion, AccordionPanel, Box, Button, Grid, Heading, Paragraph, Text } from 'grommet';
 import { Checkmark } from 'grommet-icons';
@@ -137,13 +138,29 @@ export const CapTableCreatePage: React.FC<Props> = ({ ...props }) => {
         } catch (error) {
             throw Error("Could not getLastQuedAddress on uuid " + orgData.orgnr.toString())
         }
-        // TODO ADD this back inn
-        // if ("request" in signer) {
-        //     await signer.request("oracle_data", [{
-        //         method: "approve_captable",
-        //         capTableAddress: deployedContract
-        //     }])
-        // }
+        // Approve capTable
+        const BROK_HELPERS_VERIFIER = process.env.REACT_APP_BROK_HELPERS_VERIFIER
+        const BROK_HELPERS_URL = process.env.REACT_APP_BROK_HELPERS_URL
+        if ("request" in signer) {
+            const jwt = await signer.request("did_requestVerifiableCredential", [{
+                type: "CapTableBoardDirector",
+                orgnr: orgData.orgnr.toString(),
+                verifier: BROK_HELPERS_VERIFIER
+
+            }])
+            console.log("test", normalizePresentation(jwt))
+            // TODO - Make this strcutured and pretty
+            const res = axios.post<string>(
+                `${true ? "http://localhost:3004" : BROK_HELPERS_URL
+                }/brreg/captable/approve`,
+                {
+                    jwt: jwt,
+                    capTableAddress: deployedContract,
+                    test: true
+                }
+            );
+            console.log("RESPONSE brreg/captable/approve: ", res)
+        }
         setDeploying(false)
         if (deployedContract) {
             history.push("/captable/" + deployedContract)
