@@ -27,7 +27,7 @@ export const CapTableQueDetails: React.FC<Props> = ({ ...props }) => {
         let subscribed = true
         const doAsync = async () => {
             const status = await props.capTableRegistry.getStatus(props.capTableAddress)
-            const uuid = await props.capTableRegistry.getUuid(props.capTableAddress)
+            const uuid = await props.capTableRegistry.getid(props.capTableAddress)
             if (subscribed) {
                 setInfo({
                     uuid: uuid !== ethers.constants.HashZero ? ethers.utils.parseBytes32String(uuid) : "Inget OrgNr.",

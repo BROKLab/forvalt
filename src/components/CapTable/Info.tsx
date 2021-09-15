@@ -40,7 +40,7 @@ export const Info: React.FC<Props> = ({ capTable, ...pops }) => {
             if (capTableRegistry.instance) {
                 try {
                     const status = await capTableRegistry.instance.getStatus(capTable.address)
-                    const uuid = await capTableRegistry.instance.getUuid(capTable.address)
+                    const uuid = await capTableRegistry.instance.getid(capTable.address)
                     if (subscribed) {
                         setRegistryData({
                             uuid: uuid === ethers.constants.HashZero ? ethers.utils.formatBytes32String("Ikke opprettet") : uuid,

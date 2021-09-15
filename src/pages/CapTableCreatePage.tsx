@@ -51,7 +51,7 @@ export const CapTableCreatePage: React.FC<Props> = ({ ...props }) => {
         }
     }, [init, signer])
 
-    const resolveIdentifierToAddress = async (params: { name: string, streetAddress: string, postalcode: string, email: string, identifier: string, orgnr: string }) => {
+    const resolveIdentifierToAddress = async (params: { name: string, streetAddress: string, postalcode: string, email: string, identifier: string, orgnr: string, amount: string, partition: string }) => {
         if (!signer || !("request" in signer)) throw Error("Must have a signer resolve address from identifier")
         const BROK_HELPERS_URL = process.env.REACT_APP_BROK_HELPERS_URL
         const BROK_HELPERS_VERIFIER = process.env.REACT_APP_BROK_HELPERS_VERIFIER
@@ -65,6 +65,8 @@ export const CapTableCreatePage: React.FC<Props> = ({ ...props }) => {
                 email: params.email,
                 identifier: params.identifier,
                 orgnr: params.orgnr,
+                amount: params.amount,
+                partition: params.partition
             }
         }])
         console.log("vpJWT", vpJWT)
@@ -116,6 +118,8 @@ export const CapTableCreatePage: React.FC<Props> = ({ ...props }) => {
                     name: field.name,
                     postalcode: field.postalcode,
                     streetAddress: field.streetAddress,
+                    amount: field.amount,
+                    partition: field.partition,
                     orgnr: orgData.orgnr.toString(),
                 })
                 return { ...field, address: address }

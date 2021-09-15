@@ -26,7 +26,7 @@ export const Issue: React.FC<Props> = ({ ...props }) => {
         if (!registry.instance) throw Error("Not cap table registry instance")
         let orgnr: string | undefined = undefined
         try {
-            const orgnrBytes32 = await registry.instance.getUuid(props.capTable.address)
+            const orgnrBytes32 = await registry.instance.getid(props.capTable.address)
             orgnr = ethers.utils.parseBytes32String(orgnrBytes32)
 
         } catch (error) {
@@ -42,6 +42,8 @@ export const Issue: React.FC<Props> = ({ ...props }) => {
                 email: privateUserData.email,
                 identifier: privateUserData.identifier,
                 orgnr: orgnr,
+                amount: privateUserData.amount,
+                partition: privateUserData.partition
             }
         }])
         const res = await axios

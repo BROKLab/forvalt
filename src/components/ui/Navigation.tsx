@@ -5,7 +5,7 @@ import { SymfoniContext } from '../../hardhat/ForvaltContext';
 import BRREG_LOGO_SMALL_PNG from './../../assets/brreg_logo.png';
 import BRREG_LOGO_SVG from './../../assets/brreg_logo.svg';
 
-interface Props { }
+interface Props {}
 const BROWSER_WALLET_URL = process.env.REACT_APP_BROWSER_WALLET
 
 export const Navigation: React.FC<Props> = () => {
@@ -40,7 +40,9 @@ export const Navigation: React.FC<Props> = () => {
                 <Link to="/register/list">
                     <Button size="small" label="Register" hoverIndicator focusIndicator={false} />
                 </Link>
-                <Button label={hasSigner ? "Din profil" : "Loginn"} size="small" hoverIndicator focusIndicator={false} onClick={() => handleLoginn()}></Button>
+                <Link to="/profile">
+                    <Button label={"Profil"} size="small" hoverIndicator focusIndicator={false}></Button>
+                </Link>
 
             </Box>
 

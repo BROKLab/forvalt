@@ -5,7 +5,7 @@ import { BrowserRouter, Route, Switch } from "react-router-dom";
 import { Theme } from "./assets/Theme";
 import { Navigation } from './components/ui/Navigation';
 import { Symfoni } from "./hardhat/ForvaltContext";
-import { AccountPage } from "./pages/AccountPage";
+import { ProfilePage } from "./pages/ProfilePage";
 import { CapTableCreatePage } from "./pages/CapTableCreatePage";
 import { CapTablePage } from "./pages/CapTablePage";
 import { CapTableQuePage } from "./pages/CapTableQuePage";
@@ -28,8 +28,6 @@ function App() {
           <Symfoni autoInit={true} showLoading={true}>
             <Contact>
 
-
-
               <Box height={{ min: "100vh" }}>
                 {/* Navigation */}
                 <Navigation></Navigation>
@@ -41,7 +39,7 @@ function App() {
                     <Route path="/capTable/:address" component={CapTablePage} />
                     <Route path="/que" component={CapTableQuePage} />
                     <Route path="/register" component={CapTableRegistryPage} />
-                    <Route path="/account" component={AccountPage} />
+                    <Route path="/profile" component={ProfilePage} />
                   </Switch>
                 </Main>
                 {/* footer */}
