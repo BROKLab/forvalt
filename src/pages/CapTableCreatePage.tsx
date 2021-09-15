@@ -9,6 +9,7 @@ import { useHistory } from 'react-router-dom';
 import { OrgData, SelectOrg } from '../components/CapTable/SelectOrg';
 import { PrivateUserData, SelectPrivateUser } from '../components/SelectPrivateUser';
 import { Loading } from '../components/ui/Loading';
+import { unclaimedCreate } from '../domain/BrokHelpers';
 import { CapTableFactoryContext, SymfoniContext } from '../hardhat/ForvaltContext';
 
 interface Props {
@@ -53,9 +54,7 @@ export const CapTableCreatePage: React.FC<Props> = ({ ...props }) => {
 
     const resolveIdentifierToAddress = async (params: { name: string, streetAddress: string, postalcode: string, email: string, identifier: string, orgnr: string, amount: string, partition: string }) => {
         if (!signer || !("request" in signer)) throw Error("Must have a signer resolve address from identifier")
-        const BROK_HELPERS_URL = process.env.REACT_APP_BROK_HELPERS_URL
         const BROK_HELPERS_VERIFIER = process.env.REACT_APP_BROK_HELPERS_VERIFIER
-        if (!BROK_HELPERS_URL || !BROK_HELPERS_VERIFIER) throw Error("BROK_HELPERS_URL and BROK_HELPERS_VERIFIER must be decleared in enviroment")
         const vpJWT = await signer.request("did_createVerifiableCredential", [{
             verifier: BROK_HELPERS_VERIFIER,
             payload: {
@@ -70,14 +69,7 @@ export const CapTableCreatePage: React.FC<Props> = ({ ...props }) => {
             }
         }])
         console.log("vpJWT", vpJWT)
-        const res = await axios
-            .post<{ blockchainAccount: string }>(
-                `${TESTING ? "http://localhost:3004" : BROK_HELPERS_URL
-                }/brreg/unclaimed/create`,
-                {
-                    jwt: vpJWT,
-                }
-            )
+        const res = await unclaimedCreate(vpJWT)
             .catch(
                 (error: AxiosError<{ message: string; code: number }>) => {
                     if (error.response && error.response.data.message) {

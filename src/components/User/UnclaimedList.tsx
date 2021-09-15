@@ -28,7 +28,7 @@ export const UnclaimedList: React.FC<Props> = ({ ...props }) => {
                 verifier: BROK_HELPERS_VERIFIER
             }])
             // get a jwt
-            const unclaimedResponse = await fetchUnclaimedList(jwt, { test: true })
+            const unclaimedResponse = await fetchUnclaimedList(jwt)
             console.log("unclaimedResponse,", unclaimedResponse.data)
             if (unclaimedResponse.status === 201 && subscribed) {
                 setUnclaimed(unclaimedResponse.data.data)

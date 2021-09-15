@@ -3,6 +3,7 @@ import axios, { AxiosError } from 'axios';
 import { ethers } from 'ethers';
 import { Box, Text } from 'grommet';
 import React, { useContext } from 'react';
+import { unclaimedCreate } from '../../domain/BrokHelpers';
 import { CapTableRegistryContext, SymfoniContext } from '../../hardhat/ForvaltContext';
 import { PrivateUserData, SelectPrivateUser } from '../SelectPrivateUser';
 
@@ -20,9 +21,7 @@ export const Issue: React.FC<Props> = ({ ...props }) => {
     const resolvePrivateAddress = async (privateUserData: PrivateUserData) => {
 
         if (!signer || !("request" in signer)) throw Error("Cant resolve private address with request in signer")
-        const BROK_HELPERS_URL = process.env.REACT_APP_BROK_HELPERS_URL
         const BROK_HELPERS_VERIFIER = process.env.REACT_APP_BROK_HELPERS_VERIFIER
-        if (!BROK_HELPERS_URL || !BROK_HELPERS_VERIFIER) throw Error("BROK_HELPERS_URL and BROK_HELPERS_VERIFIER must be decleared in enviroment")
         if (!registry.instance) throw Error("Not cap table registry instance")
         let orgnr: string | undefined = undefined
         try {
@@ -46,14 +45,7 @@ export const Issue: React.FC<Props> = ({ ...props }) => {
                 partition: privateUserData.partition
             }
         }])
-        const res = await axios
-            .post<{ blockchainAccount: string }>(
-                `${true ? "http://localhost:3004" : BROK_HELPERS_URL
-                }/brreg/unclaimed/create`,
-                {
-                    jwt: vpJWT,
-                }
-            )
+        const res = await unclaimedCreate(vpJWT)
             .catch(
                 (error: AxiosError<{ message: string; code: number }>) => {
                     if (error.response && error.response.data.message) {

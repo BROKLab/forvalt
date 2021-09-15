@@ -1201,10 +1201,10 @@
   resolved "https://registry.yarnpkg.com/@bcoe/v8-coverage/-/v8-coverage-0.2.3.tgz#75a2e8b51cb758a7553d6804a5932d7aace75c39"
   integrity sha512-0hYQ8SB4Db5zvZB4axdMHGwEaQjkZzFjQiN9LVYvIFB2nSUHW9tYpxWriPrWDASIxiaXax83REcLxuSdnGPZtw==
 
-"@brok/captable-contracts@^2.0.1":
-  version "2.0.1"
-  resolved "https://registry.yarnpkg.com/@brok/captable-contracts/-/captable-contracts-2.0.1.tgz#1db76675c97000ac7ea27a8f62cf30ba75dd4f34"
-  integrity sha512-7g4TQiocvtk7OWYidC7W5tIsOCapLWbta1TuayspOdSo7ssGSoRrVWwtiDs4Q8K0Yj9VhcCE9HLby76i0XK9aQ==
+"@brok/captable-contracts@^2.0.2":
+  version "2.0.2"
+  resolved "https://registry.yarnpkg.com/@brok/captable-contracts/-/captable-contracts-2.0.2.tgz#ced1afc56b5a695e430b53c6f96e41a312d78128"
+  integrity sha512-i+alqdPjJxdbMrHKgKlte1BiGPWV6VM/ydKzIT9Mme6hrudhC+4m1Zcpd9kWyEQ2HYn3kNEw6Y2pwuB/8UpJtQ==
 
 "@cnakazawa/watch@^1.0.3":
   version "1.0.4"

@@ -3,6 +3,7 @@ import React, { useContext } from 'react';
 import { SymfoniContext } from '../../hardhat/ForvaltContext';
 import { normalizePresentation } from "did-jwt-vc";
 import axios from 'axios';
+import { captableApprove } from '../../domain/BrokHelpers';
 
 interface Props {
     orgnr: string,
@@ -29,18 +30,10 @@ export const QueSelfApprove: React.FC<Props> = ({ ...props }) => {
             }])
             console.log("test", normalizePresentation(jwt))
             // TODO - Make this strcutured and pretty
-            const res = axios.post<string>(
-                `${true ? "http://localhost:3004" : BROK_HELPERS_URL
-                }/brreg/captable/approve`,
-                {
-                    jwt: jwt,
-                    capTableAddress: props.capTableAddress,
-                    test: true
-                }
-            );
-            console.log(res)
+            const res = await captableApprove(jwt, props.capTableAddress);
+            console.log("captableApprove", res)
             // const vp = await
-            console.log("proof", jwt)
+
             if (props.done) {
                 props.done()
             }

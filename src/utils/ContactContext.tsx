@@ -1,5 +1,6 @@
 import axios, { AxiosError } from 'axios';
 import React, { useCallback } from 'react';
+import { fetchAddress2Name } from '../domain/BrokHelpers';
 import { useLocalStorage } from './useLocalstorage';
 
 interface Props {}
@@ -21,17 +22,7 @@ export const Contact: React.FC<Props> = ({ ...props }) => {
     const [names, setNames] = useLocalStorage<Address2Name>("address2name", {});
 
     const getContractNames = useCallback(async (contractAddress: string) => {
-        const BROK_HELPERS_URL = process.env.REACT_APP_BROK_HELPERS_URL
-        const BROK_HELPERS_VERIFIER = process.env.REACT_APP_BROK_HELPERS_VERIFIER
-        if (!BROK_HELPERS_URL || !BROK_HELPERS_VERIFIER) throw Error("BROK_HELPERS_URL and BROK_HELPERS_VERIFIER must be decleared in enviroment")
-        const res = await axios
-            .post<Address2Name>(
-                `${TESTING ? "http://localhost:3004" : BROK_HELPERS_URL
-                }/brreg/contract/erc1400/names`,
-                {
-                    capTableAddress: contractAddress,
-                }
-            )
+        const res = await fetchAddress2Name(contractAddress)
             .catch(
                 (error: AxiosError<{ message: string; code: number }>) => {
                     if (error.response && error.response.data.message) {
