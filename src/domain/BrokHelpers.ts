@@ -5,108 +5,68 @@ const BROK_HELPERS_VERIFIER = process.env.REACT_APP_BROK_HELPERS_VERIFIER;
 const BROK_HELPERS_URL = process.env.REACT_APP_BROK_HELPERS_URL;
 
 export type Options = {
-  test?: boolean;
+    test?: boolean;
 };
 
 export type Unclaimed = {
-  id: string;
-  capTableAddress: string;
-  balances: { balance: string; partition: string }[];
-  name: string;
+    id: string;
+    capTableAddress: string;
+    balances: { balance: string; partition: string }[];
+    name: string;
 };
 
 export function captableApprove(jwt: string, capTableAddress: string) {
-  return axios.post<string>(
-    `${
-      process.env.REACT_APP_USE_LOCAL_ENVIROMENT
-        ? "http://localhost:3004"
-        : BROK_HELPERS_URL
-    }/brreg/captable/approve`,
-    {
-      jwt: jwt,
-      capTableAddress,
-      test: process.env.REACT_APP_USE_TEST_DATA ? true : false,
-    }
-  );
+    const url = !process.env.REACT_APP_USE_LOCAL_ENVIROMENT ? "http://localhost:3004" : BROK_HELPERS_URL;
+    return axios.post<string>(`${url}/brreg/captable/approve`, {
+        jwt: jwt,
+        capTableAddress,
+        test: process.env.REACT_APP_USE_TEST_DATA ? true : false,
+    });
 }
 
 export function digitalEntityUpdate(jwt: string) {
-  return axios.post<{ success: boolean }>(
-    `${
-      process.env.REACT_APP_USE_LOCAL_ENVIROMENT
-        ? "http://localhost:3004"
-        : BROK_HELPERS_URL
-    }/brreg/digital-entity/update`,
-    {
-      jwt,
-    }
-  );
+    return axios.post<{ success: boolean }>(
+        `${process.env.REACT_APP_USE_LOCAL_ENVIROMENT ? "http://localhost:3004" : BROK_HELPERS_URL}/brreg/digital-entity/update`,
+        {
+            jwt,
+        }
+    );
 }
 
 export function unclaimedCreate(jwt: string) {
-  return axios.post<{ blockchainAccount: string }>(
-    `${
-      process.env.REACT_APP_USE_LOCAL_ENVIROMENT
-        ? "http://localhost:3004"
-        : BROK_HELPERS_URL
-    }/brreg/unclaimed/create`,
-    {
-      jwt,
-    }
-  );
+    const url = !process.env.REACT_APP_USE_LOCAL_ENVIROMENT ? "http://localhost:3004" : BROK_HELPERS_URL;
+    return axios.post<{ blockchainAccount: string }>(`${url}/brreg/unclaimed/create`, {
+        jwt,
+    });
 }
 export function fetchAddress2Name(contractAddress: string) {
-  return axios.post<Address2Info>(
-    `${
-      process.env.REACT_APP_USE_LOCAL_ENVIROMENT
-        ? "http://localhost:3004"
-        : BROK_HELPERS_URL
-    }/brreg/contract/erc1400/names`,
-    {
-      capTableAddress: contractAddress,
-    }
-  );
+    const url = !process.env.REACT_APP_USE_LOCAL_ENVIROMENT ? "http://localhost:3004" : BROK_HELPERS_URL;
+    console.log("url", url);
+    return axios.post<Address2Info>(`${url}/brreg/contract/erc1400/names`, {
+        capTableAddress: contractAddress,
+    });
 }
 
 export function fetchUnclaimedList(jwt: string) {
-  return axios.post<{
-    object: string;
-    url: string;
-    has_more: boolean;
-    data: [];
-  }>(
-    `${
-      process.env.REACT_APP_USE_LOCAL_ENVIROMENT
-        ? "http://localhost:3004"
-        : BROK_HELPERS_URL
-    }/brreg/unclaimed/list`,
-    {
-      jwt: jwt,
-    }
-  );
+    const url = !process.env.REACT_APP_USE_LOCAL_ENVIROMENT ? "http://localhost:3004" : BROK_HELPERS_URL;
+    return axios.post<{
+        object: string;
+        url: string;
+        has_more: boolean;
+        data: [];
+    }>(`${url}/brreg/unclaimed/list`, {
+        jwt: jwt,
+    });
 }
 export function claimUnclaimed(jwt: string, options: Options = {}) {
-  return axios.post<boolean>(
-    `${
-      process.env.REACT_APP_USE_LOCAL_ENVIROMENT
-        ? "http://localhost:3004"
-        : BROK_HELPERS_URL
-    }/brreg/unclaimed/claim`,
-    {
-      jwt: jwt,
-    }
-  );
+    const url = !process.env.REACT_APP_USE_LOCAL_ENVIROMENT ? "http://localhost:3004" : BROK_HELPERS_URL;
+    return axios.post<boolean>(`${url}/brreg/unclaimed/claim`, {
+        jwt: jwt,
+    });
 }
 
 export function entityGet(jwt: string) {
-  return axios.post<boolean>(
-    `${
-      process.env.REACT_APP_USE_LOCAL_ENVIROMENT
-        ? "http://localhost:3004"
-        : BROK_HELPERS_URL
-    }/brreg/entity/get`,
-    {
-      jwt: jwt,
-    }
-  );
+    return axios.post<boolean>(`${process.env.REACT_APP_USE_LOCAL_ENVIROMENT ? "http://localhost:3004" : BROK_HELPERS_URL}/brreg/entity/get`, {
+        jwt: jwt,
+    });
 }
