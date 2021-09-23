@@ -1,17 +1,22 @@
-import axios, { AxiosError } from 'axios';
+import { AxiosError } from 'axios';
 import React, { useCallback } from 'react';
 import { fetchAddress2Name } from '../domain/BrokHelpers';
 import { useLocalStorage } from './useLocalstorage';
 
 interface Props {}
 
-export type Address2Name = {
-    [address: string]: string,
+export type Address2Info = {
+    [address: string]: {
+        name: string;
+        streetAddress: string;
+        postalcode: string;
+        birthdate: string;
+    }
 }
 export interface ContactContext {
-    names: Address2Name
-    getContractNames: (contractAddress: string) => Promise<Address2Name>
-    getAddressName: (address: string) => Promise<Address2Name>
+    names: Address2Info
+    getContractNames: (contractAddress: string) => Promise<Address2Info>
+    getAddressName: (address: string) => Promise<Address2Info>
 }
 
 export const ContactContext = React.createContext<ContactContext>(undefined!)
@@ -19,7 +24,7 @@ export const ContactContext = React.createContext<ContactContext>(undefined!)
 const TESTING = true
 
 export const Contact: React.FC<Props> = ({ ...props }) => {
-    const [names, setNames] = useLocalStorage<Address2Name>("address2name", {});
+    const [names, setNames] = useLocalStorage<Address2Info>("address2name", {});
 
     const getContractNames = useCallback(async (contractAddress: string) => {
         const res = await fetchAddress2Name(contractAddress)

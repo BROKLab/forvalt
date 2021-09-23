@@ -1,5 +1,5 @@
 import axios from "axios";
-import { Address2Name } from "../utils/ContactContext";
+import { Address2Info } from "../utils/ContactContext";
 
 const BROK_HELPERS_VERIFIER = process.env.REACT_APP_BROK_HELPERS_VERIFIER;
 const BROK_HELPERS_URL = process.env.REACT_APP_BROK_HELPERS_URL;
@@ -30,6 +30,19 @@ export function captableApprove(jwt: string, capTableAddress: string) {
   );
 }
 
+export function digitalEntityUpdate(jwt: string) {
+  return axios.post<{ success: boolean }>(
+    `${
+      process.env.REACT_APP_USE_LOCAL_ENVIROMENT
+        ? "http://localhost:3004"
+        : BROK_HELPERS_URL
+    }/brreg/digital-entity/update`,
+    {
+      jwt,
+    }
+  );
+}
+
 export function unclaimedCreate(jwt: string) {
   return axios.post<{ blockchainAccount: string }>(
     `${
@@ -43,7 +56,7 @@ export function unclaimedCreate(jwt: string) {
   );
 }
 export function fetchAddress2Name(contractAddress: string) {
-  return axios.post<Address2Name>(
+  return axios.post<Address2Info>(
     `${
       process.env.REACT_APP_USE_LOCAL_ENVIROMENT
         ? "http://localhost:3004"
@@ -79,6 +92,19 @@ export function claimUnclaimed(jwt: string, options: Options = {}) {
         ? "http://localhost:3004"
         : BROK_HELPERS_URL
     }/brreg/unclaimed/claim`,
+    {
+      jwt: jwt,
+    }
+  );
+}
+
+export function entityGet(jwt: string) {
+  return axios.post<boolean>(
+    `${
+      process.env.REACT_APP_USE_LOCAL_ENVIROMENT
+        ? "http://localhost:3004"
+        : BROK_HELPERS_URL
+    }/brreg/entity/get`,
     {
       jwt: jwt,
     }

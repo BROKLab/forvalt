@@ -25,8 +25,8 @@ export const FormatAddress: React.FC<Props> = ({ address, copy = true, size = "m
 
   const formatAddress = () => {
     const checkedAddress = ethers.utils.getAddress(address)
-    if (checkedAddress in names) {
-      return names[checkedAddress]
+    if (checkedAddress in names && "name" in names[checkedAddress]) {
+      return names[checkedAddress].name
     }
     return address.substr(0, 5) +
       ".." +

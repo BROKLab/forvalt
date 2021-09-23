@@ -11,7 +11,7 @@ interface Props {
 
 
 interface CapTableRegistryData {
-    uuid: string
+    id: string
     active: boolean
 }
 
@@ -28,28 +28,32 @@ export const Info: React.FC<Props> = ({ capTable, ...pops }) => {
     useEffect(() => {
         let subscribed = true
         const doAsync = async () => {
-            const name = await capTable.name().catch(() => "No company found");
-            const totalSupplyBN = await capTable
-                .totalSupply()
-            const isController = await (await capTable.controllers()).findIndex(address => address === currentAddress) !== -1
-            if (subscribed) {
-                setName(name)
-                setTotalSupply(ethers.utils.formatEther(totalSupplyBN.toString()))
-                setIsController(isController)
-            }
-            if (capTableRegistry.instance) {
-                try {
-                    const status = await capTableRegistry.instance.getStatus(capTable.address)
-                    const uuid = await capTableRegistry.instance.getid(capTable.address)
-                    if (subscribed) {
-                        setRegistryData({
-                            uuid: uuid === ethers.constants.HashZero ? ethers.utils.formatBytes32String("Ikke opprettet") : uuid,
-                            active: status.toString() === "2"
-                        })
-                    }
-                } catch (error) {
-                    console.log(error)
+            try {
+                const name = await capTable.name().catch(() => "No company found");
+                const totalSupplyBN = await capTable
+                    .totalSupply()
+                const isController = await (await capTable.controllers()).findIndex(address => address === currentAddress) !== -1
+                if (subscribed) {
+                    setName(name)
+                    setTotalSupply(ethers.utils.formatEther(totalSupplyBN.toString()))
+                    setIsController(isController)
                 }
+                if (capTableRegistry.instance) {
+                    try {
+                        const status = await capTableRegistry.instance.getStatus(capTable.address)
+                        const uuid = await capTableRegistry.instance.getid(capTable.address)
+                        if (subscribed) {
+                            setRegistryData({
+                                id: uuid === ethers.constants.HashZero ? ethers.utils.formatBytes32String("Ikke opprettet") : uuid,
+                                active: status.toString() === "2"
+                            })
+                        }
+                    } catch (error) {
+                        console.log(error)
+                    }
+                }
+            } catch (error) {
+                console.log(error)
             }
         };
         doAsync();
@@ -67,7 +71,7 @@ export const Info: React.FC<Props> = ({ capTable, ...pops }) => {
             {registryData &&
                 <Grid columns={["small", "flex"]}>
                     <Text >Orginisasjonsnummer</Text>
-                    <Text weight="bold">{ethers.utils.parseBytes32String(registryData.uuid)}</Text>
+                    <Text weight="bold">{ethers.utils.parseBytes32String(registryData.id)}</Text>
                 </Grid>
             }
             {registryData &&

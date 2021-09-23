@@ -34,6 +34,7 @@ export module CapTableTypes {
     export interface CapTable {
       partitions: string[];
       totalSupply: string;
+      owner: string;
     }
 
     export interface TokenHolder {
@@ -86,6 +87,8 @@ export module CapTableTypes {
             }
             capTable {
               totalSupply
+              owner
+              partitions
             }
           }
         }

@@ -140,7 +140,7 @@ export const Symfoni: React.FC<SymfoniProps> = ({
         }
         if (selectedProvider === "walletConnectV2") {
             return new ethers.providers.JsonRpcProvider({
-                url: "https://arbitrum-rinkeby.infura.io/v3/eaa35471bb7947adb685b17daa1030d4"
+                url: "https://arb-rinkeby.g.alchemy.com/v2/_oMAKsLfMlE5OrHhjUPdBiV-8bKnpGXW"
             });
         }
         if (selectedProvider === "hardhat") {
