@@ -1,31 +1,17 @@
 import axios, { AxiosError } from "axios";
 import { normalizePresentation } from "did-jwt-vc";
 import { ethers } from "ethers";
-import {
-    Accordion,
-    AccordionPanel,
-    Box,
-    Button,
-    Grid,
-    Heading,
-    Paragraph,
-    Text,
-} from "grommet";
+import { Accordion, AccordionPanel, Box, Button, Grid, Heading, Paragraph, Text } from "grommet";
 import { Checkmark } from "grommet-icons";
 import { validateNorwegianIdNumber } from "norwegian-national-id-validator";
 import React, { useCallback, useContext, useEffect, useState } from "react";
 import { useHistory } from "react-router-dom";
 import { OrgData, SelectOrg } from "../components/CapTable/SelectOrg";
-import {
-    PrivateUserData,
-    SelectPrivateUser,
-} from "../components/SelectPrivateUser";
+import { PrivateUserData, SelectPrivateUser } from "../components/SelectPrivateUser";
 import { Loading } from "../components/ui/Loading";
 import { unclaimedCreate } from "../domain/BrokHelpers";
-import {
-    CapTableFactoryContext,
-    SymfoniContext,
-} from "../hardhat/ForvaltContext";
+import { CapTableFactoryContext, SymfoniContext } from "../hardhat/ForvaltContext";
+import { SignatureRequest } from "../utils/SignerRequestHandler";
 
 interface Props {}
 
@@ -38,7 +24,7 @@ enum STEP {
 const TESTING = true;
 
 export const CapTableCreatePage: React.FC<Props> = ({ ...props }) => {
-    const { init, signer } = useContext(SymfoniContext);
+    const { init, signer, signatureRequestHandler } = useContext(SymfoniContext);
     const [step, setStep] = useState(STEP.SELECT_COMPANY); // TEST - ISSUE_SHARES
     const [deploying, setDeploying] = useState(false);
     const [orgData, setOrgData] = useState<OrgData>(); // TEST - DEFAULT_ORG_DATA[0]
@@ -79,38 +65,55 @@ export const CapTableCreatePage: React.FC<Props> = ({ ...props }) => {
         amount: string;
         partition: string;
     }) => {
-        if (!signer || !("request" in signer))
-            throw Error("Must have a signer resolve address from identifier");
-        const BROK_HELPERS_VERIFIER =
-            process.env.REACT_APP_BROK_HELPERS_VERIFIER;
-        const vpJWT = await signer.request("did_createVerifiableCredential", [
-            {
-                verifier: BROK_HELPERS_VERIFIER,
-                payload: {
-                    name: params.name,
-                    streetAddress: params.streetAddress,
-                    postalcode: params.postalcode,
-                    email: params.email,
-                    identifier: params.identifier,
-                    orgnr: params.orgnr,
-                    amount: params.amount,
-                    partition: params.partition,
-                },
-            },
-        ]);
-        console.log("vpJWT", vpJWT);
-        const res = await unclaimedCreate(vpJWT).catch(
-            (error: AxiosError<{ message: string; code: number }>) => {
-                if (error.response && error.response.data.message) {
-                    throw Error(error.response.data.message);
-                }
-                throw Error(error.message);
+        if (!signer || !("request" in signer)) throw Error("Must have a signer resolve address from identifier");
+        const BROK_HELPERS_VERIFIER = process.env.REACT_APP_BROK_HELPERS_VERIFIER;
+
+        const verifier = BROK_HELPERS_VERIFIER;
+        const method = "did_createVerifiableCredential";
+        const payload = {
+            name: params.name,
+            streetAddress: params.streetAddress,
+            postalcode: params.postalcode,
+            email: params.email,
+            identifier: params.identifier,
+            orgnr: params.orgnr,
+            amount: params.amount,
+            partition: params.partition,
+        };
+
+        const request: SignatureRequest = {
+            message: "Godkjenn privat aksjeutstedelse via Brønnøysundregistrene",
+            fn: async () =>
+                await signer.request(method, [
+                    {
+                        verifier: verifier,
+                        payload: payload,
+                    },
+                ]),
+        };
+        console.log("request", request);
+
+        if (!signatureRequestHandler) throw Error("TODO: Create error");
+        signatureRequestHandler.add([request]);
+        let result;
+        try {
+            const results = (await signatureRequestHandler.results()) as string[];
+            result = results[0];
+        } catch (e: any) {
+            console.log("error", e);
+            result = "rejected";
+        }
+        console.log("resultt", result);
+
+        const res = await unclaimedCreate(result).catch((error: AxiosError<{ message: string; code: number }>) => {
+            if (error.response && error.response.data.message) {
+                throw Error(error.response.data.message);
             }
-        );
+            throw Error(error.message);
+        });
+        console.log("unclaimed create res", res);
         if (!res.data.blockchainAccount) {
-            throw Error(
-                "/brreg/unclaimed/create should return a blockchainAccount "
-            );
+            throw Error("/brreg/unclaimed/create should return a blockchainAccount ");
         }
         return res.data.blockchainAccount;
     };
@@ -145,64 +148,71 @@ export const CapTableCreatePage: React.FC<Props> = ({ ...props }) => {
                     partition: field.partition,
                     orgnr: orgData.orgnr.toString(),
                 });
+
                 return { ...field, address: address };
             }
-            throw Error(
-                "Identifier was not Norwegian ID number or an Ethereum address"
-            );
+            throw Error("Identifier was not Norwegian ID number or an Ethereum address");
         });
         const resolvedFields = await Promise.all(resolvedFieldPromises);
 
         let deployedContract: string | undefined;
-        const deployTx = await capTableFactory.instance.createCapTable(
-            ethers.utils.formatBytes32String(orgData.orgnr.toString()),
-            orgData.navn,
-            orgData.navn.substr(0, 3),
-            resolvedFields.map((a) => a.address),
-            resolvedFields.map((a) => ethers.utils.parseEther(a.amount))
-        );
-        await deployTx.wait();
-        try {
-            deployedContract =
-                await capTableFactory.instance.getLastQuedAddress(
-                    ethers.utils.formatBytes32String(orgData.orgnr.toString())
+        const request: SignatureRequest = {
+            message: "Bekreft migrering av aksjeeierboken",
+            fn: async () => {
+                if (!capTableFactory.instance) {
+                    throw Error("CapTable Factory not initialized");
+                }
+                const deployTx = await capTableFactory.instance.createCapTable(
+                    ethers.utils.formatBytes32String(orgData.orgnr.toString()),
+                    orgData.navn,
+                    orgData.navn.substr(0, 3),
+                    resolvedFields.map((a) => a.address),
+                    resolvedFields.map((a) => ethers.utils.parseEther(a.amount))
                 );
+                await deployTx.wait();
+            },
+        };
+
+        signatureRequestHandler.add([request]);
+        const results = await signatureRequestHandler.results();
+        console.log("CaptableCreatePage deployContract request result", request);
+
+        try {
+            deployedContract = await capTableFactory.instance.getLastQuedAddress(ethers.utils.formatBytes32String(orgData.orgnr.toString()));
         } catch (error) {
-            throw Error(
-                "Could not getLastQuedAddress on uuid " +
-                    orgData.orgnr.toString()
-            );
+            throw Error("Could not getLastQuedAddress on uuid " + orgData.orgnr.toString());
         }
         // Approve capTable
-        const BROK_HELPERS_VERIFIER =
-            process.env.REACT_APP_BROK_HELPERS_VERIFIER;
+        const BROK_HELPERS_VERIFIER = process.env.REACT_APP_BROK_HELPERS_VERIFIER;
         const BROK_HELPERS_URL = process.env.REACT_APP_BROK_HELPERS_URL;
         if ("request" in signer) {
-            const jwt = await signer.request(
-                "did_requestVerifiableCredential",
-                [
-                    {
-                        type: "CapTableBoardDirector",
-                        orgnr: orgData.orgnr.toString(),
-                        verifier: BROK_HELPERS_VERIFIER,
-                    },
-                ]
-            );
-            console.log("test", normalizePresentation(jwt));
-            // TODO - Make this strcutured and pretty
-            const res = axios.post<string>(
-                `${
-                    true ? "http://localhost:3004" : BROK_HELPERS_URL
-                }/brreg/captable/approve`,
-                {
-                    jwt: jwt,
-                    capTableAddress: deployedContract,
-                    test: true,
-                }
-            );
-            console.log("RESPONSE brreg/captable/approve: ", res);
+            const request: SignatureRequest = {
+                message: "Bekreft at du er styreleder",
+                fn: async () => {
+                    const jwt = await signer.request("did_requestVerifiableCredential", [
+                        {
+                            type: "CapTableBoardDirector",
+                            orgnr: orgData.orgnr.toString(),
+                            verifier: BROK_HELPERS_VERIFIER,
+                        },
+                    ]);
+                    console.log("test", normalizePresentation(jwt));
+                    // TODO - Make this strcutured and pretty
+                    // const res = axios.post<string>(`${true ? "http://localhost:3004" : BROK_HELPERS_URL}/brreg/captable/approve`, {
+                    //     jwt: jwt,
+                    //     capTableAddress: deployedContract,
+                    //     test: true,
+                    // });
+                    // console.log("RESPONSE brreg/captable/approve: ", res);
+                },
+            };
+            // signatureRequestHandler.add([request]);
+            // const results = await signatureRequestHandler.results();
+
+            // console.log("CaptableCreatePage did_requestVerifiableCredential request result", results);
         }
         setDeploying(false);
+        history.push("/");
         if (deployedContract) {
             history.push("/captable/" + deployedContract);
         }
@@ -217,19 +227,12 @@ export const CapTableCreatePage: React.FC<Props> = ({ ...props }) => {
                 </Box>
             )}
             <Accordion justify="start" activeIndex={step} gap="small">
-                <AccordionPanel
-                    label="1. Velg selskap"
-                    onClickCapture={() => setStep(STEP.SELECT_COMPANY)}>
+                <AccordionPanel label="1. Velg selskap" onClickCapture={() => setStep(STEP.SELECT_COMPANY)}>
                     <Box pad="small">
-                        <SelectOrg
-                            aggragateResult={(orgData) =>
-                                handleOrgData(orgData)
-                            }></SelectOrg>
+                        <SelectOrg aggragateResult={(orgData) => handleOrgData(orgData)}></SelectOrg>
                     </Box>
                 </AccordionPanel>
-                <AccordionPanel
-                    label="2. Utsted aksjer"
-                    onClickCapture={() => setStep(STEP.ISSUE_SHARES)}>
+                <AccordionPanel label="2. Utsted aksjer" onClickCapture={() => setStep(STEP.ISSUE_SHARES)}>
                     <Box pad="medium">
                         {orgData ? (
                             <SelectPrivateUser
@@ -237,22 +240,12 @@ export const CapTableCreatePage: React.FC<Props> = ({ ...props }) => {
                                     label: "Lagre og gå videre",
                                 }}
                                 multiple
-                                selectPartiton={
-                                    useDefaultPartitions ? true : false
-                                }
-                                createPartition={
-                                    useDefaultPartitions ? false : true
-                                }
+                                selectPartiton={useDefaultPartitions ? true : false}
+                                createPartition={useDefaultPartitions ? false : true}
                                 onSubmit={handleBatchIssueData}>
                                 <Box gap="small">
-                                    <Grid
-                                        columns="1"
-                                        fill="horizontal"
-                                        gap="small">
-                                        <Text
-                                            size="small"
-                                            weight="bold"
-                                            truncate>
+                                    <Grid columns="1" fill="horizontal" gap="small">
+                                        <Text size="small" weight="bold" truncate>
                                             Har selskapet aksjeklasser?
                                         </Text>
                                     </Grid>
@@ -262,91 +255,62 @@ export const CapTableCreatePage: React.FC<Props> = ({ ...props }) => {
                                             hoverIndicator={false}
                                             focusIndicator={false}
                                             label="Ja, legg til aksjeklasser"
-                                            onClick={() =>
-                                                setUseDefaultPartitions(false)
-                                            }
+                                            onClick={() => setUseDefaultPartitions(false)}
                                             style={{
-                                                fontWeight:
-                                                    !useDefaultPartitions
-                                                        ? "bold"
-                                                        : "initial",
+                                                fontWeight: !useDefaultPartitions ? "bold" : "initial",
                                             }}></Button>
                                         <Button
                                             size="small"
                                             hoverIndicator={false}
                                             focusIndicator={false}
                                             label="Nei, selskapet har kun ordinære aksjer"
-                                            onClick={() =>
-                                                setUseDefaultPartitions(true)
-                                            }
+                                            onClick={() => setUseDefaultPartitions(true)}
                                             style={{
-                                                fontWeight: useDefaultPartitions
-                                                    ? "bold"
-                                                    : "initial",
+                                                fontWeight: useDefaultPartitions ? "bold" : "initial",
                                             }}></Button>
                                     </Box>
                                 </Box>
                             </SelectPrivateUser>
                         ) : (
-                            <Paragraph fill>
-                                Vennligst velg en aksjeeierbok
-                            </Paragraph>
+                            <Paragraph fill>Vennligst velg en aksjeeierbok</Paragraph>
                         )}
                     </Box>
                 </AccordionPanel>
-                <AccordionPanel
-                    label="3. Bekreft"
-                    onClickCapture={() => setStep(STEP.CONFIRM)}>
+                <AccordionPanel label="3. Bekreft" onClickCapture={() => setStep(STEP.CONFIRM)}>
                     <Box margin="small">
                         <Paragraph fill={true}>
-                            Kun selskapets <strong>styreleder</strong> kan
-                            flytte aksjeeierboken til Brønnøysundregistrene
-                            Aksjeeierbok. Når selskapet bruker denne løsningen,
-                            vil dette være en offisielle aksjeeierboken, og den
-                            tidligere aksjeeierboken selskapet er ikke lengre
-                            gyldig.
+                            Kun selskapets <strong>styreleder</strong> kan flytte aksjeeierboken til Brønnøysundregistrene Aksjeeierbok. Når selskapet
+                            bruker denne løsningen, vil dette være en offisielle aksjeeierboken, og den tidligere aksjeeierboken selskapet er ikke
+                            lengre gyldig.
                         </Paragraph>
 
                         <Paragraph fill={true}>
-                            Aksjonærer i selskapet vil kunne sende aksjene sine
-                            til andre uten styrets samtykke, og aksjeeierboken
-                            vil automatisk oppdateres fortløpende.
+                            Aksjonærer i selskapet vil kunne sende aksjene sine til andre uten styrets samtykke, og aksjeeierboken vil automatisk
+                            oppdateres fortløpende.
                         </Paragraph>
 
                         <Paragraph>
-                            <Text weight="bold">
-                                Ved å fortsette, bekrefter du følgende:
-                            </Text>
+                            <Text weight="bold">Ved å fortsette, bekrefter du følgende:</Text>
                         </Paragraph>
 
                         <Paragraph fill={true}>
-                            <Checkmark size="small"></Checkmark> Jeg er
-                            styreleder i selskapet jeg valgte i forrige steg.
+                            <Checkmark size="small"></Checkmark> Jeg er styreleder i selskapet jeg valgte i forrige steg.
                         </Paragraph>
                         <Paragraph fill={true}>
-                            <Checkmark size="small"></Checkmark> Jeg er
-                            inneforstått med at løsningen ikke automatisk
-                            innrapporterer noe til offentlig sektor, og at
-                            innrapportering forstatt må gjøres som før.
+                            <Checkmark size="small"></Checkmark> Jeg er inneforstått med at løsningen ikke automatisk innrapporterer noe til offentlig
+                            sektor, og at innrapportering forstatt må gjøres som før.
                         </Paragraph>
                         <Paragraph fill={true}>
-                            <Checkmark size="small"></Checkmark> Jeg er
-                            inneforstått med at løsningen er i
-                            Brønnøysundregistrene Sandkasse, som betyr at
-                            Brønnøysundregistrene kan slutte å drifte løsningen.
-                            Det vil da være mulig å laste need aksjeeierboken i
-                            csv-format.
+                            <Checkmark size="small"></Checkmark> Jeg er inneforstått med at løsningen er i Brønnøysundregistrene Sandkasse, som betyr
+                            at Brønnøysundregistrene kan slutte å drifte løsningen. Det vil da være mulig å laste need aksjeeierboken i csv-format.
                         </Paragraph>
                         <Paragraph fill={true}>
-                            <Checkmark size="small"></Checkmark> Jeg er
-                            inneforstått med at løsningen er i
-                            Brønnøysundregistrene Sandkasse, som betyr at det
-                            kan være feil i løsningen.
+                            <Checkmark size="small"></Checkmark> Jeg er inneforstått med at løsningen er i Brønnøysundregistrene Sandkasse, som betyr
+                            at det kan være feil i løsningen.
                         </Paragraph>
                         <Paragraph fill={true}>
-                            <Checkmark size="small"></Checkmark> Jeg er
-                            inneforstått med at aksjeeierboken blir liggende
-                            offentlig tilgjengelig på nett.
+                            <Checkmark size="small"></Checkmark> Jeg er inneforstått med at aksjeeierboken blir liggende offentlig tilgjengelig på
+                            nett.
                         </Paragraph>
 
                         {/* <Paragraph fill>Det kreves {totalTransactions + 1} signereing for å opprette dette selskapet, utstede aksjene og godkjenne selskapet hos Brreg. Lommeboken vil forslå signering for deg.</Paragraph> */}
@@ -356,11 +320,7 @@ export const CapTableCreatePage: React.FC<Props> = ({ ...props }) => {
             <Button
                 size="large"
                 label="Opprett aksjeeierbok"
-                disabled={
-                    step !== STEP.CONFIRM ||
-                    !orgData ||
-                    !batchIssueData /* || deploying */
-                }
+                disabled={step !== STEP.CONFIRM || !orgData || !batchIssueData /* || deploying */}
                 onClick={() => deploy()}></Button>
             {deploying && (
                 <Box align="center">
