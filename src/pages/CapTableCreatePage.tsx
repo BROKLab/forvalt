@@ -1,4 +1,4 @@
-import axios, { AxiosError } from "axios";
+import { AxiosError } from "axios";
 import { normalizePresentation } from "did-jwt-vc";
 import { ethers } from "ethers";
 import { Accordion, AccordionPanel, Box, Button, Grid, Heading, Paragraph, Text } from "grommet";
@@ -9,7 +9,7 @@ import { useHistory } from "react-router-dom";
 import { OrgData, SelectOrg } from "../components/CapTable/SelectOrg";
 import { PrivateUserData, SelectPrivateUser } from "../components/SelectPrivateUser";
 import { Loading } from "../components/ui/Loading";
-import { unclaimedCreate } from "../domain/BrokHelpers";
+import { captableApprove, unclaimedCreate } from "../domain/BrokHelpers";
 import { CapTableFactoryContext, SymfoniContext } from "../hardhat/ForvaltContext";
 import { SignatureRequest } from "../utils/SignerRequestHandler";
 
@@ -99,8 +99,8 @@ export const CapTableCreatePage: React.FC<Props> = ({ ...props }) => {
             const results = (await signatureRequestHandler.results()) as string[];
             result = results[0];
         } catch (e: any) {
-            console.log("error", e);
-            result = "rejected";
+            console.log("[ERROR] resolveIdentifierToAddress", e);
+            throw e;
         }
         console.log("resultt", result);
 
@@ -173,7 +173,15 @@ export const CapTableCreatePage: React.FC<Props> = ({ ...props }) => {
         };
 
         signatureRequestHandler.add([request]);
-        const results = await signatureRequestHandler.results();
+        let results;
+        try {
+            results = await signatureRequestHandler.results();
+        } catch (e: any) {
+            console.log("CaptableCreatePage error =", e);
+            setDeploying(false);
+            return;
+        }
+
         console.log("CaptableCreatePage deployContract request result", request);
 
         try {
@@ -183,7 +191,7 @@ export const CapTableCreatePage: React.FC<Props> = ({ ...props }) => {
         }
         // Approve capTable
         const BROK_HELPERS_VERIFIER = process.env.REACT_APP_BROK_HELPERS_VERIFIER;
-        const BROK_HELPERS_URL = process.env.REACT_APP_BROK_HELPERS_URL;
+
         if ("request" in signer) {
             const request: SignatureRequest = {
                 message: "Bekreft at du er styreleder",
@@ -196,19 +204,14 @@ export const CapTableCreatePage: React.FC<Props> = ({ ...props }) => {
                         },
                     ]);
                     console.log("test", normalizePresentation(jwt));
-                    // TODO - Make this strcutured and pretty
-                    // const res = axios.post<string>(`${true ? "http://localhost:3004" : BROK_HELPERS_URL}/brreg/captable/approve`, {
-                    //     jwt: jwt,
-                    //     capTableAddress: deployedContract,
-                    //     test: true,
-                    // });
-                    // console.log("RESPONSE brreg/captable/approve: ", res);
+                    const res = captableApprove(jwt, deployedContract!, true);
+                    console.log("RESPONSE brreg/captable/approve: ", res);
                 },
             };
-            // signatureRequestHandler.add([request]);
-            // const results = await signatureRequestHandler.results();
-
-            // console.log("CaptableCreatePage did_requestVerifiableCredential request result", results);
+            // TODO GJør om flyt etter Brokhelpers rewrite. Nå throwes det error om bruker rejecter
+            signatureRequestHandler.add([request]);
+            const results = await signatureRequestHandler.results();
+            console.log("CaptableCreatePage did_requestVerifiableCredential request result", results);
         }
         setDeploying(false);
         history.push("/");

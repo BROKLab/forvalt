@@ -15,12 +15,12 @@ export type Unclaimed = {
     name: string;
 };
 
-export function captableApprove(jwt: string, capTableAddress: string) {
+export function captableApprove(jwt: string, capTableAddress: string, test: boolean = false) {
     const url = !process.env.REACT_APP_USE_LOCAL_ENVIROMENT ? "http://localhost:3004" : BROK_HELPERS_URL;
     return axios.post<string>(`${url}/brreg/captable/approve`, {
         jwt: jwt,
         capTableAddress,
-        test: process.env.REACT_APP_USE_TEST_DATA ? true : false,
+        test: test,
     });
 }
 

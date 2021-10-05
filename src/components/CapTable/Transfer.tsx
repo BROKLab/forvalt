@@ -5,6 +5,7 @@ import { Box, Text } from "grommet";
 import React, { useContext } from "react";
 import { unclaimedCreate } from "../../domain/BrokHelpers";
 import { CapTableRegistryContext, SymfoniContext } from "../../hardhat/ForvaltContext";
+import { SignatureRequest } from "../../utils/SignerRequestHandler";
 import { PrivateUserData, SelectPrivateUser } from "../SelectPrivateUser";
 
 interface Props {
@@ -14,7 +15,7 @@ interface Props {
 
 export const Transfer: React.FC<Props> = ({ ...props }) => {
     const registry = useContext(CapTableRegistryContext);
-    const { init, signer } = useContext(SymfoniContext);
+    const { init, signer, signatureRequestHandler } = useContext(SymfoniContext);
 
     const resolvePrivateAddress = async (privateUserData: PrivateUserData) => {
         if (!signer || !("request" in signer)) throw Error("Cant resolve private address with request in signer");
@@ -28,22 +29,37 @@ export const Transfer: React.FC<Props> = ({ ...props }) => {
             console.error("Could not resolve orgnr");
             throw error;
         }
-        const vpJWT = await signer.request("did_createVerifiableCredential", [
-            {
-                verifier: BROK_HELPERS_VERIFIER,
-                payload: {
-                    name: privateUserData.name,
-                    streetAddress: privateUserData.streetAddress,
-                    postalcode: privateUserData.postalcode,
-                    email: privateUserData.email,
-                    identifier: privateUserData.identifier,
-                    orgnr: orgnr,
-                    amount: privateUserData.amount,
-                    partition: privateUserData.partition,
-                },
-            },
-        ]);
-        const res = await unclaimedCreate(vpJWT).catch((error: AxiosError<{ message: string; code: number }>) => {
+
+        const request: SignatureRequest = {
+            message: "Godkjenn private aksjeoverførelse via Brønnøysundregistrene",
+            fn: async () =>
+                await signer.request("did_createVerifiableCredential", [
+                    {
+                        verifier: BROK_HELPERS_VERIFIER,
+                        payload: {
+                            name: privateUserData.name,
+                            streetAddress: privateUserData.streetAddress,
+                            postalcode: privateUserData.postalcode,
+                            email: privateUserData.email,
+                            identifier: privateUserData.identifier,
+                            orgnr: orgnr,
+                            amount: privateUserData.amount,
+                            partition: privateUserData.partition,
+                        },
+                    },
+                ]),
+        };
+
+        signatureRequestHandler.add([request]);
+        let result;
+        try {
+            const results = (await signatureRequestHandler.results()) as string[];
+            result = results[0];
+        } catch (e: any) {
+            return;
+        }
+
+        const res = await unclaimedCreate(result).catch((error: AxiosError<{ message: string; code: number }>) => {
             if (error.response && error.response.data.message) {
                 throw Error(error.response.data.message);
             }
@@ -59,11 +75,25 @@ export const Transfer: React.FC<Props> = ({ ...props }) => {
 
         const address = ethers.utils.isAddress(privateUserData.address) ? privateUserData.address : await resolvePrivateAddress(privateUserData);
 
+        if (!address) {
+            if (props.done) {
+                return props.done();
+            }
+            return;
+        }
         const amountEther = ethers.utils.parseEther(privateUserData.amount.toString());
         if (amountEther === ethers.constants.Zero) return alert("Kan ikke overføre 0 beløp");
-        const tx = await props.capTable.transferByPartition(privateUserData.partition, address, amountEther, "0x11");
-        await tx.wait();
 
+        const request: SignatureRequest = {
+            message: `Overfør aksjer til ${privateUserData.name}`,
+            fn: async () => {
+                const tx = await props.capTable.transferByPartition(privateUserData.partition, address, amountEther, "0x11");
+                await tx.wait();
+            },
+        };
+
+        signatureRequestHandler.add([request]);
+        await signatureRequestHandler.results();
         if (props.done) {
             props.done();
         }
