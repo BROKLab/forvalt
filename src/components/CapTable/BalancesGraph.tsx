@@ -1,16 +1,11 @@
 import { ERC1400 } from "@brok/captable-contracts";
 import { ethers } from "ethers";
 import { useQuery } from "graphql-hooks";
-<<<<<<< HEAD
-import { Box, Button, DataTable, Text } from "grommet";
 import { Edit } from "grommet-icons";
-import React, { useContext, useState } from "react";
 import { SymfoniContext } from "../../hardhat/ForvaltContext";
-=======
-import { Box, DataTable, Text } from "grommet";
-import React, { useEffect, useState } from "react";
+import { Box, Button, DataTable, Text } from "grommet";
+import React, { useContext, useEffect, useState } from "react";
 import { Export } from "../Export";
->>>>>>> 1d61ddf (Naming of file and send captable to component to get name date)
 import { FormatAddress } from "../ui/FormatAddress";
 import { Loading } from "../ui/Loading";
 import { Modal } from "../ui/Modal";
@@ -33,9 +28,7 @@ export const BalancesGraph: React.FC<Props> = ({ capTable, ...props }) => {
         },
       }
     );
-<<<<<<< HEAD
   const { address } = useContext(SymfoniContext);
-=======
 
   const [name, setName] = useState<string>("");
 
@@ -53,7 +46,6 @@ export const BalancesGraph: React.FC<Props> = ({ capTable, ...props }) => {
     };
   }, []);
 
->>>>>>> 1d61ddf (Naming of file and send captable to component to get name date)
   if (loading) {
     return <Loading>Laster Balanser</Loading>;
   }
@@ -63,8 +55,6 @@ export const BalancesGraph: React.FC<Props> = ({ capTable, ...props }) => {
 
   return (
     <Box gap="small">
-<<<<<<< HEAD
-=======
       {/* <Box direction="row" gap="small">
                 <Box gap="small">
                     <Text>Partisjon</Text>
@@ -77,7 +67,6 @@ export const BalancesGraph: React.FC<Props> = ({ capTable, ...props }) => {
                 </Box>
             </Box> */}
       {data && <Export capTableName={name} data={data} />}
->>>>>>> 1d61ddf (Naming of file and send captable to component to get name date)
       <DataTable
         data={data ? data.balances : []}
         primaryKey={false}
