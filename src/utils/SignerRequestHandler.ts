@@ -1,5 +1,9 @@
 import { EventEmitter } from "events";
-
+export interface ErrorResponse {
+    code: number;
+    message: string;
+    data?: string;
+}
 export type SignatureRequest = {
     fn: () => Promise<any>;
     message: string;
@@ -30,19 +34,31 @@ export class SignatureRequestHandler {
         this.events.emit("done", result);
     }
 
+    public reject(reason?: ErrorResponse) {
+        console.log("SignatureRequestHandler reject()", reason);
+        this.events.emit("rejected", reason);
+    }
+
     handleDone(resolve: () => void) {
         resolve();
-        this.events.removeListener("done", this.handleDone);
+        this.clear();
+    }
+
+    handleRejected(reject: () => void) {
+        reject();
         this.clear();
     }
 
     async results() {
         return new Promise((resolve, reject) => {
             this.events.on("done", (event) => this.handleDone(() => resolve(event)));
+            this.events.on("rejected", (event) => this.handleRejected(() => reject(event)));
         });
     }
 
     public clear() {
         this.events.emit("onClear", []);
+        this.events.removeListener("done", this.handleDone);
+        this.events.removeListener("rejected", this.handleDone);
     }
 }

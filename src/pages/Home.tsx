@@ -1,12 +1,12 @@
-import React, { useContext } from "react";
 import { Button, Heading, Text } from "grommet";
-import { SignatureRequest } from "../utils/SignerRequestHandler";
+import React, { useContext } from "react";
 import { SymfoniContext } from "../hardhat/ForvaltContext";
+import { ErrorResponse, SignatureRequest } from "../utils/SignerRequestHandler";
 
 interface Props {}
 
 export const Home: React.FC<Props> = () => {
-    /*     const { init, signer, signatureRequestHandler } = useContext(SymfoniContext);
+    const { init, signer, signatureRequestHandler } = useContext(SymfoniContext);
 
     const test = async () => {
         console.log(1);
@@ -32,17 +32,22 @@ export const Home: React.FC<Props> = () => {
 
         signatureRequestHandler.add([request]);
         console.log(4);
-        const results = await signatureRequestHandler.results();
-        console.log(5);
-    }; */
+
+        try {
+            const results = await signatureRequestHandler.results();
+            console.log(results);
+        } catch (e: any) {
+            console.log("Home catch error:", (e as ErrorResponse).message);
+        }
+    };
 
     return (
         <>
-            {/* <Button onClick={() => test()}>TEST</Button> */}
+            <Button onClick={() => test()}>TEST</Button>
             <Heading level={3}>
                 Velkommen til{" "}
                 <Text size="xxlarge" weight="bold" style={{ fontStyle: "italic" }}>
-                    Brønnøysundregistrene Aksjeeierbok
+                    Brønnøysundregistrene Aksjeeierbokk
                 </Text>
             </Heading>
         </>

@@ -91,7 +91,6 @@ export const CapTableCreatePage: React.FC<Props> = ({ ...props }) => {
                     },
                 ]),
         };
-        console.log("request", request);
 
         if (!signatureRequestHandler) throw Error("TODO: Create error");
         signatureRequestHandler.add([request]);
