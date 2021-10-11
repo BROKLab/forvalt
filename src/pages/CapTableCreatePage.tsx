@@ -1,4 +1,4 @@
-import { AxiosError } from "axios";
+import axios, { AxiosError } from "axios";
 import { normalizePresentation } from "did-jwt-vc";
 import { ethers } from "ethers";
 import { Accordion, AccordionPanel, Box, Button, Grid, Heading, Paragraph, Text } from "grommet";
@@ -110,7 +110,6 @@ export const CapTableCreatePage: React.FC<Props> = ({ ...props }) => {
             }
             throw Error(error.message);
         });
-        console.log("unclaimed create res", res);
         if (!res.data.blockchainAccount) {
             throw Error("/brreg/unclaimed/create should return a blockchainAccount ");
         }
@@ -147,7 +146,6 @@ export const CapTableCreatePage: React.FC<Props> = ({ ...props }) => {
                     partition: field.partition,
                     orgnr: orgData.orgnr.toString(),
                 });
-
                 return { ...field, address: address };
             }
             throw Error("Identifier was not Norwegian ID number or an Ethereum address");
@@ -238,9 +236,7 @@ export const CapTableCreatePage: React.FC<Props> = ({ ...props }) => {
                     <Box pad="medium">
                         {orgData ? (
                             <SelectPrivateUser
-                                onSubmitButtonProps={{
-                                    label: "Lagre og gå videre",
-                                }}
+                                onSubmitButtonProps={{ label: "Lagre og gå videre" }}
                                 multiple
                                 selectPartiton={useDefaultPartitions ? true : false}
                                 createPartition={useDefaultPartitions ? false : true}
