@@ -1,22 +1,21 @@
-import React, { useContext, useState } from 'react';
-import { Box, Button } from 'grommet';
-import { ERC1400 } from '@brok/captable-contracts';
-import { Modal } from '../ui/Modal';
-import { Transfer } from './Transfer';
-import { SymfoniContext } from '../../hardhat/ForvaltContext';
+import React, { useContext, useState } from "react";
+import { Box, Button } from "grommet";
+import { ERC1400 } from "@brok/captable-contracts";
+import { Modal } from "../ui/Modal";
+import { Transfer } from "./Transfer";
+import { SymfoniContext } from "../../hardhat/ForvaltContext";
 // import { BatchIssue } from './BatchIssue';
-import { Extensions } from './Extensions';
-import { Issue } from './Issue';
+import { Issue } from "./Issue";
 
 interface Props {
-    capTable: ERC1400
+    capTable: ERC1400;
 }
 
 export const Actions: React.FC<Props> = ({ ...props }) => {
-    const { init } = useContext(SymfoniContext)
+    const { init } = useContext(SymfoniContext);
     const [showTransfers, setShowTransfers] = useState(false);
     const [showIssue, setShowIssue] = useState(false);
-    const [showExtensions, setShowExtensions] = useState(false);
+    // const [showExtensions, setShowExtensions] = useState(false);
 
     return (
         <Box gap="small" direction="row">
@@ -25,17 +24,21 @@ export const Actions: React.FC<Props> = ({ ...props }) => {
             {/* <Button size="small" label={"Utvidelser"} onClick={() => setShowExtensions(!showExtensions)}></Button> */}
             <Box>
                 <Modal show={showTransfers} setShow={setShowTransfers}>
-                    <Transfer capTable={props.capTable} done={() => {
-                        setShowTransfers(false)
-                        init()
-                    }}></Transfer>
+                    <Transfer
+                        capTable={props.capTable}
+                        done={() => {
+                            setShowTransfers(false);
+                            init();
+                        }}></Transfer>
                 </Modal>
                 <Modal show={showIssue} setShow={setShowIssue}>
                     {/* TODO - Readd this */}
-                    <Issue capTable={props.capTable} done={() => {
-                        setShowIssue(false)
-                        init()
-                    }}></Issue>
+                    <Issue
+                        capTable={props.capTable}
+                        done={() => {
+                            setShowIssue(false);
+                            init();
+                        }}></Issue>
                 </Modal>
                 {/* <Modal show={showExtensions} setShow={setShowExtensions}>
                     <Extensions capTable={props.capTable} done={() => {
@@ -45,6 +48,5 @@ export const Actions: React.FC<Props> = ({ ...props }) => {
                 </Modal> */}
             </Box>
         </Box>
-
-    )
-}
+    );
+};

@@ -1,38 +1,34 @@
-import { Box, Heading, Text } from 'grommet';
-import React, { useContext } from 'react';
-import { Route, Switch, useRouteMatch } from 'react-router-dom';
-import { List } from '../components/Registry/List';
-import { Loading } from '../components/ui/Loading';
-import { CapTableRegistryContext } from '../hardhat/ForvaltContext';
+import { Box, Heading, Text } from "grommet";
+import React, { useContext } from "react";
+import { Route, Switch, useRouteMatch } from "react-router-dom";
+import { List } from "../components/Registry/List";
+import { Loading } from "../components/ui/Loading";
+import { CapTableRegistryContext } from "../hardhat/ForvaltContext";
 
-interface Props {
-}
+interface Props {}
 
-interface RouteParams {
-
-}
+interface RouteParams {}
 export const CapTableRegistryPage: React.FC<Props> = ({ ...props }) => {
-    const { path } = useRouteMatch()
-    const capTableRegistry = useContext(CapTableRegistryContext)
+    const { path } = useRouteMatch();
+    const capTableRegistry = useContext(CapTableRegistryContext);
 
     return (
         <Box>
             <Heading>Aksjeeierbokregisteret</Heading>
-            {!capTableRegistry &&
+            {!capTableRegistry && (
                 <Box align="center">
                     <Loading size={50}>
                         <Text>Laster...</Text>
                     </Loading>
                 </Box>
-            }
-            {capTableRegistry.instance &&
+            )}
+            {capTableRegistry.instance && (
                 <Switch>
-                    <Route path={`${path}/list`} exact={true} >
+                    <Route path={`${path}/list`} exact={true}>
                         <List />
                     </Route>
                 </Switch>
-            }
-
-        </Box >
-    )
-}
+            )}
+        </Box>
+    );
+};
