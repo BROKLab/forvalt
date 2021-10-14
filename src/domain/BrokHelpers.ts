@@ -16,6 +16,7 @@ export type Unclaimed = {
 };
 
 export function captableApprove(jwt: string, capTableAddress: string, test: boolean = false) {
+    console.log("captableApprove useLocalEnv", process.env.REACT_APP_USE_LOCAL_ENVIROMENT);
     const url = !process.env.REACT_APP_USE_LOCAL_ENVIROMENT ? "http://localhost:3004" : BROK_HELPERS_URL;
     return axios.post<string>(`${url}/brreg/captable/approve`, {
         jwt: jwt,
@@ -25,16 +26,16 @@ export function captableApprove(jwt: string, capTableAddress: string, test: bool
 }
 
 export function digitalEntityUpdate(jwt: string) {
-    return axios.post<{ success: boolean }>(
-        `${process.env.REACT_APP_USE_LOCAL_ENVIROMENT ? "http://localhost:3004" : BROK_HELPERS_URL}/brreg/digital-entity/update`,
-        {
-            jwt,
-        }
-    );
+    console.log("digEntuU useLocalEnv", process.env.REACT_APP_USE_LOCAL_ENVIROMENT);
+    const url = !process.env.REACT_APP_USE_LOCAL_ENVIROMENT ? "http://localhost:3004" : BROK_HELPERS_URL;
+    return axios.post<{ success: boolean }>(`${url}/brreg/digital-entity/update`, {
+        jwt,
+    });
 }
 
 export function unclaimedCreate(jwt: string) {
     const url = !process.env.REACT_APP_USE_LOCAL_ENVIROMENT ? "http://localhost:3004" : BROK_HELPERS_URL;
+    console.log("unclaimedCreate useLocalEnv", url);
     return axios.post<{ blockchainAccount: string }>(`${url}/brreg/unclaimed/create`, {
         jwt,
     });
@@ -66,7 +67,7 @@ export function claimUnclaimed(jwt: string, options: Options = {}) {
 }
 
 export function entityGet(jwt: string) {
-    return axios.post<boolean>(`${process.env.REACT_APP_USE_LOCAL_ENVIROMENT ? "http://localhost:3004" : BROK_HELPERS_URL}/brreg/entity/get`, {
+    return axios.post<boolean>(`${!process.env.REACT_APP_USE_LOCAL_ENVIROMENT ? "http://localhost:3004" : BROK_HELPERS_URL}/brreg/entity/get`, {
         jwt: jwt,
     });
 }
