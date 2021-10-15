@@ -25,12 +25,10 @@ export function captableApprove(jwt: string, capTableAddress: string, test: bool
 }
 
 export function digitalEntityUpdate(jwt: string) {
-    return axios.post<{ success: boolean }>(
-        `${process.env.REACT_APP_USE_LOCAL_ENVIROMENT ? "http://localhost:3004" : BROK_HELPERS_URL}/brreg/digital-entity/update`,
-        {
-            jwt,
-        }
-    );
+    const url = !process.env.REACT_APP_USE_LOCAL_ENVIROMENT ? "http://localhost:3004" : BROK_HELPERS_URL;
+    return axios.post<{ success: boolean }>(`${url}/brreg/digital-entity/update`, {
+        jwt,
+    });
 }
 
 export function unclaimedCreate(jwt: string) {
@@ -66,7 +64,7 @@ export function claimUnclaimed(jwt: string, options: Options = {}) {
 }
 
 export function entityGet(jwt: string) {
-    return axios.post<boolean>(`${process.env.REACT_APP_USE_LOCAL_ENVIROMENT ? "http://localhost:3004" : BROK_HELPERS_URL}/brreg/entity/get`, {
+    return axios.post<boolean>(`${!process.env.REACT_APP_USE_LOCAL_ENVIROMENT ? "http://localhost:3004" : BROK_HELPERS_URL}/brreg/entity/get`, {
         jwt: jwt,
     });
 }
