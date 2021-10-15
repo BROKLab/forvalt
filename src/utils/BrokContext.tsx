@@ -55,14 +55,9 @@ export interface BrokContext {
 
 export const BrokContext = React.createContext<BrokContext>(undefined!);
 
-const checkTokenValidity = (token: string): boolean => {
-    return true;
-};
-
-export const BROK: React.FC<Props> = ({ ...props }) => {
+export const Brok: React.FC<Props> = ({ ...props }) => {
     const [token, setToken] = useLocalStorage<string>("permissionBrokToken", "");
-    const { init, signer, address, signatureRequestHandler } = useContext(SymfoniContext);
-    const hasValidToken = checkTokenValidity(token);
+    const { init, signer, signatureRequestHandler } = useContext(SymfoniContext);
 
     const requestPermissionTokenFromSigner = async () => {
         // TODO fix real valid check of token
@@ -70,7 +65,10 @@ export const BROK: React.FC<Props> = ({ ...props }) => {
             return token;
         }
 
+        console.log("in requestPermissionToken...", "before check signer");
+
         if (!signer) {
+            console.log("doesnt have signer");
             init({ forceSigner: true });
         }
 
@@ -86,7 +84,7 @@ export const BROK: React.FC<Props> = ({ ...props }) => {
                         verifier: BROK_HELPERS_VERIFIER,
                         payload: {
                             domain: "localhost:3000",
-                            cachable: true,
+                            cacheable: true,
                             paths: ["/entities/*", "/captable/*", "/unclaimed/*"],
                         },
                     },
@@ -99,7 +97,7 @@ export const BROK: React.FC<Props> = ({ ...props }) => {
         try {
             const results = (await signatureRequestHandler.results()) as string[];
             userTokenJwt = results[0];
-            console.log(userTokenJwt);
+            console.log("userTokenJwt from Symfoni ID", userTokenJwt);
             setToken(userTokenJwt);
         } catch (e: any) {
             console.log("[ERROR] requestPermissionTokenFromSigner", e);
@@ -111,8 +109,9 @@ export const BROK: React.FC<Props> = ({ ...props }) => {
     // returns captableAddress or need to catch some error
     // jwt requiredCredential: ['orgnr', 'unclaimed', 'acceptedBoardDirectorTOADate', 'acceptedBoardDirectorTOAVersion'],
     const createCaptable = async (jwt: string) => {
-        const url = !process.env.REACT_APP_USE_LOCAL_ENVIROMENT ? "http://localhost:3004" : BROK_HELPERS_URL;
-        return axios.post<{ captableAddress: string }>(`${url}/brreg/captable`, {
+        console.log("in createCaptable");
+        const url = !!process.env.REACT_APP_USE_LOCAL_ENVIROMENT ? "http://localhost:3004" : BROK_HELPERS_URL;
+        return axios.post<{ captableAddress: string }>(`${url}/captable`, {
             jwt,
         });
     };
@@ -120,7 +119,7 @@ export const BROK: React.FC<Props> = ({ ...props }) => {
     const getCaptableShareholders = async (captableAddress: string) => {
         const bearerToken = await requestPermissionTokenFromSigner();
         const url = !process.env.REACT_APP_USE_LOCAL_ENVIROMENT ? "http://localhost:3004" : BROK_HELPERS_URL;
-        return await axios.get<Shareholder[]>(`${url}/brreg/captable/${captableAddress}/shareholder/list`, {
+        return await axios.get<Shareholder[]>(`${url}/captable/${captableAddress}/shareholder/list`, {
             headers: {
                 Authorization: `Bearer ${bearerToken}`,
             },
@@ -130,7 +129,7 @@ export const BROK: React.FC<Props> = ({ ...props }) => {
     const getCaptableShareholder = async (captableAddress: string, shareholderId: string) => {
         const bearerToken = await requestPermissionTokenFromSigner();
         const url = !process.env.REACT_APP_USE_LOCAL_ENVIROMENT ? "http://localhost:3004" : BROK_HELPERS_URL;
-        return await axios.get<Shareholder>(`${url}/brreg/captable/${captableAddress}/shareholder/${shareholderId}`, {
+        return await axios.get<Shareholder>(`${url}/captable/${captableAddress}/shareholder/${shareholderId}`, {
             headers: {
                 Authorization: `Bearer ${bearerToken}`,
             },
@@ -143,7 +142,7 @@ export const BROK: React.FC<Props> = ({ ...props }) => {
     const listUnclaimed = async () => {
         const bearerToken = await requestPermissionTokenFromSigner();
         const url = !process.env.REACT_APP_USE_LOCAL_ENVIROMENT ? "http://localhost:3004" : BROK_HELPERS_URL;
-        return await axios.get<Unclaimed[]>(`${url}/brreg/unclaimed/list`, {
+        return await axios.get<Unclaimed[]>(`${url}/unclaimed/list`, {
             headers: {
                 Authorization: `Bearer ${bearerToken}`,
             },
@@ -154,7 +153,7 @@ export const BROK: React.FC<Props> = ({ ...props }) => {
     // jwt requires = ["unclaimed"]
     const createUnclaimed = async (jwt: string) => {
         const url = !process.env.REACT_APP_USE_LOCAL_ENVIROMENT ? "http://localhost:3004" : BROK_HELPERS_URL;
-        return await axios.post<{ transfers: { amount: string; partition: string; address: string }[] }>(`${url}/brreg/unclaimed/`, {
+        return await axios.post<{ transfers: { amount: string; partition: string; address: string }[] }>(`${url}/unclaimed/`, {
             jwt: jwt,
             operatorTransfer: true,
         });
@@ -164,7 +163,7 @@ export const BROK: React.FC<Props> = ({ ...props }) => {
     // jwt requires = ["unclaimedAddress"]
     const claim = async (jwt: string) => {
         const url = !process.env.REACT_APP_USE_LOCAL_ENVIROMENT ? "http://localhost:3004" : BROK_HELPERS_URL;
-        return await axios.post<{ claimed: boolean }>(`${url}/brreg/claim`, {
+        return await axios.post<{ claimed: boolean }>(`${url}/claim`, {
             jwt: jwt,
             operatorTransfer: true,
         });
