@@ -44,6 +44,15 @@ export interface Shareholder {
     identifier?: string;
 }
 
+export interface OrgData {
+    aksjer: number;
+    kapital: number;
+    navn: string;
+    orgnr: number;
+    vedtektsdato: string;
+}
+export type CapTableLegacyRespons = OrgData[];
+
 export interface BrokContext {
     createCaptable: (jwt: string) => Promise<AxiosResponse<{ captableAddress: string }>>;
     getCaptableShareholders: (captableAddress: string) => Promise<AxiosResponse<Shareholder[]>>;
@@ -51,7 +60,9 @@ export interface BrokContext {
     listUnclaimed: () => Promise<AxiosResponse<Unclaimed[]>>;
     createUnclaimed: (jwt: string) => Promise<AxiosResponse<{ transfers: { amount: string; partition: string; address: string }[] }>>;
     claim: (jwt: string) => Promise<AxiosResponse<{ claimed: boolean }>>;
+    getCaptableLegacy: (search: string) => Promise<AxiosResponse<CapTableLegacyRespons>>
 }
+
 
 export const BrokContext = React.createContext<BrokContext>(undefined!);
 
@@ -116,6 +127,15 @@ export const Brok: React.FC<Props> = ({ ...props }) => {
         });
     };
 
+    const getCaptableLegacy = async (search: string) => {
+        const url = !process.env.REACT_APP_USE_LOCAL_ENVIROMENT ? "http://localhost:3004" : BROK_HELPERS_URL;
+        return await axios.get<CapTableLegacyRespons>(`${url}/captable/legacy`, {
+            params: {
+                query: search,
+            },
+        });
+    };
+
     const getCaptableShareholders = async (captableAddress: string) => {
         const bearerToken = await requestPermissionTokenFromSigner();
         const url = !process.env.REACT_APP_USE_LOCAL_ENVIROMENT ? "http://localhost:3004" : BROK_HELPERS_URL;
@@ -176,6 +196,7 @@ export const Brok: React.FC<Props> = ({ ...props }) => {
         listUnclaimed,
         createUnclaimed,
         claim,
+        getCaptableLegacy
     };
 
     return <BrokContext.Provider value={context}>{props.children}</BrokContext.Provider>;

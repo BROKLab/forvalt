@@ -17,8 +17,6 @@ enum STEP {
     CONFIRM = 2,
 }
 
-const TESTING = true;
-
 export const CapTableCreatePageV2: React.FC<Props> = ({ ...props }) => {
     const { createCaptable } = useContext(BrokContext);
     const { init, signer, signatureRequestHandler } = useContext(SymfoniContext);

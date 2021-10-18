@@ -5,6 +5,7 @@ import React, { useContext, useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { SpinnerDiamond } from "spinners-react/lib/esm/SpinnerDiamond";
 import { CapTableFactoryContext, SymfoniContext } from "../../hardhat/ForvaltContext";
+import { BrokContext } from "../../utils/BrokContext";
 import { formatCurrency } from "../../utils/numbers";
 import { removePassword } from "../../utils/passwordBlockAPI";
 
@@ -49,6 +50,7 @@ export const SelectOrg: React.FC<Props> = ({ ...props }) => {
     const [orgList, setOrgList] = useState<OrgData[]>(DEFAULT_ORG_DATA);
     const [isSearchingBrreg, setIsSearchingBrreg] = useState(false);
     const capTableFactory = useContext(CapTableFactoryContext);
+    const { getCaptableLegacy } = useContext(BrokContext);
     const orgWatch = watch("org");
     const [searchQuery, setSearchQuery] = useState("");
     const { init, signer } = useContext(SymfoniContext);
@@ -67,22 +69,20 @@ export const SelectOrg: React.FC<Props> = ({ ...props }) => {
                 if (!process.env.REACT_APP_BROK_HELPERS) {
                     throw Error("process.env.REACT_APP_BROK_HELPERS not set");
                 }
-                const capTableInfoAPI = process.env.REACT_APP_BROK_HELPERS + "/brreg/captable/info";
 
-                const res = await axios
-                    .get<OrgData[]>(capTableInfoAPI, {
-                        params: {
-                            query: _searchQuery,
-                        },
-                    })
+                const res = await getCaptableLegacy(_searchQuery)
                     .catch((err: AxiosError<ApiRespons>) => {
                         if (err.response?.status === 401) {
                             removePassword();
                         }
                         throw Error("Søk etter navn ga ingen resultater.");
                     });
-                console.debug(res);
-                setOrgList(res.data);
+                console.log(res.data)
+                if (res.data) {
+                    setOrgList(res.data);
+                } else {
+                    throw Error(`getCaptableLegacy gave unvalid result`)
+                }
 
                 setIsSearchingBrreg(false);
             } catch (error) {
