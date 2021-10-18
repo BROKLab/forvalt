@@ -124,11 +124,14 @@ export const Brok: React.FC<Props> = ({ ...props }) => {
         const url = !!process.env.REACT_APP_USE_LOCAL_ENVIROMENT ? "http://localhost:3004" : BROK_HELPERS_URL;
         return axios.post<{ captableAddress: string }>(`${url}/captable`, {
             jwt,
+            skipAmountControl: process.env.REACT_APP_IS_TEST ? true : false,
+            skipBoardDirector: process.env.REACT_APP_IS_TEST ? true : false,
+            skipDirectTransferIdentityCheck: process.env.REACT_APP_IS_TEST ? true : false,
         });
     };
 
     const getCaptableLegacy = async (search: string) => {
-        const url = !process.env.REACT_APP_USE_LOCAL_ENVIROMENT ? "http://localhost:3004" : BROK_HELPERS_URL;
+        const url = !!process.env.REACT_APP_USE_LOCAL_ENVIROMENT ? "http://localhost:3004" : BROK_HELPERS_URL;
         return await axios.get<CapTableLegacyRespons>(`${url}/captable/legacy`, {
             params: {
                 query: search,
@@ -138,7 +141,7 @@ export const Brok: React.FC<Props> = ({ ...props }) => {
 
     const getCaptableShareholders = async (captableAddress: string) => {
         const bearerToken = await requestPermissionTokenFromSigner();
-        const url = !process.env.REACT_APP_USE_LOCAL_ENVIROMENT ? "http://localhost:3004" : BROK_HELPERS_URL;
+        const url = !!process.env.REACT_APP_USE_LOCAL_ENVIROMENT ? "http://localhost:3004" : BROK_HELPERS_URL;
         return await axios.get<Shareholder[]>(`${url}/captable/${captableAddress}/shareholder/list`, {
             headers: {
                 Authorization: `Bearer ${bearerToken}`,
@@ -148,7 +151,7 @@ export const Brok: React.FC<Props> = ({ ...props }) => {
 
     const getCaptableShareholder = async (captableAddress: string, shareholderId: string) => {
         const bearerToken = await requestPermissionTokenFromSigner();
-        const url = !process.env.REACT_APP_USE_LOCAL_ENVIROMENT ? "http://localhost:3004" : BROK_HELPERS_URL;
+        const url = !!process.env.REACT_APP_USE_LOCAL_ENVIROMENT ? "http://localhost:3004" : BROK_HELPERS_URL;
         return await axios.get<Shareholder>(`${url}/captable/${captableAddress}/shareholder/${shareholderId}`, {
             headers: {
                 Authorization: `Bearer ${bearerToken}`,
@@ -161,7 +164,7 @@ export const Brok: React.FC<Props> = ({ ...props }) => {
     // requires in jwt ['cacheable', 'domain', 'paths']; and user need to have entity in brok helpers
     const listUnclaimed = async () => {
         const bearerToken = await requestPermissionTokenFromSigner();
-        const url = !process.env.REACT_APP_USE_LOCAL_ENVIROMENT ? "http://localhost:3004" : BROK_HELPERS_URL;
+        const url = !!process.env.REACT_APP_USE_LOCAL_ENVIROMENT ? "http://localhost:3004" : BROK_HELPERS_URL;
         return await axios.get<Unclaimed[]>(`${url}/unclaimed/list`, {
             headers: {
                 Authorization: `Bearer ${bearerToken}`,
@@ -172,7 +175,7 @@ export const Brok: React.FC<Props> = ({ ...props }) => {
     // TODO operatorTransfer needs to be discussed. If true, brreg handles transfer for us
     // jwt requires = ["unclaimed"]
     const createUnclaimed = async (jwt: string) => {
-        const url = !process.env.REACT_APP_USE_LOCAL_ENVIROMENT ? "http://localhost:3004" : BROK_HELPERS_URL;
+        const url = !!process.env.REACT_APP_USE_LOCAL_ENVIROMENT ? "http://localhost:3004" : BROK_HELPERS_URL;
         return await axios.post<{ transfers: { amount: string; partition: string; address: string }[] }>(`${url}/unclaimed/`, {
             jwt: jwt,
             operatorTransfer: true,
@@ -182,7 +185,7 @@ export const Brok: React.FC<Props> = ({ ...props }) => {
     // TODO operatorTransfer needs to be discussed. If true, brreg handles transfer for us
     // jwt requires = ["unclaimedAddress"]
     const claim = async (jwt: string) => {
-        const url = !process.env.REACT_APP_USE_LOCAL_ENVIROMENT ? "http://localhost:3004" : BROK_HELPERS_URL;
+        const url = !!process.env.REACT_APP_USE_LOCAL_ENVIROMENT ? "http://localhost:3004" : BROK_HELPERS_URL;
         return await axios.post<{ claimed: boolean }>(`${url}/claim`, {
             jwt: jwt,
             operatorTransfer: true,
