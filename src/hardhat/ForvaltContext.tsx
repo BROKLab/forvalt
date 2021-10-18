@@ -152,7 +152,7 @@ export const Symfoni: React.FC<SymfoniProps> = ({ showLoading = true, autoInit =
         }
         if (selectedProvider === "walletConnectV2") {
             return new ethers.providers.JsonRpcProvider({
-                url: "https://arb-rinkeby.g.alchemy.com/v2/Ms5OhNmdnd12VjXM9Yy5dwNPbNte_25M",
+                url: "https://arb-rinkeby.g.alchemy.com/v2/_oMAKsLfMlE5OrHhjUPdBiV-8bKnpGXW",
             });
         }
         if (selectedProvider === "hardhat") {
@@ -346,39 +346,19 @@ export const Symfoni: React.FC<SymfoniProps> = ({ showLoading = true, autoInit =
                                                 {walletConnectURI ? (
                                                     <Box gap="small">
                                                         {/* TODO : Fix this, not safe */}
-                                                        <Text truncate>For å se denne nettsiden må du logge inn med en Lommebok</Text>
+                                                        <Text textAlign="center" truncate>Koble til med en SymfoniID</Text>
                                                         {/* TODO VERY NOT SAFE, just for testing */}
-                                                        <Grid columns={["1/2", "1/2"]}>
-                                                            <Box align="center">
-                                                                <Text size="xsmall">WC Deeplink</Text>
-                                                                <QRCode size={200} value={`${walletConnectURI}`}></QRCode>
-                                                            </Box>
-                                                            <Box align="center">
-                                                                <Text size="xsmall">Symfoni Browser Wallet URL</Text>
-                                                                {/* <QRCode size={200} value={`${BROWSER_WALLET_URL + "?wc-uri=" + encodeURIComponent(walletConnectURI) + "&callback-url=" + encodeURIComponent(document.URL)}`}></QRCode> */}
-                                                            </Box>
-                                                        </Grid>
-                                                        <Grid columns={["2/3", "1/3"]}>
-                                                            <TextInput size="small" value={walletConnectURI}></TextInput>
+                                                        <Box align="center">
+                                                            <QRCode size={200} value={`${walletConnectURI}`}></QRCode>
+                                                        </Box>
+                                                        <Box >
                                                             <Button
                                                                 size="small"
                                                                 icon={<Copy></Copy>}
                                                                 label="Copy"
                                                                 onClick={() => copy(walletConnectURI)}></Button>
-                                                        </Grid>
-                                                        <Grid columns={"1/2"} gap="small">
-                                                            <Button
-                                                                size="medium"
-                                                                label="Symfoni Browser Test Wallet"
-                                                                target={"_blank"}
-                                                                href={
-                                                                    BROWSER_WALLET_URL +
-                                                                    "?wc-uri=" +
-                                                                    encodeURIComponent(walletConnectURI) +
-                                                                    "&callback-url=" +
-                                                                    encodeURIComponent(document.URL)
-                                                                }></Button>
-                                                        </Grid>
+                                                        </Box>
+
                                                     </Box>
                                                 ) : (
                                                     <Text>No Wallet Connect URI found</Text>
