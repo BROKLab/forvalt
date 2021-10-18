@@ -70,14 +70,15 @@ export const CapTableCreatePageV2: React.FC<Props> = ({ ...props }) => {
         const request: SignatureRequest = {
             message: "Godkjenn migreringen av aksjeeierboka",
             fn: async () =>
-                await signer.request("did_createVerifiableCredential", [
+                await signer.request("did_requestVerifiablePresentation", [
                     {
                         verifier: BROK_HELPERS_VERIFIER,
-                        payload: {
-                            orgnr: orgData.orgnr,
-                            unclaimed: batchIssueData,
-                            acceptedBoardDirectorTOADate: "todo",
-                            acceptedBoardDirectorTOAVersion: "0.0.1",
+                        type: "CREATE_CAP_TABLE_VP_REQUEST",
+                        params: {
+                            capTableForm: {
+                                organizationNumber: orgData.orgnr.toString(),
+                                shareholders: batchIssueData,
+                            }
                         },
                     },
                 ]),

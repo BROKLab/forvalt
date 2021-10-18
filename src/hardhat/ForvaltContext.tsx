@@ -182,6 +182,7 @@ export const Symfoni: React.FC<SymfoniProps> = ({ showLoading = true, autoInit =
                             "did_createVerifiableCredential",
                             "did_requestVerifiableCredential",
                             "symfoni_privateTransferByPartition",
+                            "did_requestVerifiablePresentation"
                         ],
                         chainId: 421611,
                         walletConnectOpts: {
