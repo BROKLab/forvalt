@@ -178,11 +178,7 @@ export const Symfoni: React.FC<SymfoniProps> = ({ showLoading = true, autoInit =
                             "personal_sign",
                             "eth_signTypedData",
                             "eth_signTransaction",
-                            "oracle_data",
-                            "did_createVerifiableCredential",
-                            "did_requestVerifiableCredential",
-                            "symfoni_privateTransferByPartition",
-                            "did_requestVerifiablePresentation"
+                            "symfoniID_createCapTableVP"
                         ],
                         chainId: 421611,
                         walletConnectOpts: {
