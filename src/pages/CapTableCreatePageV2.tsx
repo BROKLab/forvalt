@@ -70,10 +70,9 @@ export const CapTableCreatePageV2: React.FC<Props> = ({ ...props }) => {
         const request: SignatureRequest = {
             message: "Godkjenn migreringen av aksjeeierboka",
             fn: async () =>
-                await signer.request("did_requestVerifiablePresentation", [
+                await signer.request("symfoniID_createCapTableVP", [
                     {
                         verifier: BROK_HELPERS_VERIFIER,
-                        type: "CREATE_CAP_TABLE_VP_REQUEST",
                         params: {
                             capTableForm: {
                                 organizationNumber: orgData.orgnr.toString(),
