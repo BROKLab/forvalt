@@ -28,7 +28,7 @@ import { SignatureRequestHandler } from "../utils/SignerRequestHandler";
 import { getAuthProvider } from "./contracts/AuthProvider";
 import { getCapTableFactory } from "./contracts/CapTableFactory";
 import { getCapTableRegistry } from "./contracts/CapTableRegistry";
-import { getERC1400 } from "./contracts/ERC1400";
+import { getCapTable } from "./contracts/ERC1400";
 import { getERC1400AuthValidator } from "./contracts/ERC1400AuthValidator";
 import { getERC1820Registry } from "./contracts/ERC1820Registry";
 
@@ -275,7 +275,7 @@ export const Symfoni: React.FC<SymfoniProps> = ({ showLoading = true, autoInit =
                     setProvider(_provider);
                     setSigner(_signer);
                     setAddress(_address ? _address : undefined);
-                    setERC1400(getERC1400(_provider, _chainId, _signer));
+                    setERC1400(getCapTable(_provider, _chainId, _signer));
                     setAuthProvider(getAuthProvider(_provider, _chainId, _signer));
                     setERC1820Registry(getERC1820Registry(_provider, _chainId, _signer));
                     setCapTableFactory(getCapTableFactory(_provider, _chainId, _signer));
