@@ -73,7 +73,6 @@ export const CapTableCreatePageV2: React.FC<Props> = ({ ...props }) => {
                 await signer.request("symfoniID_createCapTableVP", [
                     {
                         verifier: BROK_HELPERS_VERIFIER,
-                        type: "CREATE_CAP_TABLE_VP_REQUEST",
                         params: {
                             capTableForm: {
                                 organizationNumber: orgData.orgnr.toString(),
