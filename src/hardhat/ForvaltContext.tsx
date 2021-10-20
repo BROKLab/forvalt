@@ -174,14 +174,6 @@ export const Symfoni: React.FC<SymfoniProps> = ({ showLoading = true, autoInit =
                     }
                     const _signer = new WalletConnectSigner({
                         methods: [
-                            "eth_sendTransaction",
-                            "personal_sign",
-                            "eth_signTypedData",
-                            "eth_signTransaction",
-                            "oracle_data",
-                            "did_createVerifiableCredential",
-                            "did_requestVerifiableCredential",
-                            "symfoni_privateTransferByPartition",
                             "symfoniID_createCapTableVP",
                         ],
                         chainId: 421611,
