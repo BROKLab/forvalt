@@ -1,4 +1,4 @@
-import { ERC1400 } from "@brok/captable-contracts";
+import { CapTable } from "@brok/captable-contracts";
 import { ethers } from "ethers";
 import { useQuery } from "graphql-hooks";
 import { Edit } from "grommet-icons";
@@ -13,7 +13,7 @@ import { EntityUpdate } from "../User/EntityUpdate";
 import { CapTableTypes } from "./CapTable.types";
 
 interface Props {
-  capTable: ERC1400;
+  capTable: CapTable;
 }
 
 export const BalancesGraph: React.FC<Props> = ({ capTable, ...props }) => {

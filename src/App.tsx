@@ -5,15 +5,14 @@ import { BrowserRouter, Route, Switch } from "react-router-dom";
 import { Theme } from "./assets/Theme";
 import { Navigation } from "./components/ui/Navigation";
 import { Symfoni } from "./hardhat/ForvaltContext";
-import { ProfilePage } from "./pages/ProfilePage";
-import { CapTableCreatePage } from "./pages/CapTableCreatePage";
+import { CapTableCreatePageV2 } from "./pages/CapTableCreatePageV2";
 import { CapTablePage } from "./pages/CapTablePage";
 import { CapTableQuePage } from "./pages/CapTableQuePage";
 import { CapTableRegistryPage } from "./pages/CapTableRegistryPage";
 import { Home } from "./pages/Home";
-import { Contact } from "./utils/ContactContext";
-import { CapTableCreatePageV2 } from "./pages/CapTableCreatePageV2";
+import { ProfilePage } from "./pages/ProfilePage";
 import { Brok } from "./utils/BrokContext";
+import { Contact } from "./utils/ContactContext";
 
 function App() {
     if (!process.env.REACT_APP_BROK_CAPTABLE_GRAPHQL) {

@@ -1,13 +1,13 @@
 import { BigNumber, BytesLike, ethers } from 'ethers';
 import { Box, DataTable, Select, Text } from 'grommet';
 import React, { useEffect, useState } from 'react';
-import { ERC1400 } from '@brok/captable-contracts';
+import { CapTable } from '@brok/captable-contracts';
 import { getERC1400Addresses } from '../../utils/erc1400-helpers';
 import { formatBN } from '../../utils/numbers';
 import { FormatAddress } from '../ui/FormatAddress';
 
 interface Props {
-    capTable: ERC1400
+    capTable: CapTable
 }
 
 interface TokenHolder {

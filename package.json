@@ -7,7 +7,7 @@
     "**/@typescript-eslint/parser": "^4.1.1"
   },
   "dependencies": {
-    "@brok/captable-contracts": "^2.0.2",
+    "@brok/captable-contracts": "^3.0.0",
     "@symfoni/walletconnect-v2-ethers-signer": "^0.2.3",
     "@testing-library/jest-dom": "^5.14.1",
     "@testing-library/react": "^12.1.0",

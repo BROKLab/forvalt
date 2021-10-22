@@ -1,4 +1,4 @@
-import { ERC1400 } from "@brok/captable-contracts";
+import { CapTable } from "@brok/captable-contracts";
 import { BytesLike, ethers } from "ethers";
 import { Box, Button, ButtonProps, Grid, Select, Text, TextInput } from "grommet";
 import { Trash } from "grommet-icons";
@@ -7,7 +7,7 @@ import { useFieldArray, useForm } from "react-hook-form";
 import { DEFAULT_CAPTABLE_PARTITION } from "../assets/default";
 
 type PropsSingel = {
-    capTable?: ERC1400;
+    capTable?: CapTable;
     onSubmit: (batchIssueData: PrivateUserData) => void;
     onSubmitButtonProps?: ButtonProps;
     multiple?: never;
@@ -15,7 +15,7 @@ type PropsSingel = {
     selectPartiton?: boolean;
 };
 type PropsMultiple = {
-    capTable?: ERC1400;
+    capTable?: CapTable;
     onSubmit: (batchIssueData: PrivateUserData[]) => void;
     onSubmitButtonProps?: ButtonProps;
     multiple: true;

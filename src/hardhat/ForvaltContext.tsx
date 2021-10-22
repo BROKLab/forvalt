@@ -4,11 +4,12 @@
 import {
     AuthProvider,
     AuthProvider__factory,
+    CapTable,
     CapTableFactory,
     CapTableFactory__factory,
     CapTableRegistry,
     CapTableRegistry__factory,
-    ERC1400,
+    CapTable__factory,
     ERC1400AuthValidator,
     ERC1400AuthValidator__factory,
     ERC1400__factory,
@@ -28,12 +29,12 @@ import { SignatureRequestHandler } from "../utils/SignerRequestHandler";
 import { getAuthProvider } from "./contracts/AuthProvider";
 import { getCapTableFactory } from "./contracts/CapTableFactory";
 import { getCapTableRegistry } from "./contracts/CapTableRegistry";
-import { getERC1400 } from "./contracts/ERC1400";
+import { getCapTable } from "./contracts/CapTable";
 import { getERC1400AuthValidator } from "./contracts/ERC1400AuthValidator";
 import { getERC1820Registry } from "./contracts/ERC1820Registry";
 
 export const SymfoniContext = React.createContext<SymfoniContextInterface>(undefined!);
-export const ERC1400Context = React.createContext<SymfoniERC1400>(undefined!);
+export const CapTableContext = React.createContext<SymfoniCapTable>(undefined!);
 export const AuthProviderContext = React.createContext<SymfoniAuthProvider>(undefined!);
 export const ERC1820RegistryContext = React.createContext<SymfoniERC1820Registry>(undefined!);
 export const CapTableFactoryContext = React.createContext<SymfoniCapTableFactory>(undefined!);
@@ -46,10 +47,10 @@ export interface SymfoniProps {
     loadingComponent?: React.ReactNode;
 }
 
-export type SymfoniERC1400 = {
-    instance?: ERC1400;
-    factory?: ERC1400__factory;
-    connect: (address: string) => ERC1400;
+export type SymfoniCapTable = {
+    instance?: CapTable;
+    factory?: CapTable__factory;
+    connect: (address: string) => CapTable;
 };
 
 export type SymfoniAuthProvider = {
@@ -133,7 +134,7 @@ export const Symfoni: React.FC<SymfoniProps> = ({ showLoading = true, autoInit =
 
     const [address, setAddress] = useState<string>();
 
-    const [ERC1400, setERC1400] = useState<SymfoniERC1400>(undefined!);
+    const [CapTable, setCapTable] = useState<SymfoniCapTable>(undefined!);
     const [AuthProvider, setAuthProvider] = useState<SymfoniAuthProvider>(undefined!);
     const [ERC1820Registry, setERC1820Registry] = useState<SymfoniERC1820Registry>(undefined!);
     const [CapTableFactory, setCapTableFactory] = useState<SymfoniCapTableFactory>(undefined!);
@@ -283,7 +284,7 @@ export const Symfoni: React.FC<SymfoniProps> = ({ showLoading = true, autoInit =
                     setProvider(_provider);
                     setSigner(_signer);
                     setAddress(_address ? _address : undefined);
-                    setERC1400(getERC1400(_provider, _chainId, _signer));
+                    setCapTable(getCapTable(_provider, _chainId, _signer));
                     setAuthProvider(getAuthProvider(_provider, _chainId, _signer));
                     setERC1820Registry(getERC1820Registry(_provider, _chainId, _signer));
                     setCapTableFactory(getCapTableFactory(_provider, _chainId, _signer));
@@ -321,7 +322,7 @@ export const Symfoni: React.FC<SymfoniProps> = ({ showLoading = true, autoInit =
                 signatureRequestHandler,
             }}>
             <AuthProviderContext.Provider value={AuthProvider}>
-                <ERC1400Context.Provider value={ERC1400}>
+                <CapTableContext.Provider value={CapTable}>
                     <ERC1820RegistryContext.Provider value={ERC1820Registry}>
                         <CapTableFactoryContext.Provider value={CapTableFactory}>
                             <CapTableRegistryContext.Provider value={CapTableRegistry}>
@@ -372,7 +373,7 @@ export const Symfoni: React.FC<SymfoniProps> = ({ showLoading = true, autoInit =
                             </CapTableRegistryContext.Provider>
                         </CapTableFactoryContext.Provider>
                     </ERC1820RegistryContext.Provider>
-                </ERC1400Context.Provider>
+                </CapTableContext.Provider>
             </AuthProviderContext.Provider>
         </SymfoniContext.Provider>
     );

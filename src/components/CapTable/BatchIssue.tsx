@@ -1,4 +1,4 @@
-import { ERC1400 } from '@brok/captable-contracts';
+import { CapTable } from '@brok/captable-contracts';
 import { BytesLike, ethers } from 'ethers';
 import { Box, Button, Grid, Select, Text, TextInput } from "grommet";
 import { Trash } from 'grommet-icons';
@@ -11,7 +11,7 @@ type PropsAggregate = {
     aggregateResult: (batchIssueData: BatchIssueData[]) => void
 }
 type PropsSend = {
-    capTable: ERC1400,
+    capTable: CapTable,
     done?: () => void
     aggregateResult?: never
 }

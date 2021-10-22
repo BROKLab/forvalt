@@ -1,6 +1,6 @@
 import React, { useContext, useState } from "react";
 import { Box, Button } from "grommet";
-import { ERC1400 } from "@brok/captable-contracts";
+import { CapTable } from "@brok/captable-contracts";
 import { Modal } from "../ui/Modal";
 import { Transfer } from "./Transfer";
 import { SymfoniContext } from "../../hardhat/ForvaltContext";
@@ -8,7 +8,7 @@ import { SymfoniContext } from "../../hardhat/ForvaltContext";
 import { Issue } from "./Issue";
 
 interface Props {
-    capTable: ERC1400;
+    capTable: CapTable;
 }
 
 export const Actions: React.FC<Props> = ({ ...props }) => {

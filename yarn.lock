@@ -1201,10 +1201,12 @@
   resolved "https://registry.npmjs.org/@bcoe/v8-coverage/-/v8-coverage-0.2.3.tgz"
   integrity sha512-0hYQ8SB4Db5zvZB4axdMHGwEaQjkZzFjQiN9LVYvIFB2nSUHW9tYpxWriPrWDASIxiaXax83REcLxuSdnGPZtw==
 
-"@brok/captable-contracts@^2.0.2":
-  version "2.0.2"
-  resolved "https://registry.npmjs.org/@brok/captable-contracts/-/captable-contracts-2.0.2.tgz"
-  integrity sha512-i+alqdPjJxdbMrHKgKlte1BiGPWV6VM/ydKzIT9Mme6hrudhC+4m1Zcpd9kWyEQ2HYn3kNEw6Y2pwuB/8UpJtQ==
+"@brok/captable-contracts@^3.0.0":
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/@brok/captable-contracts/-/captable-contracts-3.0.0.tgz#f70eaed4374faaf67b9b16096f64c4a552394dc2"
+  integrity sha512-NUbzK3RIkJbGrDl5U7l/26YSInzOVwkbRPNiCuUwlYNgu7dZE8b9HU/EkG3Y4a3HMSkd+2w5AYHZEcUa+GiGoQ==
+  dependencies:
+    hardhat-spdx-license-identifier "^2.0.3"
 
 "@cnakazawa/watch@^1.0.3":
   version "1.0.4"
@@ -6539,6 +6541,11 @@ handle-thing@^2.0.0:
   version "2.0.1"
   resolved "https://registry.npmjs.org/handle-thing/-/handle-thing-2.0.1.tgz"
   integrity sha512-9Qn4yBxelxoh2Ow62nP+Ka/kMnOXRi8BXnRaUwezLNhqelnN49xKz4F/dPP8OYLxLxq6JDtZb2i9XznUQbNPTg==
+
+hardhat-spdx-license-identifier@^2.0.3:
+  version "2.0.3"
+  resolved "https://registry.yarnpkg.com/hardhat-spdx-license-identifier/-/hardhat-spdx-license-identifier-2.0.3.tgz#6dd89a7e036ede4f7e86fb349eb23daaaad6890f"
+  integrity sha512-G4u4I1md0tWaitX6Os7Nq9sYZ/CFdR+ibm7clCksGJ4yrtdHEZxgLjWpJ0WiALF9SoFKt03PwCe9lczDQ/5ADA==
 
 harmony-reflect@^1.4.6:
   version "1.6.2"

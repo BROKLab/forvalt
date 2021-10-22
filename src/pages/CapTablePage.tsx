@@ -1,10 +1,10 @@
-import { ERC1400 } from '@brok/captable-contracts';
+import { CapTable } from '@brok/captable-contracts';
 import { Box, Text } from 'grommet';
 import React, { useContext, useEffect, useState } from 'react';
 import { Route, Switch, useParams, useRouteMatch } from 'react-router-dom';
 import { Details } from '../components/CapTable/Details';
 import { Loading } from '../components/ui/Loading';
-import { ERC1400Context } from '../hardhat/ForvaltContext';
+import { CapTableContext } from '../hardhat/ForvaltContext';
 
 interface Props {
 }
@@ -15,8 +15,8 @@ interface RouteParams {
 export const CapTablePage: React.FC<Props> = ({ ...props }) => {
     const { address } = useParams<RouteParams>();
     const { path } = useRouteMatch()
-    const erc1400 = useContext(ERC1400Context);
-    const [capTable, setCapTable] = useState<ERC1400>();
+    const erc1400 = useContext(CapTableContext);
+    const [capTable, setCapTable] = useState<CapTable>();
     // const { loading, error, data } = useQuery<CapTableTypes.Types.CapTable>(CapTableTypes.Queries.CAP_TABLE_QUERY(address), {
     //     variables: {
     //         limit: 10

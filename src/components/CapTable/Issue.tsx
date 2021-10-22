@@ -1,4 +1,4 @@
-import { ERC1400 } from "@brok/captable-contracts";
+import { CapTable } from "@brok/captable-contracts";
 import { AxiosError } from "axios";
 import { ethers } from "ethers";
 import { Box, Text } from "grommet";
@@ -9,7 +9,7 @@ import { SignatureRequest } from "../../utils/SignerRequestHandler";
 import { PrivateUserData, SelectPrivateUser } from "../SelectPrivateUser";
 
 interface Props {
-    capTable: ERC1400;
+    capTable: CapTable;
     done?: () => void;
 }
 

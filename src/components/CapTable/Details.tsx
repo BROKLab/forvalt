@@ -1,4 +1,4 @@
-import { ERC1400 } from "@brok/captable-contracts";
+import { CapTable } from "@brok/captable-contracts";
 import { Box, CheckBox, Heading, Text } from "grommet";
 import React, { useContext, useEffect, useState } from "react";
 import { SymfoniContext } from "../../hardhat/ForvaltContext";
@@ -9,7 +9,7 @@ import { BalancesSmartContract } from "./BalancesSmartContract";
 import { Info } from "./Info";
 
 interface Props {
-  capTable: ERC1400;
+  capTable: CapTable;
 }
 
 export const Details: React.FC<Props> = ({ ...props }) => {

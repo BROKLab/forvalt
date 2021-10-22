@@ -1,20 +1,20 @@
 import { BigNumber, BytesLike } from "ethers";
-import { ERC1400 } from "@brok/captable-contracts";
+import { CapTable } from "@brok/captable-contracts";
 
 export interface CollateralDetail {
-  cToken: {
-    balance: BigNumber;
-    holder: string;
-  }[];
-  pToken: {
-    balance: BigNumber;
-    holder: string;
-  }[];
-  closed: boolean;
-  cdpAddress: string;
+    cToken: {
+        balance: BigNumber;
+        holder: string;
+    }[];
+    pToken: {
+        balance: BigNumber;
+        holder: string;
+    }[];
+    closed: boolean;
+    cdpAddress: string;
 }
 export interface CollateralDetails {
-  [tokenHolder: string]: CollateralDetail;
+    [tokenHolder: string]: CollateralDetail;
 }
 
 // export const getERC20Addresses = async (address: string) => {
@@ -46,116 +46,71 @@ export interface CollateralDetails {
 //   return addresses;
 // };
 
-export const getERC1400Addresses = async (
-  capTable: ERC1400,
-  partitionFilter?: BytesLike,
-  fromBlock?: number,
-  skipZeroBalances = true
-) => {
-  const _partitionFilter = partitionFilter ? partitionFilter : null;
-  const _fromBlock = fromBlock ? fromBlock : 0;
-  const issueByPartition = await capTable.queryFilter(
-    capTable.filters.IssuedByPartition(
-      _partitionFilter,
-      null,
-      null,
-      null,
-      null,
-      null
-    ),
-    _fromBlock,
-    "latest"
-  );
-  const transferByPartition = await capTable.queryFilter(
-    capTable.filters.TransferByPartition(
-      _partitionFilter,
-      null,
-      null,
-      null,
-      null,
-      null,
-      null
-    ),
-    _fromBlock,
-    "latest"
-  );
-  const redeemByPartition = await capTable.queryFilter(
-    capTable.filters.RedeemedByPartition(
-      _partitionFilter,
-      null,
-      null,
-      null,
-      null
-    ),
-    _fromBlock,
-    "latest"
-  );
+export const getERC1400Addresses = async (capTable: CapTable, partitionFilter?: BytesLike, fromBlock?: number, skipZeroBalances = true) => {
+    const _partitionFilter = partitionFilter ? partitionFilter : null;
+    const _fromBlock = fromBlock ? fromBlock : 0;
+    const issueByPartition = await capTable.queryFilter(
+        capTable.filters.IssuedByPartition(_partitionFilter, null, null, null, null, null),
+        _fromBlock,
+        "latest"
+    );
+    const transferByPartition = await capTable.queryFilter(
+        capTable.filters.TransferByPartition(_partitionFilter, null, null, null, null, null, null),
+        _fromBlock,
+        "latest"
+    );
+    const redeemByPartition = await capTable.queryFilter(
+        capTable.filters.RedeemedByPartition(_partitionFilter, null, null, null, null),
+        _fromBlock,
+        "latest"
+    );
 
-  const logs = [
-    ...redeemByPartition,
-    ...transferByPartition,
-    ...issueByPartition,
-  ];
+    const logs = [...redeemByPartition, ...transferByPartition, ...issueByPartition];
 
-  const results = logs
-    .filter((event) => {
-      if (event.args) {
-        if (
-          "to" in event.args &&
-          ("partition" in event.args || "fromPartition" in event.args)
-        ) {
-          return true;
-        }
-      }
-      return false;
-    })
-    .map((event) => {
-      if (event.args) {
-        if (
-          "to" in event.args &&
-          ("partition" in event.args || "fromPartition" in event.args)
-        ) {
-          const parition =
-            "partition" in event.args
-              ? event.args.partition
-              : event.args.fromPartition;
-          return {
-            address: event.args.to as string,
-            partition: parition as BytesLike,
-          };
-        }
-      }
-      return undefined;
-    })
-    .reduce((prev: { address: string; partition: BytesLike }[], cur) => {
-      if (!cur) return prev;
-      const exist =
-        prev.findIndex((event) => {
-          return event.address === cur.address &&
-            event.partition === cur.partition
-            ? true
-            : false;
-        }) !== -1;
-      return exist ? prev : [...prev, cur];
-    }, [])
-    .map(async (event) => {
-      const balance = await capTable.balanceOfByPartition(
-        event.partition,
-        event.address
-      );
-      return {
-        ...event,
-        balance: balance,
-      };
-    });
+    const results = logs
+        .filter((event) => {
+            if (event.args) {
+                if ("to" in event.args && ("partition" in event.args || "fromPartition" in event.args)) {
+                    return true;
+                }
+            }
+            return false;
+        })
+        .map((event) => {
+            if (event.args) {
+                if ("to" in event.args && ("partition" in event.args || "fromPartition" in event.args)) {
+                    const parition = "partition" in event.args ? event.args.partition : event.args.fromPartition;
+                    return {
+                        address: event.args.to as string,
+                        partition: parition as BytesLike,
+                    };
+                }
+            }
+            return undefined;
+        })
+        .reduce((prev: { address: string; partition: BytesLike }[], cur) => {
+            if (!cur) return prev;
+            const exist =
+                prev.findIndex((event) => {
+                    return event.address === cur.address && event.partition === cur.partition ? true : false;
+                }) !== -1;
+            return exist ? prev : [...prev, cur];
+        }, [])
+        .map(async (event) => {
+            const balance = await capTable.balanceOfByPartition(event.partition, event.address);
+            return {
+                ...event,
+                balance: balance,
+            };
+        });
 
-  const addresses = await Promise.all(results);
-  if (skipZeroBalances) {
-    return addresses.filter((a) => {
-      return !a.balance.isZero();
-    });
-  }
-  return addresses;
+    const addresses = await Promise.all(results);
+    if (skipZeroBalances) {
+        return addresses.filter((a) => {
+            return !a.balance.isZero();
+        });
+    }
+    return addresses;
 };
 
 // export const filterCDPHolders = async (

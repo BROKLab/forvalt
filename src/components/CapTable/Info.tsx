@@ -2,11 +2,11 @@ import { ethers } from 'ethers';
 import { Box, Grid, Text } from 'grommet';
 import React, { useContext, useEffect, useState } from 'react';
 import { CapTableRegistryContext, SymfoniContext } from '../../hardhat/ForvaltContext';
-import { ERC1400 } from '@brok/captable-contracts';
+import { CapTable } from '@brok/captable-contracts';
 import { CapTableQueDetails } from './../Que/CapTableQueDetails';
 
 interface Props {
-    capTable: ERC1400
+    capTable: CapTable
 }
 
 
