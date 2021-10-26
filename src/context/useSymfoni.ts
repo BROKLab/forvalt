@@ -134,6 +134,8 @@ export const useSymfoni = () => {
         signer,
         signatureRequestHandler,
         initSigner,
+        address,
+        chainId,
         ...contracts,
     };
 };

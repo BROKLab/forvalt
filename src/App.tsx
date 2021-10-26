@@ -14,6 +14,7 @@ import { BrokProvider } from './context/BrokContext';
 import { CapTableRegistryPage } from './pages/CapTableRegistryPage';
 import { ClientContext, GraphQLClient } from "graphql-hooks";
 import { CapTableQuePage } from './pages/CapTableQuePage';
+import { CapTablePage } from './pages/CapTablePage';
 
 
 function App() {
@@ -40,10 +41,7 @@ function App() {
                   <Switch>
                     <Route exact path="/" component={Home} />
                     <Route path="/captable/create" component={CreateCapTablePage} />
-                    {/* 
-                <Route path="/capTable/:address" component={CapTablePage} />
-            
-               */}
+                    <Route path="/capTable/:address" component={CapTablePage} />
                     <Route path="/register" component={CapTableRegistryPage} />
                     <Route path="/que" component={CapTableQuePage} />
                     <Route path="/me" component={MePage} />
@@ -64,7 +62,6 @@ function App() {
         </Grommet>
       </ClientContext.Provider>
       <ToastContainer></ToastContainer>
-
     </BrowserRouter>
   );
 }

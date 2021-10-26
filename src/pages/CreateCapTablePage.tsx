@@ -47,6 +47,8 @@ export const CreateCapTablePage: React.FC<Props> = ({ ...props }) => {
         [step]
     );
 
+    const requireSigner = (!signer || !("request" in signer));
+
 
     const createCapTable = async () => {
         debug(`Started createCapTable, has request in signer ${signer && "request" in signer}`)
@@ -217,7 +219,7 @@ export const CreateCapTablePage: React.FC<Props> = ({ ...props }) => {
 
             <Button
                 size="large"
-                label="Opprett aksjeeierbok"
+                label={requireSigner ? "Koble til lommebok" : "Opprett aksjeeierbok"}
                 disabled={step !== STEP.CONFIRM || !orgData || !privateTokenTransfers /* || deploying */}
                 onClick={() => createCapTable()}>
             </Button>
