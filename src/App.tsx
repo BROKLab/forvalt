@@ -13,6 +13,7 @@ import { CreateCapTablePage } from './pages/CreateCapTablePage';
 import { BrokProvider } from './context/BrokContext';
 import { CapTableRegistryPage } from './pages/CapTableRegistryPage';
 import { ClientContext, GraphQLClient } from "graphql-hooks";
+import { CapTableQuePage } from './pages/CapTableQuePage';
 
 
 function App() {
@@ -41,9 +42,10 @@ function App() {
                     <Route path="/captable/create" component={CreateCapTablePage} />
                     {/* 
                 <Route path="/capTable/:address" component={CapTablePage} />
-                <Route path="/que" component={CapTableQuePage} />
+            
                */}
                     <Route path="/register" component={CapTableRegistryPage} />
+                    <Route path="/que" component={CapTableQuePage} />
                     <Route path="/me" component={MePage} />
                   </Switch>
                 </Main>

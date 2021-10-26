@@ -1,13 +1,13 @@
 import { useQuery } from "graphql-hooks";
 import { Box, Heading, Paragraph, Spinner } from "grommet";
 import React from "react";
-import { CapTableRegistryList } from "../components/CapTableRegistryList";
+import { CapTableList } from "../components/CapTableRegistryList";
 
 
 interface Props {}
 
 const CAP_TABLES_QUERY = `{
-    capTables(where: {status: APPROVED}) {
+    capTables(where: {status: QUED}) {
       name
       orgnr
       status
@@ -22,7 +22,7 @@ export type CapTableListData = {
     status: string;
 }
 
-export const CapTableRegistryPage: React.FC<Props> = ({ ...props }) => {
+export const CapTableQuePage: React.FC<Props> = ({ ...props }) => {
     const { loading, error, data } = useQuery<{
         capTables: CapTableListData[];
     }>(CAP_TABLES_QUERY, {
@@ -37,7 +37,7 @@ export const CapTableRegistryPage: React.FC<Props> = ({ ...props }) => {
             {loading && <Spinner></Spinner>}
             {error && <Paragraph>Noe galt skjedde</Paragraph>}
             {data &&
-                <CapTableRegistryList capTables={data.capTables}></CapTableRegistryList>
+                <CapTableList capTables={data.capTables}></CapTableList>
             }
         </Box>
     );

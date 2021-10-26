@@ -1,7 +1,7 @@
 import { useQuery } from "graphql-hooks";
 import { Box, Heading, Paragraph, Spinner } from "grommet";
 import React from "react";
-import { CapTableRegistryList } from "../components/CapTableRegistryList";
+import { CapTableList } from "../components/CapTableRegistryList";
 
 
 interface Props {}
@@ -37,7 +37,7 @@ export const CapTableRegistryPage: React.FC<Props> = ({ ...props }) => {
             {loading && <Spinner></Spinner>}
             {error && <Paragraph>Noe galt skjedde</Paragraph>}
             {data &&
-                <CapTableRegistryList capTables={data.capTables}></CapTableRegistryList>
+                <CapTableList capTables={data.capTables}></CapTableList>
             }
         </Box>
     );

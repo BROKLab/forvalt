@@ -8,7 +8,7 @@ interface Props {
     capTables: CapTableListData[]
 }
 
-export const CapTableRegistryList: React.FC<Props> = ({ ...props }) => {
+export const CapTableList: React.FC<Props> = ({ ...props }) => {
     const history = useHistory();
     return (
         <DataTable
