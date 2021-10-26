@@ -39,17 +39,7 @@ export interface PrivateTokenTransferData {
 
 const defaultValues: Record<string, PrivateTokenTransferData[]> = {
     test: [
-        {
-            identifier: "",
-            address: "",
-            amount: "0",
-            partition: DEFAULT_CAPTABLE_PARTITION,
-            name: "",
-            streetAddress: "Testveien 424",
-            postalcode: "1344",
-            email: "styreleder@mail.com",
-            isBoardDirector: true,
-        },
+
         {
             identifier: "17107292926",
             address: "",
@@ -63,17 +53,17 @@ const defaultValues: Record<string, PrivateTokenTransferData[]> = {
         },
     ],
     production: [
-        {
-            identifier: "",
-            address: "",
-            amount: "0",
-            partition: DEFAULT_CAPTABLE_PARTITION,
-            name: "",
-            streetAddress: "",
-            postalcode: "",
-            email: "",
-            isBoardDirector: true,
-        },
+        // {
+        //     identifier: "",
+        //     address: "",
+        //     amount: "0",
+        //     partition: DEFAULT_CAPTABLE_PARTITION,
+        //     name: "",
+        //     streetAddress: "",
+        //     postalcode: "",
+        //     email: "",
+        //     isBoardDirector: true,
+        // },
         {
             identifier: "",
             address: "",
@@ -89,9 +79,10 @@ const defaultValues: Record<string, PrivateTokenTransferData[]> = {
 };
 
 export const PrivateTokenTransferForm: React.FC<Props> = ({ ...props }) => {
+
     const { control, watch, register, setValue } = useForm({ defaultValues });
     const enviroment = process.env.NODE_ENV === "development" ? "test" : "production";
-    const { fields, append, remove } = useFieldArray({
+    const { fields, append, remove, prepend } = useFieldArray({
         control,
         name: enviroment,
     });
@@ -104,6 +95,23 @@ export const PrivateTokenTransferForm: React.FC<Props> = ({ ...props }) => {
     });
     const [partitions, setPartitions] = useState<BytesLike[]>([DEFAULT_CAPTABLE_PARTITION]);
     const [newPartition, setNewPartition] = useState("");
+
+    // TODO - Make this more explicit. Add borad director if multiple 
+    useEffect(() => {
+        if (props.multiple) {
+            prepend({
+                identifier: "",
+                address: "",
+                amount: "0",
+                partition: DEFAULT_CAPTABLE_PARTITION,
+                name: "",
+                streetAddress: "Testveien 424",
+                postalcode: "1344",
+                email: "styreleder@mail.com",
+                isBoardDirector: true,
+            }, {})
+        }
+    }, [])
 
     // Get partitions if capTable is set
     useEffect(() => {

@@ -14,6 +14,7 @@ export const DEFAULT_WALLETCONNECT_METHODS = [
     //   "eth_signTypedData",
     //   "eth_signTransaction",
     "symfoniID_createCapTableVP",
+    "symfoniID_capTablePrivateTokenTransferVP",
 ];
 
 export const CHAIN_ID = 421611;

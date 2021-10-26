@@ -9,7 +9,7 @@ import { SymfoniProvider } from './context/SymfoniContext';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { MePage } from './pages/MePage';
-import { CreateCapTablePage } from './pages/CreateCapTablePage';
+import { CapTableCreatePage } from './pages/CapTableCreatePage';
 import { BrokProvider } from './context/BrokContext';
 import { CapTableRegistryPage } from './pages/CapTableRegistryPage';
 import { ClientContext, GraphQLClient } from "graphql-hooks";
@@ -40,7 +40,7 @@ function App() {
                 <Main pad="xlarge" height={{ min: "75vh" }}>
                   <Switch>
                     <Route exact path="/" component={Home} />
-                    <Route path="/captable/create" component={CreateCapTablePage} />
+                    <Route path="/captable/create" component={CapTableCreatePage} />
                     <Route path="/capTable/:address" component={CapTablePage} />
                     <Route path="/register" component={CapTableRegistryPage} />
                     <Route path="/que" component={CapTableQuePage} />

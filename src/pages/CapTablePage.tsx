@@ -3,6 +3,7 @@ import { useQuery } from 'graphql-hooks';
 import { Box, Heading, Paragraph, Spinner } from 'grommet';
 import React, { useContext } from 'react';
 import { useParams } from 'react-router-dom';
+import { CapTableActions } from '../components/CapTableActions';
 import { CapTableBalances } from '../components/CapTableBalances';
 import { CapTableDetails } from '../components/CapTableDetails';
 import { SymfoniContext } from '../context/SymfoniContext';
@@ -44,7 +45,7 @@ export const CapTablePage: React.FC<Props> = ({ ...props }) => {
             {loading && <Spinner></Spinner>}
             {error && <Paragraph>Noe galt skjedde</Paragraph>}
             {data &&
-                <Box gap="large">
+                <Box gap="small">
                     <Heading level={3}>Nøkkelopplysninger</Heading>
                     <CapTableDetails data={{
                         boardDirector: data.capTable.boardDirector,
@@ -55,6 +56,10 @@ export const CapTablePage: React.FC<Props> = ({ ...props }) => {
                         totalSupply: ethers.utils.formatEther(data.capTable.totalSupply)
                     }}></CapTableDetails>
 
+                    <Heading level={3}>Handlinger</Heading>
+                    <CapTableActions capTableAddress={address}></CapTableActions>
+
+                    <Heading level={3}>Aksjeeierboken</Heading>
                     <CapTableBalances capTableAddress={address}></CapTableBalances>
                 </Box>
             }

@@ -21,7 +21,7 @@ enum STEP {
 }
 
 
-export const CreateCapTablePage: React.FC<Props> = ({ ...props }) => {
+export const CapTableCreatePage: React.FC<Props> = ({ ...props }) => {
     const history = useHistory();
     const { signer, initSigner, signatureRequestHandler } = useContext(SymfoniContext)
     const { createCaptable } = useContext(BrokContext)
