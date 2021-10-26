@@ -2,6 +2,7 @@ import { useQuery } from "graphql-hooks";
 import { Box, Heading, Paragraph, Spinner } from "grommet";
 import React from "react";
 import { CapTableList } from "../components/CapTableRegistryList";
+import useInterval from "../utils/useInterval";
 
 
 interface Props {}
@@ -23,13 +24,17 @@ export type CapTableListData = {
 }
 
 export const CapTableRegistryPage: React.FC<Props> = ({ ...props }) => {
-    const { loading, error, data } = useQuery<{
+    const { loading, error, data, refetch } = useQuery<{
         capTables: CapTableListData[];
     }>(CAP_TABLES_QUERY, {
         variables: {
             limit: 10,
         },
     });
+
+    useInterval(() => {
+        refetch()
+    }, 2000)
 
     return (
         <Box>

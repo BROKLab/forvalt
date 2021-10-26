@@ -5,14 +5,20 @@ import { useQuery } from 'graphql-hooks';
 import { FormatEthereumAddress } from './FormatEthereumAddress';
 import { ethers } from 'ethers';
 import { Edit } from 'grommet-icons';
+import useInterval from '../utils/useInterval';
 
 interface Props {
     capTableAddress: string
 }
 
 export const CapTableBalances: React.FC<Props> = ({ ...props }) => {
-    const { loading, error, data } =
+    const { loading, error, data, refetch } =
         useQuery<CapTableGraphQLTypes.BalancesQuery.Response>(CapTableGraphQL.BALANCES_QUERY(props.capTableAddress));
+
+
+    useInterval(() => {
+        refetch()
+    }, 2000)
     return (
         <Box>
             {loading && <Spinner></Spinner>}

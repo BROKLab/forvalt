@@ -1,7 +1,7 @@
 import { ethers } from "ethers";
 
 export type ProviderTypes = "hardhat" | "walletConnect" | "web3modal";
-export const PROVIDERS = ["hardhat", "walletConnectV2", "web3modal"];
+export const PROVIDERS = ["hardhat", "walletConnect", "web3modal"];
 export const DEFAULT_PROVIDER = "walletConnect";
 
 export type SignerTypes = "walletConnect" | "mnemonic" | "prompt" | "web3modal";
