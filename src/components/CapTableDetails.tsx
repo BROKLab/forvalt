@@ -1,5 +1,6 @@
 import React from 'react';
 import { Box, Grid, Text } from 'grommet';
+import { FormatEthereumAddress } from './FormatEthereumAddress';
 
 interface Props {
     data: {
@@ -26,7 +27,7 @@ export const CapTableDetails: React.FC<Props> = ({ data, ...props }) => {
             </Grid>
             <Grid columns={["small", "flex"]}>
                 <Text >Styreleder</Text>
-                <Text weight="bold">{data.boardDirector}</Text>
+                <Text weight="bold"><FormatEthereumAddress address={data.boardDirector}></FormatEthereumAddress></Text>
             </Grid>
             <Grid columns={["small", "flex"]}>
                 <Text >Aktivt</Text>

@@ -1,7 +1,9 @@
+import { ethers } from 'ethers';
 import { useQuery } from 'graphql-hooks';
 import { Box, Heading, Paragraph, Spinner } from 'grommet';
 import React, { useContext } from 'react';
 import { useParams } from 'react-router-dom';
+import { CapTableBalances } from '../components/CapTableBalances';
 import { CapTableDetails } from '../components/CapTableDetails';
 import { SymfoniContext } from '../context/SymfoniContext';
 import { CapTableGraphQL, CapTableGraphQLTypes } from '../utils/CapTableGraphQL.utils';
@@ -42,7 +44,7 @@ export const CapTablePage: React.FC<Props> = ({ ...props }) => {
             {loading && <Spinner></Spinner>}
             {error && <Paragraph>Noe galt skjedde</Paragraph>}
             {data &&
-                <Box>
+                <Box gap="large">
                     <Heading level={3}>Nøkkelopplysninger</Heading>
                     <CapTableDetails data={{
                         boardDirector: data.capTable.boardDirector,
@@ -50,8 +52,10 @@ export const CapTablePage: React.FC<Props> = ({ ...props }) => {
                         isCurrentWalletConntroller,
                         name: data.capTable.name,
                         organizationNuber: data.capTable.orgnr,
-                        totalSupply: data.capTable.totalSupply
+                        totalSupply: ethers.utils.formatEther(data.capTable.totalSupply)
                     }}></CapTableDetails>
+
+                    <CapTableBalances capTableAddress={address}></CapTableBalances>
                 </Box>
             }
 

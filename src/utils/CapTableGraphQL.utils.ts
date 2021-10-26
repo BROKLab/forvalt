@@ -49,7 +49,7 @@ export declare module CapTableGraphQLTypes {
             tokenHolder: TokenHolder;
         }
 
-        export interface RootObject {
+        export interface Response {
             balances: Balance[];
         }
     }
