@@ -1,8 +1,10 @@
-import { Box, Button, Text } from "grommet";
+import { Box, Text } from "grommet";
 import React, { useContext, useEffect, useState } from "react";
-import { SymfoniContext } from "../hardhat/ForvaltContext";
+import { SymfoniContext } from "../context/SymfoniContext";
 import { ErrorResponse, SignatureRequest } from "../utils/SignerRequestHandler";
-import { Modal } from "./ui/Modal";
+import { Modal } from "./Modal";
+
+var debug = require("debug")("utils:SignatureRequestModal");
 
 interface Props {}
 
@@ -30,7 +32,7 @@ export const SignatureRequestModal: React.FC<Props> = ({ ...props }) => {
                     const res = await requests[i].fn();
                     result.push(res);
                 } catch (e: any) {
-                    console.log("error in process doAsync functions. error:", (e as ErrorResponse).message);
+                    debug("error in process doAsync functions. error:", (e as ErrorResponse).message);
                     setError(e);
                     return;
                 }
@@ -53,9 +55,11 @@ export const SignatureRequestModal: React.FC<Props> = ({ ...props }) => {
     useEffect(() => {
         let subscribed = true;
         const doAsync = async () => {
-            console.log("update on signatureRequestHandler.requests", requests);
-            signatureRequestHandler.on("onRequests", handleRequests);
-            signatureRequestHandler.on("onClear", handleClear);
+            debug("update on signatureRequestHandler.requests", requests);
+            if (subscribed) {
+                signatureRequestHandler.on("onRequests", handleRequests);
+                signatureRequestHandler.on("onClear", handleClear);
+            }
         };
         doAsync();
         return () => {
@@ -63,7 +67,7 @@ export const SignatureRequestModal: React.FC<Props> = ({ ...props }) => {
             signatureRequestHandler.removeListener("onRequests", handleRequests);
             signatureRequestHandler.removeListener("onClear", handleClear);
         };
-    }, [signatureRequestHandler]);
+    }, [requests, signatureRequestHandler]);
     if (error) {
         return (
             <Box>

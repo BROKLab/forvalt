@@ -1,17 +1,16 @@
-import axios, { AxiosError } from "axios";
-import { normalizePresentation } from "did-jwt-vc";
-import { ethers } from "ethers";
-import { Accordion, AccordionPanel, Box, Button, Grid, Heading, Paragraph, Text } from "grommet";
-import { Checkmark } from "grommet-icons";
-import { validateNorwegianIdNumber } from "norwegian-national-id-validator";
-import React, { useCallback, useContext, useEffect, useState } from "react";
-import { useHistory } from "react-router-dom";
-import { OrgData, SelectOrg } from "../components/CapTable/SelectOrg";
-import { PrivateUserData, SelectPrivateUser } from "../components/SelectPrivateUser";
-import { Loading } from "../components/ui/Loading";
-import { captableApprove, unclaimedCreate } from "../domain/BrokHelpers";
-import { CapTableFactoryContext, SymfoniContext } from "../hardhat/ForvaltContext";
-import { SignatureRequest } from "../utils/SignerRequestHandler";
+import React, { useCallback, useContext, useState } from 'react';
+import { Accordion, AccordionPanel, Box, Button, Grid, Heading, Paragraph, Spinner, Text } from 'grommet';
+import { OrgData, SelectOrg } from '../components/SelectOrg';
+import { PrivateTokenTransferData, PrivateTokenTransferForm } from '../components/PrivateTokenTransferForm';
+import { Checkmark } from 'grommet-icons';
+import { SymfoniContext } from '../context/SymfoniContext';
+import { toast } from 'react-toastify';
+import { SignatureRequest } from '../utils/SignerRequestHandler';
+import { BrokContext } from '../context/BrokContext';
+import { useHistory } from 'react-router';
+var debug = require("debug")("page:createCapTable");
+
+
 
 interface Props {}
 
@@ -21,18 +20,16 @@ enum STEP {
     CONFIRM = 2,
 }
 
-const TESTING = true;
 
 export const CapTableCreatePage: React.FC<Props> = ({ ...props }) => {
-    const { init, signer, signatureRequestHandler } = useContext(SymfoniContext);
-    const [step, setStep] = useState(STEP.SELECT_COMPANY); // TEST - ISSUE_SHARES
-    const [deploying, setDeploying] = useState(false);
-    const [orgData, setOrgData] = useState<OrgData>(); // TEST - DEFAULT_ORG_DATA[0]
-    const [batchIssueData, setBatchIssueData] = useState<PrivateUserData[]>();
-    const capTableFactory = useContext(CapTableFactoryContext);
-    const [useDefaultPartitions, setUseDefaultPartitions] = useState(true);
-
     const history = useHistory();
+    const { signer, initSigner, signatureRequestHandler } = useContext(SymfoniContext)
+    const { createCaptable } = useContext(BrokContext)
+    const [step, setStep] = useState(STEP.SELECT_COMPANY); // TEST - ISSUE_SHARES
+    const [orgData, setOrgData] = useState<OrgData>(); // TEST - DEFAULT_ORG_DATA[0]
+    const [privateTokenTransfers, setPrivateTokenTransfers] = useState<PrivateTokenTransferData[]>();
+    const [useDefaultPartitions, setUseDefaultPartitions] = useState(true);
+    const [deploying, setDeploying] = useState(false);
 
     const handleOrgData = useCallback(
         (data: OrgData) => {
@@ -42,205 +39,104 @@ export const CapTableCreatePage: React.FC<Props> = ({ ...props }) => {
         [step]
     );
 
-    const handleBatchIssueData = useCallback(
-        (data: PrivateUserData[]) => {
+    const handlePrivateTokenTransferData = useCallback(
+        (data: PrivateTokenTransferData[]) => {
             setStep(step + 1);
-            setBatchIssueData(data);
+            setPrivateTokenTransfers(data);
         },
         [step]
     );
-    useEffect(() => {
-        if (!signer) {
-            init({ forceSigner: true });
+
+    const requireSigner = (!signer || !("request" in signer));
+
+
+    const createCapTable = async () => {
+        debug(`Started createCapTable, has request in signer ${signer && "request" in signer}`)
+        if (!signer || !("request" in signer)) {
+            debug(`No signer or request in signer found, running initSigner`)
+            return initSigner()
         }
-    }, [init, signer]);
-
-    const resolveIdentifierToAddress = async (params: {
-        name: string;
-        streetAddress: string;
-        postalcode: string;
-        email: string;
-        identifier: string;
-        orgnr: string;
-        amount: string;
-        partition: string;
-    }) => {
-        if (!signer || !("request" in signer)) throw Error("Must have a signer resolve address from identifier");
         const BROK_HELPERS_VERIFIER = process.env.REACT_APP_BROK_HELPERS_VERIFIER;
-
-        const verifier = BROK_HELPERS_VERIFIER;
-        const method = "did_createVerifiableCredential";
-        const payload = {
-            name: params.name,
-            streetAddress: params.streetAddress,
-            postalcode: params.postalcode,
-            email: params.email,
-            identifier: params.identifier,
-            orgnr: params.orgnr,
-            amount: params.amount,
-            partition: params.partition,
-        };
-
+        if (!orgData) {
+            return toast("Du må velge selskap først");
+        }
+        if (!privateTokenTransfers) {
+            return toast("Du må sette aksjonærer først");
+        }
+        setDeploying(true);
+        debug(`creating org`, orgData)
+        debug(`creating privateTokenTransfers`, privateTokenTransfers);
+        if (!signatureRequestHandler) throw Error("TODO: Create error");
+        debug("BROK_HELPERS_VERIFIER", BROK_HELPERS_VERIFIER)
         const request: SignatureRequest = {
-            message: "Godkjenn privat aksjeutstedelse via Brønnøysundregistrene",
+            message: "Godkjenn migreringen av aksjeeierboka",
             fn: async () =>
-                await signer.request(method, [
+                await signer.request("symfoniID_createCapTableVP", [
                     {
-                        verifier: verifier,
-                        payload: payload,
+                        verifier: BROK_HELPERS_VERIFIER,
+                        capTable: {
+                            organizationNumber: orgData.orgnr.toString(),
+                            shareholders: privateTokenTransfers,
+                        }
                     },
                 ]),
         };
 
-        if (!signatureRequestHandler) throw Error("TODO: Create error");
+        debug(`Created request in signatureRequestHandler`)
         signatureRequestHandler.add([request]);
-        let result;
-        try {
-            const results = (await signatureRequestHandler.results()) as string[];
-            result = results[0];
-        } catch (e: any) {
-            console.log("[ERROR] resolveIdentifierToAddress", e);
-            throw e;
-        }
-        console.log("resultt", result);
-
-        const res = await unclaimedCreate(result).catch((error: AxiosError<{ message: string; code: number }>) => {
-            if (error.response && error.response.data.message) {
-                throw Error(error.response.data.message);
-            }
-            throw Error(error.message);
-        });
-        if (!res.data.blockchainAccount) {
-            throw Error("/brreg/unclaimed/create should return a blockchainAccount ");
-        }
-        return res.data.blockchainAccount;
-    };
-
-    const deploy = async () => {
-        if (!signer) return init({ forceSigner: true });
-        if (!capTableFactory.instance) {
-            throw Error("CapTable Factory not initialized");
-        }
-        if (!orgData) {
-            throw Error("Du må velge selskap først");
-        }
-        if (!batchIssueData) {
-            throw Error;
-        }
-        setDeploying(true);
-        console.log("batchIssueData", batchIssueData);
-        const resolvedFieldPromises = batchIssueData.map(async (field) => {
-            if (field.identifier.substr(0, 2) === "0x") {
-                if (ethers.utils.isAddress(field.identifier)) {
-                    return { ...field, address: field.identifier };
-                }
-            }
-            if (validateNorwegianIdNumber(field.identifier)) {
-                const address = await resolveIdentifierToAddress({
-                    email: field.name,
-                    identifier: field.identifier,
-                    name: field.name,
-                    postalcode: field.postalcode,
-                    streetAddress: field.streetAddress,
-                    amount: field.amount,
-                    partition: field.partition,
-                    orgnr: orgData.orgnr.toString(),
-                });
-                return { ...field, address: address };
-            }
-            throw Error("Identifier was not Norwegian ID number or an Ethereum address");
-        });
-        const resolvedFields = await Promise.all(resolvedFieldPromises);
-
-        let deployedContract: string | undefined;
-        const request: SignatureRequest = {
-            message: "Bekreft migrering av aksjeeierboken",
-            fn: async () => {
-                if (!capTableFactory.instance) {
-                    throw Error("CapTable Factory not initialized");
-                }
-                const deployTx = await capTableFactory.instance.createCapTable(
-                    ethers.utils.formatBytes32String(orgData.orgnr.toString()),
-                    orgData.navn,
-                    orgData.navn.substr(0, 3),
-                    resolvedFields.map((a) => a.address),
-                    resolvedFields.map((a) => ethers.utils.parseEther(a.amount))
-                );
-                await deployTx.wait();
-            },
-        };
-
-        signatureRequestHandler.add([request]);
-        let results;
-        try {
-            results = await signatureRequestHandler.results();
-        } catch (e: any) {
-            console.log("CaptableCreatePage error =", e);
+        let response = await signatureRequestHandler.results().catch(error => {
+            debug(error)
+            return undefined
+        }) as { createCapTableVP: string }[] | undefined
+        if (!response) {
+            toast(`Signering ble avbrutt.`)
             setDeploying(false);
-            return;
+            return
         }
-
-        console.log("CaptableCreatePage deployContract request result", request);
-
-        try {
-            deployedContract = await capTableFactory.instance.getLastQuedAddress(ethers.utils.formatBytes32String(orgData.orgnr.toString()));
-        } catch (error) {
-            throw Error("Could not getLastQuedAddress on uuid " + orgData.orgnr.toString());
+        if (!Array.isArray(response) || !response[0]) {
+            toast(`Feil i respons fra Lommebok.`)!
+            setDeploying(false);
+            return
         }
-        // Approve capTable
-        const BROK_HELPERS_VERIFIER = process.env.REACT_APP_BROK_HELPERS_VERIFIER;
+        const createCapTableVP = response[0].createCapTableVP
 
-        if ("request" in signer) {
-            const request: SignatureRequest = {
-                message: "Bekreft at du er styreleder",
-                fn: async () => {
-                    const jwt = await signer.request("did_requestVerifiableCredential", [
-                        {
-                            type: "CapTableBoardDirector",
-                            orgnr: orgData.orgnr.toString(),
-                            verifier: BROK_HELPERS_VERIFIER,
-                        },
-                    ]);
-                    console.log("test", normalizePresentation(jwt));
-                    const res = captableApprove(jwt, deployedContract!, true);
-                    console.log("RESPONSE brreg/captable/approve: ", res);
-                },
-            };
-            // TODO GJør om flyt etter Brokhelpers rewrite. Nå throwes det error om bruker rejecter
-            signatureRequestHandler.add([request]);
-            const results = await signatureRequestHandler.results();
-            console.log("CaptableCreatePage did_requestVerifiableCredential request result", results);
-        }
+        debug("signature result", createCapTableVP);
+        const createCapTableRespone = await createCaptable(createCapTableVP);
+        debug("deployed contract", createCapTableRespone.data);
+
         setDeploying(false);
         history.push("/");
-        if (deployedContract) {
-            history.push("/captable/" + deployedContract);
+        if (createCapTableRespone.data.capTableAddress) {
+            history.push("/captable/" + createCapTableRespone.data.capTableAddress);
         }
     };
+
 
     return (
         <Box gap="small">
             <Heading>Opprett aksjeeierbok</Heading>
-            {!signer && (
-                <Box>
-                    <Text>Du må koble til med en signer</Text>
-                </Box>
-            )}
+
             <Accordion justify="start" activeIndex={step} gap="small">
+
+
+                {/* Select organization */}
                 <AccordionPanel label="1. Velg selskap" onClickCapture={() => setStep(STEP.SELECT_COMPANY)}>
                     <Box pad="small">
-                        <SelectOrg aggragateResult={(orgData) => handleOrgData(orgData)}></SelectOrg>
+                        <SelectOrg onSubmit={(orgData) => handleOrgData(orgData)}></SelectOrg>
                     </Box>
                 </AccordionPanel>
+
+
+                {/* Token issue */}
                 <AccordionPanel label="2. Utsted aksjer" onClickCapture={() => setStep(STEP.ISSUE_SHARES)}>
                     <Box pad="medium">
                         {orgData ? (
-                            <SelectPrivateUser
-                                onSubmitButtonProps={{ label: "Lagre og gå videre" }}
+                            <PrivateTokenTransferForm
+                                submitLabel="Lagre og gå videre"
                                 multiple
                                 selectPartiton={useDefaultPartitions ? true : false}
                                 createPartition={useDefaultPartitions ? false : true}
-                                onSubmit={handleBatchIssueData}>
+                                onSubmit={handlePrivateTokenTransferData}>
                                 <Box gap="small">
                                     <Grid columns="1" fill="horizontal" gap="small">
                                         <Text size="small" weight="bold" truncate>
@@ -268,12 +164,16 @@ export const CapTableCreatePage: React.FC<Props> = ({ ...props }) => {
                                             }}></Button>
                                     </Box>
                                 </Box>
-                            </SelectPrivateUser>
+                            </PrivateTokenTransferForm>
                         ) : (
                             <Paragraph fill>Vennligst velg en aksjeeierbok</Paragraph>
                         )}
                     </Box>
                 </AccordionPanel>
+
+
+                {/* Confirm */}
+
                 <AccordionPanel label="3. Bekreft" onClickCapture={() => setStep(STEP.CONFIRM)}>
                     <Box margin="small">
                         <Paragraph fill={true}>
@@ -314,17 +214,21 @@ export const CapTableCreatePage: React.FC<Props> = ({ ...props }) => {
                         {/* <Paragraph fill>Det kreves {totalTransactions + 1} signereing for å opprette dette selskapet, utstede aksjene og godkjenne selskapet hos Brreg. Lommeboken vil forslå signering for deg.</Paragraph> */}
                     </Box>
                 </AccordionPanel>
+
             </Accordion>
+
             <Button
                 size="large"
-                label="Opprett aksjeeierbok"
-                disabled={step !== STEP.CONFIRM || !orgData || !batchIssueData /* || deploying */}
-                onClick={() => deploy()}></Button>
+                label={requireSigner ? "Koble til lommebok" : "Opprett aksjeeierbok"}
+                disabled={step !== STEP.CONFIRM || !orgData || !privateTokenTransfers /* || deploying */}
+                onClick={() => createCapTable()}>
+            </Button>
             {deploying && (
                 <Box align="center">
-                    <Loading size={50}></Loading>
+                    <Spinner></Spinner>
                 </Box>
             )}
-        </Box>
-    );
-};
+
+        </Box >
+    )
+}

@@ -1,10 +1,13 @@
-import { ERC1400 } from '@brok/captable-contracts';
-import { Box, Text } from 'grommet';
-import React, { useContext, useEffect, useState } from 'react';
-import { Route, Switch, useParams, useRouteMatch } from 'react-router-dom';
-import { Details } from '../components/CapTable/Details';
-import { Loading } from '../components/ui/Loading';
-import { ERC1400Context } from '../hardhat/ForvaltContext';
+import { ethers } from 'ethers';
+import { useQuery } from 'graphql-hooks';
+import { Box, Heading, Paragraph, Spinner } from 'grommet';
+import React, { useContext } from 'react';
+import { useParams } from 'react-router-dom';
+import { CapTableActions } from '../components/CapTableActions';
+import { CapTableBalances } from '../components/CapTableBalances';
+import { CapTableDetails } from '../components/CapTableDetails';
+import { SymfoniContext } from '../context/SymfoniContext';
+import { CapTableGraphQL, CapTableGraphQLTypes } from '../utils/CapTableGraphQL.utils';
 
 interface Props {
 }
@@ -12,11 +15,16 @@ interface Props {
 interface RouteParams {
     address: string
 }
+
+
+
 export const CapTablePage: React.FC<Props> = ({ ...props }) => {
     const { address } = useParams<RouteParams>();
-    const { path } = useRouteMatch()
-    const erc1400 = useContext(ERC1400Context);
-    const [capTable, setCapTable] = useState<ERC1400>();
+    const { address: currentSignerAddress } = useContext(SymfoniContext);
+
+    const { loading, error, data } =
+        useQuery<CapTableGraphQLTypes.CapTableQuery.Response>(CapTableGraphQL.CAP_TABLE_QUERY(address));
+
     // const { loading, error, data } = useQuery<CapTableTypes.Types.CapTable>(CapTableTypes.Queries.CAP_TABLE_QUERY(address), {
     //     variables: {
     //         limit: 10
@@ -24,28 +32,38 @@ export const CapTablePage: React.FC<Props> = ({ ...props }) => {
     // })
 
 
-    useEffect(() => {
-        const _capTable = erc1400.connect(address)
-        setCapTable(_capTable)
-    }, [erc1400, address])
+    // useEffect(() => {
+    //     const _capTable = erc1400.connect(address)
+    //     setCapTable(_capTable)
+    // }, [erc1400, address])
+    const isCurrentWalletConntroller = !!currentSignerAddress && !!data && data.capTable.controllers.includes(currentSignerAddress)
+
 
 
     return (
         <Box>
-            {!capTable &&
-                <Box align="center" gap="small">
-                    <Loading size={50}>
-                    </Loading>
-                    <Text>Laster aksjeeierboken...</Text>
+            {loading && <Spinner></Spinner>}
+            {error && <Paragraph>Noe galt skjedde</Paragraph>}
+            {data &&
+                <Box gap="small">
+                    <Heading level={3}>Nøkkelopplysninger</Heading>
+                    <CapTableDetails data={{
+                        boardDirector: data.capTable.boardDirector,
+                        active: data.capTable.status === "APPROVED",
+                        isCurrentWalletConntroller,
+                        name: data.capTable.name,
+                        organizationNuber: data.capTable.orgnr,
+                        totalSupply: ethers.utils.formatEther(data.capTable.totalSupply)
+                    }}></CapTableDetails>
+
+                    <Heading level={3}>Handlinger</Heading>
+                    <CapTableActions capTableAddress={address}></CapTableActions>
+
+                    <Heading level={3}>Aksjeeierboken</Heading>
+                    <CapTableBalances capTableAddress={address}></CapTableBalances>
                 </Box>
             }
-            <Switch>
-                {capTable &&
-                    <>
-                        <Route path={`${path}`} exact={true} render={() => <Details capTable={capTable} />} />
-                    </>
-                }
-            </Switch>
+
         </Box >
     )
 }
