@@ -8,6 +8,7 @@ import { Edit } from 'grommet-icons';
 import useInterval from '../utils/useInterval';
 import { BrokContext } from '../context/BrokContext';
 import { useAsyncEffect } from 'use-async-effect';
+var debug = require("debug")("component:CapTableBalances");
 
 interface Props {
     capTableAddress: string
@@ -24,12 +25,21 @@ export const CapTableBalances: React.FC<Props> = ({ ...props }) => {
     }, 4000)
 
     useAsyncEffect(async (isMounted) => {
-        const response = await getUnclaimedShares()
-        if (response.status === 200) {
-            if (isMounted()) {
-                console.log(response.data)
+        try {
+            const response = await getUnclaimedShares()
+            if (response.status === 200) {
+                if (isMounted()) {
+                    console.log(response.data)
+                }
+            }
+        } catch (error: any) {
+            if ("message" in error) {
+                debug(error.message)
+            } else {
+                debug("error in getUnclaimedShares", error)
             }
         }
+
     }, [])
 
 

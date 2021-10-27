@@ -4,6 +4,7 @@ import { SymfoniContext } from "./SymfoniContext";
 import { useLocalStorage } from "./../utils/useLocalstorage";
 import { toast } from "react-toastify";
 import { SignatureRequest } from "../utils/SignerRequestHandler";
+import { Box, Button, Text } from "grommet";
 
 var debug = require("debug")("context:brok:");
 
@@ -86,28 +87,31 @@ export const useBrok = () => {
     const [token, setToken] = useLocalStorage<string>("permissionBrokToken", "");
     const { signer, initSigner, signatureRequestHandler } = useContext(SymfoniContext);
 
-    const requestPermissionTokenFromSigner = async () => {
+    const tryFetchPermissionTokenFromSigner = async () => {
         // TODO fix real valid check of token
         if (token !== "") {
             return token;
         }
-
         debug("requestPermissionTokenFromSigner start checking for signer");
 
         if (!signer) {
-            debug("doesnt have signer");
-            initSigner();
-            toast("Koble til med lommebok for å se all informasjon på denne siden.")
-            return
+            debug("requestPermissionTokenFromSigner do NOT have signer");
+            toast(
+                <Box gap="small">
+                    <Text size="xsmall">Se mer informasjon på denne siden ved å koble til en lommebok.</Text>
+                    <Button size="small" label="Koble til lommebok" onClick={() => initSigner()}></Button>
+                </Box>
+            )
+            throw Error("Trenger tilgang for å se all informasjon på denne siden.")
         }
 
         if (!("request" in signer)) {
             toast("Klarer ikke å koble til din lommebok.")
-            return
+            throw Error("Klarer ikke å koble til din lommebok.")
         }
 
         const request: SignatureRequest = {
-            message: "Godkjenn Brønnøysundregistrene Forvalt å gjøre spørringer på dine vegne",
+            message: "Gi Brønnøysundregistrene Forvalt applikasjonen tilgang til å gjøre spørringer på dine vegne",
             fn: async () => {
                 const url = REACT_APP_USE_LOCAL_ENVIROMENT === "true" ? "http://localhost:3004" : REACT_APP_BROK_HELPERS_URL;
                 const paths = ["/captable/*", "/unclaimed/*"].map(path => `${url}${path}`)
@@ -133,8 +137,8 @@ export const useBrok = () => {
             debug("userTokenJwt from Symfoni ID", userTokenJwt);
             setToken(userTokenJwt);
         } catch (e: any) {
-            debug("[ERROR] requestPermissionTokenFromSigner", e);
-            throw e;
+            debug("requestPermissionTokenFromSigner hadde signer feil", e);
+            throw Error("Feil ved signering av tilgangsforespørsel")
         }
         return userTokenJwt;
     };
@@ -169,7 +173,7 @@ export const useBrok = () => {
     };
 
     const getCaptableShareholders = async (captableAddress: string) => {
-        const bearerToken = await requestPermissionTokenFromSigner();
+        const bearerToken = await tryFetchPermissionTokenFromSigner();
         const url = REACT_APP_USE_LOCAL_ENVIROMENT === "true" ? "http://localhost:3004" : REACT_APP_BROK_HELPERS_URL;
         return await axios.get<Shareholder[]>(`${url}/captable/${captableAddress}/shareholder/list`, {
             headers: {
@@ -179,7 +183,7 @@ export const useBrok = () => {
     };
 
     const getCaptableShareholder = async (captableAddress: string, shareholderId: string) => {
-        const bearerToken = await requestPermissionTokenFromSigner();
+        const bearerToken = await tryFetchPermissionTokenFromSigner();
         const url = REACT_APP_USE_LOCAL_ENVIROMENT === "true" ? "http://localhost:3004" : REACT_APP_BROK_HELPERS_URL;
         return await axios.get<Shareholder>(`${url}/captable/${captableAddress}/shareholder/${shareholderId}`, {
             headers: {
@@ -192,7 +196,7 @@ export const useBrok = () => {
 
     // requires in jwt ['cacheable', 'domain', 'paths']; and user need to have entity in brok helpers
     const getUnclaimedShares = async () => {
-        const bearerToken = await requestPermissionTokenFromSigner();
+        const bearerToken = await tryFetchPermissionTokenFromSigner();
         const url = REACT_APP_USE_LOCAL_ENVIROMENT === "true" ? "http://localhost:3004" : REACT_APP_BROK_HELPERS_URL;
         return await axios.get<Unclaimed[]>(`${url}/unclaimed/list`, {
             headers: {
