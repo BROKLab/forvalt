@@ -59,9 +59,9 @@ function App() {
               </Box>
             </BrokProvider>
           </SymfoniProvider>
+          <ToastContainer></ToastContainer>
         </Grommet>
       </ClientContext.Provider>
-      <ToastContainer></ToastContainer>
     </BrowserRouter>
   );
 }
