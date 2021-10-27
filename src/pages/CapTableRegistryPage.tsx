@@ -1,7 +1,7 @@
 import { useQuery } from "graphql-hooks";
 import { Box, Heading, Paragraph, Spinner } from "grommet";
 import React from "react";
-import { CapTableList } from "../components/CapTableRegistryList";
+import { CapTableList } from "../components/CapTableList";
 import useInterval from "../utils/useInterval";
 
 
@@ -34,16 +34,21 @@ export const CapTableRegistryPage: React.FC<Props> = ({ ...props }) => {
 
     useInterval(() => {
         refetch()
-    }, 2000)
+    }, 5000)
 
     return (
         <Box>
             <Heading>Aksjeeierbokregisteret</Heading>
-            {loading && <Spinner></Spinner>}
+
             {error && <Paragraph>Noe galt skjedde</Paragraph>}
             {data &&
                 <CapTableList capTables={data.capTables}></CapTableList>
             }
+            <Box margin="small" align="center" height="small">
+                {loading &&
+                    <Spinner></Spinner>
+                }
+            </Box>
         </Box>
     );
 };

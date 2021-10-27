@@ -41,7 +41,7 @@ const defaultValues: Record<string, PrivateTokenTransferData[]> = {
     test: [
 
         {
-            identifier: "17107292926",
+            identifier: "11126138727",
             address: "",
             amount: "1000",
             partition: DEFAULT_CAPTABLE_PARTITION,
@@ -99,19 +99,22 @@ export const PrivateTokenTransferForm: React.FC<Props> = ({ ...props }) => {
     // TODO - Make this more explicit. Add borad director if multiple 
     useEffect(() => {
         if (props.multiple) {
-            prepend({
-                identifier: "",
-                address: "",
-                amount: "0",
-                partition: DEFAULT_CAPTABLE_PARTITION,
-                name: "",
-                streetAddress: "Testveien 424",
-                postalcode: "1344",
-                email: "styreleder@mail.com",
-                isBoardDirector: true,
-            }, {})
+            // if no boardDirector, add it
+            if (!watchFieldArray.some(s => s.isBoardDirector)) {
+                prepend({
+                    identifier: "",
+                    address: "",
+                    amount: "0",
+                    partition: DEFAULT_CAPTABLE_PARTITION,
+                    name: "",
+                    streetAddress: "",
+                    postalcode: "",
+                    email: "",
+                    isBoardDirector: true,
+                }, {})
+            }
         }
-    }, [])
+    }, [prepend, props.multiple, watchFieldArray])
 
     // Get partitions if capTable is set
     useEffect(() => {
@@ -233,7 +236,7 @@ export const PrivateTokenTransferForm: React.FC<Props> = ({ ...props }) => {
                             <TextInput
                                 {...register(`${enviroment}.${index}.name` as const)}
                                 disabled={field.isBoardDirector || hasAddress(index)}
-                                placeholder={"Navn"}
+                                placeholder={field.isBoardDirector ? "Hentes automatisk" : "Navn"}
                                 size="small"></TextInput>
                         </Box>
                         <Box>

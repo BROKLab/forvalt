@@ -18,10 +18,9 @@ export const CapTableBalances: React.FC<Props> = ({ ...props }) => {
 
     useInterval(() => {
         refetch()
-    }, 2000)
+    }, 4000)
     return (
         <Box>
-            {loading && <Spinner></Spinner>}
             {error && <Paragraph>Noe galt skjedde</Paragraph>}
             {data &&
                 <DataTable
@@ -64,6 +63,11 @@ export const CapTableBalances: React.FC<Props> = ({ ...props }) => {
                 >
                 </DataTable>
             }
+            <Box margin="small" align="center" height="small">
+                {loading &&
+                    <Spinner></Spinner>
+                }
+            </Box>
         </Box>
     )
 }
