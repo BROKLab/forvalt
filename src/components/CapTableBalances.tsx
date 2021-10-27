@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { Box, Button, DataTable, Paragraph, Spinner, Text } from 'grommet';
 import { CapTableGraphQL, CapTableGraphQLTypes } from '../utils/CapTableGraphQL.utils';
 import { useQuery } from 'graphql-hooks';
@@ -6,6 +6,8 @@ import { FormatEthereumAddress } from './FormatEthereumAddress';
 import { ethers } from 'ethers';
 import { Edit } from 'grommet-icons';
 import useInterval from '../utils/useInterval';
+import { BrokContext } from '../context/BrokContext';
+import { useAsyncEffect } from 'use-async-effect';
 
 interface Props {
     capTableAddress: string
@@ -15,10 +17,22 @@ export const CapTableBalances: React.FC<Props> = ({ ...props }) => {
     const { loading, error, data, refetch } =
         useQuery<CapTableGraphQLTypes.BalancesQuery.Response>(CapTableGraphQL.BALANCES_QUERY(props.capTableAddress));
 
+    const { getUnclaimedShares } = useContext(BrokContext)
 
     useInterval(() => {
         refetch()
     }, 4000)
+
+    useAsyncEffect(async (isMounted) => {
+        const response = await getUnclaimedShares()
+        if (response.status === 200) {
+            if (isMounted()) {
+                console.log(response.data)
+            }
+        }
+    }, [])
+
+
     return (
         <Box>
             {error && <Paragraph>Noe galt skjedde</Paragraph>}

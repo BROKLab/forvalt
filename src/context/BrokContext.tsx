@@ -84,7 +84,7 @@ export const BrokContext = React.createContext<BrokContextInterface>(undefined!)
 
 export const useBrok = () => {
     const [token, setToken] = useLocalStorage<string>("permissionBrokToken", "");
-    const { signer, setLazySigner, signatureRequestHandler } = useContext(SymfoniContext);
+    const { signer, initSigner, signatureRequestHandler } = useContext(SymfoniContext);
 
     const requestPermissionTokenFromSigner = async () => {
         // TODO fix real valid check of token
@@ -92,31 +92,32 @@ export const useBrok = () => {
             return token;
         }
 
-        console.log("in requestPermissionToken...", "before check signer");
+        debug("requestPermissionTokenFromSigner start checking for signer");
 
         if (!signer) {
-            console.log("doesnt have signer");
-            setLazySigner(false);
-            toast("Du trenger å koble til en lommebok for å se denne siden.")
+            debug("doesnt have signer");
+            initSigner();
+            toast("Koble til med lommebok for å se all informasjon på denne siden.")
             return
         }
 
         if (!("request" in signer)) {
-            toast("Klarer ikke å koble til din signeringsenhet.")
+            toast("Klarer ikke å koble til din lommebok.")
             return
         }
 
         const request: SignatureRequest = {
-            message: "For å bruke Forvalt må du godkjenne .....",
+            message: "Godkjenn Brønnøysundregistrene Forvalt å gjøre spørringer på dine vegne",
             fn: async () => {
-
-                await signer.request("did_createVerifiableCredential", [
+                const url = REACT_APP_USE_LOCAL_ENVIROMENT === "true" ? "http://localhost:3004" : REACT_APP_BROK_HELPERS_URL;
+                const paths = ["/captable/*", "/unclaimed/*"].map(path => `${url}${path}`)
+                await signer.request("symfoniID_accessVP", [
                     {
                         verifier: BROK_HELPERS_VERIFIER,
                         payload: {
-                            domain: "localhost:3000",
+                            accessTo: "localhost:3000",
                             cacheable: true,
-                            paths: ["/entities/*", "/captable/*", "/unclaimed/*"],
+                            paths: paths,
                         },
                     },
                 ]);
@@ -129,10 +130,10 @@ export const useBrok = () => {
         try {
             const results = (await signatureRequestHandler.results()) as string[];
             userTokenJwt = results[0];
-            console.log("userTokenJwt from Symfoni ID", userTokenJwt);
+            debug("userTokenJwt from Symfoni ID", userTokenJwt);
             setToken(userTokenJwt);
         } catch (e: any) {
-            console.log("[ERROR] requestPermissionTokenFromSigner", e);
+            debug("[ERROR] requestPermissionTokenFromSigner", e);
             throw e;
         }
         return userTokenJwt;
@@ -190,7 +191,7 @@ export const useBrok = () => {
     // UNCLAIMED
 
     // requires in jwt ['cacheable', 'domain', 'paths']; and user need to have entity in brok helpers
-    const listUnclaimed = async () => {
+    const getUnclaimedShares = async () => {
         const bearerToken = await requestPermissionTokenFromSigner();
         const url = REACT_APP_USE_LOCAL_ENVIROMENT === "true" ? "http://localhost:3004" : REACT_APP_BROK_HELPERS_URL;
         return await axios.get<Unclaimed[]>(`${url}/unclaimed/list`, {
@@ -223,7 +224,7 @@ export const useBrok = () => {
         createCaptable,
         getCaptableShareholders,
         getCaptableShareholder,
-        listUnclaimed,
+        getUnclaimedShares,
         createUnclaimed,
         claim,
         getCaptableLegacy
@@ -234,7 +235,7 @@ export const useBrok = () => {
 export const BrokProvider: React.FC<Props> = ({ ...props }) => {
     const brok = useBrok()
 
-    const context = {
+    const context: BrokContextInterface = {
         ...brok
     }
     return <BrokContext.Provider value={context}>{props.children}</BrokContext.Provider>;
