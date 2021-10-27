@@ -60,7 +60,7 @@ export const CapTablePage: React.FC<Props> = ({ ...props }) => {
                     <CapTableActions capTableAddress={address}></CapTableActions>
 
                     <Heading level={3}>Aksjeeierboken</Heading>
-                    <CapTableBalances capTableAddress={address}></CapTableBalances>
+                    <CapTableBalances capTableAddress={address} name={data.capTable.name}></CapTableBalances>
                 </Box>
             }
 
