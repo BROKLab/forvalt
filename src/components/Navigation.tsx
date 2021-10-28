@@ -25,14 +25,15 @@ export const Navigation: React.FC<Props> = () => {
                 <Link to="/captable/create">
                     <Button size="small" label="Opprett" hoverIndicator focusIndicator={false} />
                 </Link>
-                {/* <Link to="/que/list">
-                    <Button size="small" label="Kø" hoverIndicator focusIndicator={false} />
-                </Link> */}
+
                 <Link to="/register/list">
                     <Button size="small" label="Register" hoverIndicator focusIndicator={false} />
                 </Link>
                 <Link to="/me">
                     <Button label={"Mine aksjer"} size="small" hoverIndicator focusIndicator={false}></Button>
+                </Link>
+                <Link to="/profile">
+                    <Button label={"Profil"} size="small" hoverIndicator focusIndicator={false}></Button>
                 </Link>
 
             </Box>

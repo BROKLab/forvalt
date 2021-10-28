@@ -20,7 +20,7 @@ export const CapTableBalances: React.FC<Props> = ({ ...props }) => {
     const { loading, error, data, refetch } =
         useQuery<CapTableGraphQLTypes.BalancesQuery.Response>(CapTableGraphQL.BALANCES_QUERY(props.capTableAddress));
 
-    const { getUnclaimedShares } = useContext(BrokContext)
+    const { getCaptableShareholders } = useContext(BrokContext)
 
     useInterval(() => {
         refetch()
@@ -28,7 +28,7 @@ export const CapTableBalances: React.FC<Props> = ({ ...props }) => {
 
     useAsyncEffect(async (isMounted) => {
         try {
-            const response = await getUnclaimedShares()
+            const response = await getCaptableShareholders(props.capTableAddress)
             if (response.status === 200) {
                 if (isMounted()) {
                     console.log(response.data)

@@ -1,22 +1,20 @@
-import { Heading } from "grommet";
-import React, { useContext } from "react";
-import { useAsyncEffect } from "use-async-effect";
-import { SymfoniContext } from "../context/SymfoniContext";
+import { Box, Heading } from "grommet";
+import React from "react";
 var debug = require("debug")("page:me");
 
 interface Props {}
 
 export const MePage: React.FC<Props> = () => {
-    const { setLazySigner, lazySigner } = useContext(SymfoniContext)
-    useAsyncEffect((isMounted) => {
-        debug(`lazySigner => ${lazySigner}`)
-        setLazySigner(false)
-    })
+    debug("Render")
+
     return (
-        <>
+        <Box gap="small">
             <Heading level={3}>
                 Mine aksjer
+                <Box>
+
+                </Box>
             </Heading>
-        </>
+        </Box>
     );
 };

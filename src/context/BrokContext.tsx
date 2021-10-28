@@ -175,6 +175,15 @@ export const useBrok = () => {
     const getCaptableShareholders = async (captableAddress: string) => {
         const bearerToken = await tryFetchPermissionTokenFromSigner();
         const url = REACT_APP_USE_LOCAL_ENVIROMENT === "true" ? "http://localhost:3004" : REACT_APP_BROK_HELPERS_URL;
+        // const mock = {
+        //     name: shareholder.name,
+        //     city: shareholder.city,
+        //     birthdate: shareholder.birthdate,
+        //     id: shareholder.digitalEntity.id,
+        //     postcode: undefined,
+        //     email: undefined,
+        //     identifier: undefined,
+        // }
         return await axios.get<Shareholder[]>(`${url}/captable/${captableAddress}/shareholder/list`, {
             headers: {
                 Authorization: `Bearer ${bearerToken}`,

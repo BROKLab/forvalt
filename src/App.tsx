@@ -15,6 +15,7 @@ import { CapTableRegistryPage } from './pages/CapTableRegistryPage';
 import { ClientContext, GraphQLClient } from "graphql-hooks";
 import { CapTableQuePage } from './pages/CapTableQuePage';
 import { CapTablePage } from './pages/CapTablePage';
+import { ProfilPage } from './pages/ProfilePage';
 
 
 function App() {
@@ -45,6 +46,7 @@ function App() {
                     <Route path="/register" component={CapTableRegistryPage} />
                     <Route path="/que" component={CapTableQuePage} />
                     <Route path="/me" component={MePage} />
+                    <Route path="/profile" component={ProfilPage} />
                   </Switch>
                 </Main>
                 {/* footer */}
