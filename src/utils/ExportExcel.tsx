@@ -1,6 +1,6 @@
 import { ethers } from "ethers";
 import * as FileSaver from "file-saver";
-import { Box, Button, RadioButtonGroup, Text } from "grommet";
+import { Box, Button, RadioButtonGroup } from "grommet";
 import React, { useState } from "react";
 import * as XLSX from "xlsx";
 import { CapTableGraphQLTypes } from "./CapTableGraphQL.utils";

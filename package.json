@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@brok/captable-contracts": "^3.0.0",
+    "@brok/captable-contracts": "^3.0.1",
     "@symfoni/walletconnect-v2-ethers-signer": "^0.2.6",
     "@testing-library/jest-dom": "^5.11.4",
     "@testing-library/react": "^11.1.0",
