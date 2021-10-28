@@ -1,10 +1,10 @@
 import axios from "axios";
+import { Box, Button, Text } from "grommet";
 import React, { useContext } from "react";
-import { SymfoniContext } from "./SymfoniContext";
-import { useLocalStorage } from "./../utils/useLocalstorage";
 import { toast } from "react-toastify";
 import { SignatureRequest } from "../utils/SignerRequestHandler";
-import { Box, Button, Text } from "grommet";
+import { useLocalStorage } from "./../utils/useLocalstorage";
+import { SymfoniContext } from "./SymfoniContext";
 
 var debug = require("debug")("context:brok:");
 
@@ -75,11 +75,11 @@ export type BrokHelpersPresentResponse = {
         amount: string;
         capTableAddress: string;
         claimed: boolean;
-        message: string
+        message: string;
     }[];
 };
 
-export type BrokContextInterface = ReturnType<typeof useBrok>
+export type BrokContextInterface = ReturnType<typeof useBrok>;
 
 export const BrokContext = React.createContext<BrokContextInterface>(undefined!);
 
@@ -101,20 +101,20 @@ export const useBrok = () => {
                     <Text size="xsmall">Se mer informasjon på denne siden ved å koble til en lommebok.</Text>
                     <Button size="small" label="Koble til lommebok" onClick={() => initSigner()}></Button>
                 </Box>
-            )
-            throw Error("Trenger tilgang for å se all informasjon på denne siden.")
+            );
+            throw Error("Trenger tilgang for å se all informasjon på denne siden.");
         }
 
         if (!("request" in signer)) {
-            toast("Klarer ikke å koble til din lommebok.")
-            throw Error("Klarer ikke å koble til din lommebok.")
+            toast("Klarer ikke å koble til din lommebok.");
+            throw Error("Klarer ikke å koble til din lommebok.");
         }
 
         const request: SignatureRequest = {
             message: "Gi Brønnøysundregistrene Forvalt applikasjonen tilgang til å gjøre spørringer på dine vegne",
             fn: async () => {
                 const url = REACT_APP_USE_LOCAL_ENVIROMENT === "true" ? "http://localhost:3004" : REACT_APP_BROK_HELPERS_URL;
-                const paths = ["/captable/*", "/unclaimed/*"].map(path => `${url}${path}`)
+                const paths = ["/captable/*", "/unclaimed/*"].map((path) => `${url}${path}`);
                 await signer.request("symfoniID_accessVP", [
                     {
                         verifier: BROK_HELPERS_VERIFIER,
@@ -125,7 +125,6 @@ export const useBrok = () => {
                         },
                     },
                 ]);
-
             },
         };
         if (!signatureRequestHandler) throw Error("TODO: Create error");
@@ -138,7 +137,7 @@ export const useBrok = () => {
             setToken(userTokenJwt);
         } catch (e: any) {
             debug("requestPermissionTokenFromSigner hadde signer feil", e);
-            throw Error("Feil ved signering av tilgangsforespørsel")
+            throw Error("Feil ved signering av tilgangsforespørsel");
         }
         return userTokenJwt;
     };
@@ -147,8 +146,8 @@ export const useBrok = () => {
     // jwt requiredCredential: ['orgnr', 'unclaimed', 'acceptedBoardDirectorTOADate', 'acceptedBoardDirectorTOAVersion'],
     const createCaptable = async (jwt: string) => {
         const url = REACT_APP_USE_LOCAL_ENVIROMENT === "true" ? "http://localhost:3004" : REACT_APP_BROK_HELPERS_URL;
-        debug(`REACT_APP_USE_LOCAL_ENVIROMENT ${REACT_APP_USE_LOCAL_ENVIROMENT === "true"} - ${REACT_APP_USE_LOCAL_ENVIROMENT}`)
-        debug(`url ${url}`)
+        debug(`REACT_APP_USE_LOCAL_ENVIROMENT ${REACT_APP_USE_LOCAL_ENVIROMENT === "true"} - ${REACT_APP_USE_LOCAL_ENVIROMENT}`);
+        debug(`url ${url}`);
         return axios.post<BrokHelpersPresentResponse>(`${url}/vcs/present`, {
             jwt,
             skipAmountControl: process.env.REACT_APP_IS_TEST ? true : false,
@@ -160,8 +159,8 @@ export const useBrok = () => {
 
     const getCaptableLegacy = async (search: string) => {
         const url = REACT_APP_USE_LOCAL_ENVIROMENT === "true" ? "http://localhost:3004" : REACT_APP_BROK_HELPERS_URL;
-        debug(`REACT_APP_USE_LOCAL_ENVIROMENT ${REACT_APP_USE_LOCAL_ENVIROMENT === "true"} - ${REACT_APP_USE_LOCAL_ENVIROMENT}`)
-        debug(`url ${url}`)
+        debug(`REACT_APP_USE_LOCAL_ENVIROMENT ${REACT_APP_USE_LOCAL_ENVIROMENT === "true"} - ${REACT_APP_USE_LOCAL_ENVIROMENT}`);
+        debug(`url ${url}`);
         return await axios.get<CapTableLegacyRespons>(`${url}/captable/legacy`, {
             headers: {
                 Accept: "application/json",
@@ -173,22 +172,86 @@ export const useBrok = () => {
     };
 
     const getCaptableShareholders = async (captableAddress: string) => {
-        const bearerToken = await tryFetchPermissionTokenFromSigner();
-        const url = REACT_APP_USE_LOCAL_ENVIROMENT === "true" ? "http://localhost:3004" : REACT_APP_BROK_HELPERS_URL;
-        // const mock = {
-        //     name: shareholder.name,
-        //     city: shareholder.city,
-        //     birthdate: shareholder.birthdate,
-        //     id: shareholder.digitalEntity.id,
-        //     postcode: undefined,
-        //     email: undefined,
-        //     identifier: undefined,
-        // }
-        return await axios.get<Shareholder[]>(`${url}/captable/${captableAddress}/shareholder/list`, {
-            headers: {
-                Authorization: `Bearer ${bearerToken}`,
-            },
-        });
+        // const bearerToken = await tryFetchPermissionTokenFromSigner();
+        // const url = REACT_APP_USE_LOCAL_ENVIROMENT === "true" ? "http://localhost:3004" : REACT_APP_BROK_HELPERS_URL;
+
+        return {
+            status: 200,
+            statusText: "Alt i orden",
+            config: {},
+            headers: {},
+            data: [
+                {
+                    identifier: undefined,
+                    name: "Asgeir Ågård",
+                    city: "Nordfjordeid",
+                    postcode: undefined,
+                    email: undefined,
+                    birthdate: "12.10.1984",
+                    id: "1",
+                },
+                {
+                    identifier: undefined,
+                    name: "Fredrik Tangen",
+                    city: "Oslo",
+                    postcode: undefined,
+                    email: undefined,
+                    birthdate: "03.05.1971",
+                    id: "1",
+                },
+                {
+                    identifier: undefined,
+                    name: "Ola Jensen",
+                    city: "Oslo",
+                    postcode: undefined,
+                    email: undefined,
+                    birthdate: "28.09.1993",
+                    id: "1",
+                },
+            ] as Shareholder[],
+        };
+
+        return {
+            status: 200,
+            statusText: "Alt i orden",
+            config: {},
+            headers: {},
+            data: [
+                {
+                    identifier: "0x2114d77a3d3376149db0435991c8dbd62d48413e",
+                    email: "test0211@test.no",
+                    name: "Asgeir Ågård",
+                    city: "Nordfjordeid",
+                    postcode: 1234,
+                    birthdate: "01.12.2000",
+                    id: "1",
+                },
+                {
+                    identifier: "0x4e9ea31029f8c01a8f1c5326a5348f8fb5ceb616",
+                    email: "test49e@test.no",
+                    name: "Fredrik Tangen",
+                    city: "Oslo",
+                    postcode: 6551,
+                    birthdate: "01.12.1980",
+                    id: "1",
+                },
+                {
+                    identifier: "0x64832336798d9816ad42a023958df48104fb5650",
+                    email: "test6483@test.no",
+                    name: "Ola Jensen",
+                    city: "Oslo",
+                    postcode: 1557,
+                    birthdate: "01.10.1945",
+                    id: "1",
+                },
+            ],
+        };
+
+        // return await axios.get<Shareholder[]>(`${url}/captable/${captableAddress}/shareholder/list`, {
+        //     headers: {
+        //         Authorization: `Bearer ${bearerToken}`,
+        //     },
+        // });
     };
 
     const getCaptableShareholder = async (captableAddress: string, shareholderId: string) => {
@@ -240,16 +303,15 @@ export const useBrok = () => {
         getUnclaimedShares,
         createUnclaimed,
         claim,
-        getCaptableLegacy
+        getCaptableLegacy,
     };
-
-}
+};
 
 export const BrokProvider: React.FC<Props> = ({ ...props }) => {
-    const brok = useBrok()
+    const brok = useBrok();
 
     const context: BrokContextInterface = {
-        ...brok
-    }
+        ...brok,
+    };
     return <BrokContext.Provider value={context}>{props.children}</BrokContext.Provider>;
 };
