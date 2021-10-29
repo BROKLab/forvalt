@@ -1254,10 +1254,10 @@
   resolved "https://registry.yarnpkg.com/@bcoe/v8-coverage/-/v8-coverage-0.2.3.tgz#75a2e8b51cb758a7553d6804a5932d7aace75c39"
   integrity sha512-0hYQ8SB4Db5zvZB4axdMHGwEaQjkZzFjQiN9LVYvIFB2nSUHW9tYpxWriPrWDASIxiaXax83REcLxuSdnGPZtw==
 
-"@brok/captable-contracts@^3.0.0":
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/@brok/captable-contracts/-/captable-contracts-3.0.0.tgz#f70eaed4374faaf67b9b16096f64c4a552394dc2"
-  integrity sha512-NUbzK3RIkJbGrDl5U7l/26YSInzOVwkbRPNiCuUwlYNgu7dZE8b9HU/EkG3Y4a3HMSkd+2w5AYHZEcUa+GiGoQ==
+"@brok/captable-contracts@^3.0.1":
+  version "3.0.2"
+  resolved "https://registry.yarnpkg.com/@brok/captable-contracts/-/captable-contracts-3.0.2.tgz#aa814d0e5201e81045cfbcf6e6f245032c80620e"
+  integrity sha512-rvED73dHkEFGO+ckdoaZ5afuwkMKxT2TJwOP/fvwN48F9rViTpcUC16ZXKpj4OuBrggzpmZ1KpagbJnLQY3EZw==
   dependencies:
     hardhat-spdx-license-identifier "^2.0.3"
 

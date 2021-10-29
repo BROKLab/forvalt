@@ -32,7 +32,7 @@ export const CapTableBalances: React.FC<Props> = ({ ...props }) => {
 
         const _capTableBalance = mergeBalancesWithShareholderDate(data.balances, shareholders);
         setCapTableBalance(_capTableBalance);
-    }, [shareholdersLoading, loading]);
+    }, [shareholdersLoading, loading, data, shareholders]);
 
     useInterval(() => {
         refetch();
