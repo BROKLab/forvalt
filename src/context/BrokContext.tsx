@@ -194,47 +194,47 @@ export const useBrok = () => {
         // const bearerToken = await tryFetchPermissionTokenFromSigner();
         // const url = REACT_APP_USE_LOCAL_ENVIROMENT === "true" ? "http://localhost:3004" : REACT_APP_BROK_HELPERS_URL;
 
-        return {
-            status: 200,
-            statusText: "Alt i orden",
-            config: {},
-            headers: {},
-            data: {
-                yourRole: "PUBLIC",
-                shareholders: [
-                    {
-                        address: "0x2114d77a3d3376149db0435991c8dbd62d48413e",
-                        identifier: undefined,
-                        name: "Asgeir Ågård",
-                        city: "Nordfjordeid",
-                        postcode: undefined,
-                        email: undefined,
-                        birthdate: "12.10.1984",
-                        id: "1",
-                    },
-                    {
-                        address: "0x4e9ea31029f8c01a8f1c5326a5348f8fb5ceb616",
-                        identifier: undefined,
-                        name: "Fredrik Tangen",
-                        city: "Oslo",
-                        postcode: undefined,
-                        email: undefined,
-                        birthdate: "03.05.1971",
-                        id: "1",
-                    },
-                    {
-                        address: "0x64832336798d9816ad42a023958df48104fb5650",
-                        identifier: undefined,
-                        name: "Ola Jensen",
-                        city: "Oslo",
-                        postcode: undefined,
-                        email: undefined,
-                        birthdate: "28.09.1993",
-                        id: "1",
-                    },
-                ] as Shareholder[],
-            },
-        };
+        // return {
+        //     status: 200,
+        //     statusText: "Alt i orden",
+        //     config: {},
+        //     headers: {},
+        //     data: {
+        //         yourRole: "PUBLIC",
+        //         shareholders: [
+        //             {
+        //                 address: "0x2114d77a3d3376149db0435991c8dbd62d48413e",
+        //                 identifier: undefined,
+        //                 name: "Asgeir Ågård",
+        //                 city: "Nordfjordeid",
+        //                 postcode: undefined,
+        //                 email: undefined,
+        //                 birthdate: "12.10.1984",
+        //                 id: "1",
+        //             },
+        //             {
+        //                 address: "0x4e9ea31029f8c01a8f1c5326a5348f8fb5ceb616",
+        //                 identifier: undefined,
+        //                 name: "Fredrik Tangen",
+        //                 city: "Oslo",
+        //                 postcode: undefined,
+        //                 email: undefined,
+        //                 birthdate: "03.05.1971",
+        //                 id: "1",
+        //             },
+        //             {
+        //                 address: "0x64832336798d9816ad42a023958df48104fb5650",
+        //                 identifier: undefined,
+        //                 name: "Ola Jensen",
+        //                 city: "Oslo",
+        //                 postcode: undefined,
+        //                 email: undefined,
+        //                 birthdate: "28.09.1993",
+        //                 id: "1",
+        //             },
+        //         ] as Shareholder[],
+        //     },
+        // };
 
         return {
             status: 200,
