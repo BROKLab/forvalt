@@ -15,7 +15,7 @@ const BROK_HELPERS_VERIFIER = process.env.REACT_APP_BROK_HELPERS_VERIFIER;
 const REACT_APP_BROK_HELPERS_URL = process.env.REACT_APP_BROK_HELPERS_URL;
 const REACT_APP_USE_LOCAL_ENVIROMENT = process.env.REACT_APP_USE_LOCAL_ENVIROMENT;
 
-export type CapTableBalance = Shareholder & CapTableGraphQLTypes.BalancesQuery.Balance;
+export type CapTableBalance = Shareholder & CapTableGraphQLTypes.BalancesQuery.Balance ;
 export type ROLE = "BOARD_DIRECTOR" | "PUBLIC" | "SHAREHOLDER";
 
 export const getRoleName = (role: ROLE) => {

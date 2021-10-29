@@ -47,7 +47,7 @@ export const CapTableBalances: React.FC<Props> = ({ ...props }) => {
                 const shareholder = shareholders.find((s) => s.address === balance.tokenHolder.address);
                 if (!shareholder) {
                     console.warn("Could not find shareholder belonging to balance");
-                    return;
+                    return undefined
                 }
                 return {
                     ...shareholder,
@@ -79,141 +79,89 @@ export const CapTableBalances: React.FC<Props> = ({ ...props }) => {
         }
     }, []);
 
-    type TableProps = {
-        data: CapTableBalance[];
-        isBoardDirector: boolean;
-    };
 
-    const CapTableBalanceTable = ({ data, isBoardDirector }: TableProps) => {
-        if (isBoardDirector) {
+    const roleDependendtColums= () => {
+        return [
+            // {
+            //     property: "address",
+            //     header: <Text>ID</Text>,
+            //     render: (data) => <FormatEthereumAddress address={data.tokenHolder.address}></FormatEthereumAddress>,
+            // },
             {
-                return (
-                    data && (
-                        <DataTable
-                            data={capTableBalance ? capTableBalance : []}
-                            primaryKey={false}
-                            columns={[
-                                // {
-                                //     property: "address",
-                                //     header: <Text>ID</Text>,
-                                //     render: (data) => <FormatEthereumAddress address={data.tokenHolder.address}></FormatEthereumAddress>,
-                                // },
-                                {
-                                    property: "name",
-                                    header: <Text>Navn</Text>,
-                                    render: (data) => data.name,
-                                },
-                                {
-                                    property: "city",
-                                    header: <Text>By</Text>,
-                                    render: (data) => data.city,
-                                },
-                                {
-                                    property: "postcode",
-                                    header: <Text>Postkode</Text>,
-                                    render: (data) => data.postcode ?? "",
-                                },
-                                {
-                                    property: "email",
-                                    header: <Text>Epost</Text>,
-                                    render: (data) => data.email ?? "",
-                                },
-                                {
-                                    property: "birthday",
-                                    header: <Text>Født</Text>,
-                                    render: (data) => data.birthdate ?? "",
-                                },
-                                {
-                                    property: "balance",
-                                    header: <Text>Aksjer</Text>,
-                                    render: (data) => ethers.utils.formatEther(data.amount),
-                                },
-                                {
-                                    property: "balanceByPartition",
-                                    header: <Text>Aksjeklasser</Text>,
-                                    render: (data) => data.partition,
-                                },
-                                {
-                                    property: "virtual",
-                                    header: "",
-                                    render: (data) => {
-                                        return (
-                                            <Button
-                                                icon={<Edit></Edit>}
-                                                // onClick={() => setEditEntity(data.tokenHolder.address)}
-                                                // disabled={
-                                                //     data.capTable.owner.toLowerCase() !== address?.toLowerCase()
-                                                // }
-                                            ></Button>
-                                        );
-                                    },
-                                },
-                            ]}></DataTable>
-                    )
-                );
-            }
-        } else {
+                property: "name",
+                header: <Text>Navn</Text>,
+                render: (data : CapTableBalance) => data.name,
+            },
             {
-                return (
-                    data && (
-                        <DataTable
-                            data={capTableBalance ? capTableBalance : []}
-                            primaryKey={false}
-                            columns={[
-                                // {
-                                //     property: "address",
-                                //     header: <Text>ID</Text>,
-                                //     render: (data) => <FormatEthereumAddress address={data.tokenHolder.address}></FormatEthereumAddress>,
-                                // },
-                                {
-                                    property: "name",
-                                    header: <Text>Navn</Text>,
-                                    render: (data) => data.name,
-                                },
-                                {
-                                    property: "city",
-                                    header: <Text>By</Text>,
-                                    render: (data) => data.city,
-                                },
-                                {
-                                    property: "balance",
-                                    header: <Text>Aksjer</Text>,
-                                    render: (data) => ethers.utils.formatEther(data.amount),
-                                },
-                                {
-                                    property: "balanceByPartition",
-                                    header: <Text>Aksjeklasser</Text>,
-                                    render: (data) => data.partition,
-                                },
-                                {
-                                    property: "virtual",
-                                    header: "",
-                                    render: (data) => {
-                                        return (
-                                            <Button
-                                                icon={<Edit></Edit>}
-                                                // onClick={() => setEditEntity(data.tokenHolder.address)}
-                                                // disabled={
-                                                //     data.capTable.owner.toLowerCase() !== address?.toLowerCase()
-                                                // }
-                                            ></Button>
-                                        );
-                                    },
-                                },
-                            ]}></DataTable>
-                    )
-                );
+                property: "city",
+                header: <Text>By</Text>,
+                render: (data: CapTableBalance) => data.city,
+            },
+            {
+                property: "postcode",
+                header: <Text>Postkode</Text>,
+                render: (data: CapTableBalance) => data.postcode ?? "",
+            },
+            {
+                property: "email",
+                header: <Text>Epost</Text>,
+                render: (data: CapTableBalance) => data.email ?? "",
+            },
+            {
+                property: "birthday",
+                header: <Text>Født</Text>,
+                render: (data: CapTableBalance) => data.birthdate ?? "",
+            },
+            {
+                property: "balance",
+                header: <Text>Aksjer</Text>,
+                render: (data: CapTableBalance) => ethers.utils.formatEther(data.amount),
+            },
+            {
+                property: "balanceByPartition",
+                header: <Text>Aksjeklasser</Text>,
+                render: (data: CapTableBalance) => data.partition,
+            },
+            {
+                property: "virtual",
+                header: "",
+                render: (data: CapTableBalance) => {
+                    return (
+                        <Button
+                            icon={<Edit></Edit>}
+                            // onClick={() => setEditEntity(data.tokenHolder.address)}
+                            // disabled={
+                            //     data.capTable.owner.toLowerCase() !== address?.toLowerCase()
+                            // }
+                        ></Button>
+                    );
+                },
+            },
+        ].filter(row => {
+            if(role !== "BOARD_DIRECTOR"){
+                if(["identifier", "email", "postcode"].includes(row.property)){
+                    return false
+                }
             }
-        }
-    };
+            return true
+        })
+    }
 
+ 
     return (
         <Box>
             {error && <Paragraph>Noe galt skjedde</Paragraph>}
-            <CapTableBalanceTable isBoardDirector={role === "BOARD_DIRECTOR"} data={capTableBalance} />
+
+            {data && 
+                <DataTable
+                data={capTableBalance ? capTableBalance : []}
+                primaryKey={false}
+                columns={roleDependendtColums()}
+                ></DataTable>
+                    }
             {capTableBalance && (
                 <Box fill="horizontal" direction="row" margin="small" align="center" justify="between">
-                    <Text color="blue">Vises som {getRoleName(role).toLocaleLowerCase()}</Text>
+                    <Text size="small" color="blue">Vises som {getRoleName(role).toLocaleLowerCase()}</Text>
                     <ExportExcel capTableName={props.name} data={capTableBalance} />
                 </Box>
             )}
