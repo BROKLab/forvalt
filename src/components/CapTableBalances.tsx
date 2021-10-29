@@ -54,7 +54,7 @@ export const CapTableBalances: React.FC<Props> = ({ ...props }) => {
                     ...balance,
                 };
             })
-            .filter((obj): obj is Merged => !!obj);
+            .filter((obj): obj is CapTableBalance => !!obj);
     };
 
     useAsyncEffect(async (isMounted) => {
