@@ -4,10 +4,10 @@ import { Box, Button, DataTable, Paragraph, Spinner, Text } from "grommet";
 import { Edit } from "grommet-icons";
 import React, { useContext, useEffect, useState } from "react";
 import { useAsyncEffect } from "use-async-effect";
-import { BrokContext, Shareholder } from "../context/BrokContext";
+import { BrokContext, CapTableBalance, getRoleName, ROLE, Shareholder } from "../context/BrokContext";
 import { CapTableGraphQL, CapTableGraphQLTypes } from "../utils/CapTableGraphQL.utils";
 import { ExportExcel } from "../utils/ExportExcel";
-import { FormatEthereumAddress } from "./FormatEthereumAddress";
+import useInterval from "../utils/useInterval";
 var debug = require("debug")("component:CapTableBalances");
 
 interface Props {
@@ -15,32 +15,36 @@ interface Props {
     name: string;
 }
 
-type Merged = Shareholder & CapTableGraphQLTypes.BalancesQuery.Balance;
-
 export const CapTableBalances: React.FC<Props> = ({ ...props }) => {
     const { loading, error, data, refetch } = useQuery<CapTableGraphQLTypes.BalancesQuery.Response>(
         CapTableGraphQL.BALANCES_QUERY(props.capTableAddress)
     );
-    const [brokLoading, setBrokloading] = useState(false);
-    const [isBoardDirector, setIsBoardDirector] = useState(false);
-    const [shareholders, setShareHolder] = useState<Shareholder[]>([]);
-    const [merged, setMerged] = useState<Merged[]>([]);
+    const [shareholdersLoading, getShareholdersLoading] = useState(false);
+    const [role, setRole] = useState<ROLE>("PUBLIC");
+    const [shareholders, setShareholders] = useState<Shareholder[]>([]);
+    const [capTableBalance, setCapTableBalance] = useState<CapTableBalance[]>([]);
 
     const { getCaptableShareholders } = useContext(BrokContext);
 
     useEffect(() => {
-        if (brokLoading || loading) return;
+        if (shareholdersLoading || loading) return;
         if (!data) return;
 
-        const isSameLength = data.balances.length === shareholders.length;
+        const _capTableBalance = mergeBalancesWithShareholderDate(data.balances, shareholders);
+        setCapTableBalance(_capTableBalance);
+    }, [shareholdersLoading, loading]);
+
+    useInterval(() => {
+        refetch();
+    }, 4000);
+
+    const mergeBalancesWithShareholderDate = (balances: CapTableGraphQLTypes.BalancesQuery.Balance[], shareholders: Shareholder[]) => {
+        const isSameLength = balances.length === shareholders.length;
         debug("Balances and shareholder is same length", isSameLength);
 
-        const _merged = data.balances
+        return balances
             .map((balance) => {
-                // TODO how to join them
-                const shareholder = shareholders.find((s) => s.id === balance.tokenHolder.address);
-                console.log("identifier", shareholder?.identifier);
-                console.log("address", balance.tokenHolder.address);
+                const shareholder = shareholders.find((s) => s.address === balance.tokenHolder.address);
                 if (!shareholder) {
                     console.warn("Could not find shareholder belonging to balance");
                     return;
@@ -51,27 +55,19 @@ export const CapTableBalances: React.FC<Props> = ({ ...props }) => {
                 };
             })
             .filter((obj): obj is Merged => !!obj);
-
-        console.log(_merged);
-        setMerged(_merged);
-    }, [brokLoading, loading]);
-
-    // useInterval(() => {
-    //     refetch()
-    // }, 4000)
+    };
 
     useAsyncEffect(async (isMounted) => {
         try {
-            setBrokloading(true);
+            getShareholdersLoading(true);
             const response = await getCaptableShareholders(props.capTableAddress);
 
             if (response.status === 200) {
                 if (isMounted()) {
-                    setShareHolder(response.data);
-                    setBrokloading(false);
-                    const isBoardDirector = response.data.find((sh) => sh.email !== undefined) !== undefined;
-                    debug("isBoardDirector", isBoardDirector);
-                    setIsBoardDirector(isBoardDirector);
+                    setShareholders(response.data.shareholders);
+                    setRole(response.data.yourRole as ROLE);
+                    getShareholdersLoading(false);
+                    debug("role", response.data.yourRole);
                 }
             }
         } catch (error: any) {
@@ -84,24 +80,24 @@ export const CapTableBalances: React.FC<Props> = ({ ...props }) => {
     }, []);
 
     type TableProps = {
-        data: Merged[];
+        data: CapTableBalance[];
         isBoardDirector: boolean;
     };
 
-    const Table = ({ data, isBoardDirector }: TableProps) => {
+    const CapTableBalanceTable = ({ data, isBoardDirector }: TableProps) => {
         if (isBoardDirector) {
             {
                 return (
                     data && (
                         <DataTable
-                            data={merged ? merged : []}
+                            data={capTableBalance ? capTableBalance : []}
                             primaryKey={false}
                             columns={[
-                                {
-                                    property: "address",
-                                    header: <Text>ID</Text>,
-                                    render: (data) => <FormatEthereumAddress address={data.tokenHolder.address}></FormatEthereumAddress>,
-                                },
+                                // {
+                                //     property: "address",
+                                //     header: <Text>ID</Text>,
+                                //     render: (data) => <FormatEthereumAddress address={data.tokenHolder.address}></FormatEthereumAddress>,
+                                // },
                                 {
                                     property: "name",
                                     header: <Text>Navn</Text>,
@@ -161,14 +157,14 @@ export const CapTableBalances: React.FC<Props> = ({ ...props }) => {
                 return (
                     data && (
                         <DataTable
-                            data={merged ? merged : []}
+                            data={capTableBalance ? capTableBalance : []}
                             primaryKey={false}
                             columns={[
-                                {
-                                    property: "address",
-                                    header: <Text>ID</Text>,
-                                    render: (data) => <FormatEthereumAddress address={data.tokenHolder.address}></FormatEthereumAddress>,
-                                },
+                                // {
+                                //     property: "address",
+                                //     header: <Text>ID</Text>,
+                                //     render: (data) => <FormatEthereumAddress address={data.tokenHolder.address}></FormatEthereumAddress>,
+                                // },
                                 {
                                     property: "name",
                                     header: <Text>Navn</Text>,
@@ -214,11 +210,15 @@ export const CapTableBalances: React.FC<Props> = ({ ...props }) => {
     return (
         <Box>
             {error && <Paragraph>Noe galt skjedde</Paragraph>}
-
-            <Table isBoardDirector={isBoardDirector} data={merged} />
-            {data && <ExportExcel capTableName={props.name} data={data} />}
+            <CapTableBalanceTable isBoardDirector={role === "BOARD_DIRECTOR"} data={capTableBalance} />
+            {capTableBalance && (
+                <Box fill="horizontal" direction="row" margin="small" align="center" justify="between">
+                    <Text color="blue">Vises som {getRoleName(role).toLocaleLowerCase()}</Text>
+                    <ExportExcel capTableName={props.name} data={capTableBalance} />
+                </Box>
+            )}
             <Box margin="small" align="center" height="small">
-                {loading && <Spinner></Spinner>}
+                {loading || (shareholdersLoading && <Spinner></Spinner>)}
             </Box>
         </Box>
     );

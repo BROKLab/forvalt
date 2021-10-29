@@ -2,6 +2,7 @@ import axios from "axios";
 import { Box, Button, Text } from "grommet";
 import React, { useContext } from "react";
 import { toast } from "react-toastify";
+import { CapTableGraphQLTypes } from "../utils/CapTableGraphQL.utils";
 import { SignatureRequest } from "../utils/SignerRequestHandler";
 import { useLocalStorage } from "./../utils/useLocalstorage";
 import { SymfoniContext } from "./SymfoniContext";
@@ -13,6 +14,23 @@ interface Props {}
 const BROK_HELPERS_VERIFIER = process.env.REACT_APP_BROK_HELPERS_VERIFIER;
 const REACT_APP_BROK_HELPERS_URL = process.env.REACT_APP_BROK_HELPERS_URL;
 const REACT_APP_USE_LOCAL_ENVIROMENT = process.env.REACT_APP_USE_LOCAL_ENVIROMENT;
+
+export type CapTableBalance = Shareholder & CapTableGraphQLTypes.BalancesQuery.Balance;
+export type ROLE = "BOARD_DIRECTOR" | "PUBLIC" | "SHAREHOLDER";
+
+export const getRoleName = (role: ROLE) => {
+    switch (role) {
+        case "BOARD_DIRECTOR": {
+            return "Styreleder";
+        }
+        case "PUBLIC": {
+            return "Offentlig";
+        }
+        case "SHAREHOLDER": {
+            return "Aksjeeier";
+        }
+    }
+};
 
 export interface Unclaimed {
     capTableName: string;
@@ -43,6 +61,7 @@ export interface Shareholder {
     name: string;
     city: string;
     birthdate: string;
+    address: string;
     id: string;
     postcode?: number;
     email?: string;
@@ -180,35 +199,41 @@ export const useBrok = () => {
             statusText: "Alt i orden",
             config: {},
             headers: {},
-            data: [
-                {
-                    identifier: undefined,
-                    name: "Asgeir Ågård",
-                    city: "Nordfjordeid",
-                    postcode: undefined,
-                    email: undefined,
-                    birthdate: "12.10.1984",
-                    id: "1",
-                },
-                {
-                    identifier: undefined,
-                    name: "Fredrik Tangen",
-                    city: "Oslo",
-                    postcode: undefined,
-                    email: undefined,
-                    birthdate: "03.05.1971",
-                    id: "1",
-                },
-                {
-                    identifier: undefined,
-                    name: "Ola Jensen",
-                    city: "Oslo",
-                    postcode: undefined,
-                    email: undefined,
-                    birthdate: "28.09.1993",
-                    id: "1",
-                },
-            ] as Shareholder[],
+            data: {
+                yourRole: "PUBLIC",
+                shareholders: [
+                    {
+                        address: "0x2114d77a3d3376149db0435991c8dbd62d48413e",
+                        identifier: undefined,
+                        name: "Asgeir Ågård",
+                        city: "Nordfjordeid",
+                        postcode: undefined,
+                        email: undefined,
+                        birthdate: "12.10.1984",
+                        id: "1",
+                    },
+                    {
+                        address: "0x4e9ea31029f8c01a8f1c5326a5348f8fb5ceb616",
+                        identifier: undefined,
+                        name: "Fredrik Tangen",
+                        city: "Oslo",
+                        postcode: undefined,
+                        email: undefined,
+                        birthdate: "03.05.1971",
+                        id: "1",
+                    },
+                    {
+                        address: "0x64832336798d9816ad42a023958df48104fb5650",
+                        identifier: undefined,
+                        name: "Ola Jensen",
+                        city: "Oslo",
+                        postcode: undefined,
+                        email: undefined,
+                        birthdate: "28.09.1993",
+                        id: "1",
+                    },
+                ] as Shareholder[],
+            },
         };
 
         return {
@@ -216,35 +241,41 @@ export const useBrok = () => {
             statusText: "Alt i orden",
             config: {},
             headers: {},
-            data: [
-                {
-                    identifier: "0x2114d77a3d3376149db0435991c8dbd62d48413e",
-                    email: "test0211@test.no",
-                    name: "Asgeir Ågård",
-                    city: "Nordfjordeid",
-                    postcode: 1234,
-                    birthdate: "01.12.2000",
-                    id: "1",
-                },
-                {
-                    identifier: "0x4e9ea31029f8c01a8f1c5326a5348f8fb5ceb616",
-                    email: "test49e@test.no",
-                    name: "Fredrik Tangen",
-                    city: "Oslo",
-                    postcode: 6551,
-                    birthdate: "01.12.1980",
-                    id: "1",
-                },
-                {
-                    identifier: "0x64832336798d9816ad42a023958df48104fb5650",
-                    email: "test6483@test.no",
-                    name: "Ola Jensen",
-                    city: "Oslo",
-                    postcode: 1557,
-                    birthdate: "01.10.1945",
-                    id: "1",
-                },
-            ],
+            data: {
+                yourRole: "BOARD_DIRECTOR",
+                shareholders: [
+                    {
+                        address: "0x2114d77a3d3376149db0435991c8dbd62d48413e",
+                        identifier: "0x2114d77a3d3376149db0435991c8dbd62d48413e",
+                        email: "test0211@test.no",
+                        name: "Asgeir Ågård",
+                        city: "Nordfjordeid",
+                        postcode: 1234,
+                        birthdate: "01.12.2000",
+                        id: "1",
+                    },
+                    {
+                        address: "0x4e9ea31029f8c01a8f1c5326a5348f8fb5ceb616",
+                        identifier: "0x4e9ea31029f8c01a8f1c5326a5348f8fb5ceb616",
+                        email: "test49e@test.no",
+                        name: "Fredrik Tangen",
+                        city: "Oslo",
+                        postcode: 6551,
+                        birthdate: "01.12.1980",
+                        id: "1",
+                    },
+                    {
+                        address: "0x64832336798d9816ad42a023958df48104fb5650",
+                        identifier: "0x64832336798d9816ad42a023958df48104fb5650",
+                        email: "test6483@test.no",
+                        name: "Ola Jensen",
+                        city: "Oslo",
+                        postcode: 1557,
+                        birthdate: "01.10.1945",
+                        id: "1",
+                    },
+                ],
+            },
         };
 
         // return await axios.get<Shareholder[]>(`${url}/captable/${captableAddress}/shareholder/list`, {
