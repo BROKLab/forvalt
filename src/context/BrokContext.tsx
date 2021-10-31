@@ -200,16 +200,16 @@ export const useBrok = () => {
             config: {},
             headers: {},
             data: {
-                yourRole: "PUBLIC",
+                yourRole: "BOARD_DIRECTOR",
                 shareholders: [
                     {
                         address: "0x2114d77a3d3376149db0435991c8dbd62d48413e",
-                        identifier: undefined,
+                        identifier: "0x2114d77a3d3376149db0435991c8dbd62d48413e",
+                        email: "test0211@test.no",
                         name: "Asgeir Ågård",
                         city: "Nordfjordeid",
-                        postcode: undefined,
-                        email: undefined,
-                        birthdate: "12.10.1984",
+                        postcode: 1234,
+                        birthdate: "01.12.2000",
                         id: "1",
                     },
                     {

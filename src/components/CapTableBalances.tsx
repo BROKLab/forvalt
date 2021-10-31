@@ -79,7 +79,7 @@ export const CapTableBalances: React.FC<Props> = ({ ...props }) => {
         }
     }, []);
 
-    const roleDependendtColums = () => {
+  const roleDependendtColums = () => {
         return [
             // {
             //     property: "address",
@@ -146,10 +146,10 @@ export const CapTableBalances: React.FC<Props> = ({ ...props }) => {
         });
     };
 
+ 
     return (
         <Box>
             {error && <Paragraph>Noe galt skjedde</Paragraph>}
-
             {data && <DataTable data={capTableBalance ? capTableBalance : []} primaryKey={false} columns={roleDependendtColums()}></DataTable>}
             {capTableBalance && (
                 <Box fill="horizontal" direction="row" margin="small" align="center" justify="between">
