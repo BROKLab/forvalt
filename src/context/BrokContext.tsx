@@ -15,7 +15,7 @@ const BROK_HELPERS_VERIFIER = process.env.REACT_APP_BROK_HELPERS_VERIFIER;
 const REACT_APP_BROK_HELPERS_URL = process.env.REACT_APP_BROK_HELPERS_URL;
 const REACT_APP_USE_LOCAL_ENVIROMENT = process.env.REACT_APP_USE_LOCAL_ENVIROMENT;
 
-export type CapTableBalance = Shareholder & CapTableGraphQLTypes.BalancesQuery.Balance ;
+export type CapTableBalance = Shareholder & CapTableGraphQLTypes.BalancesQuery.Balance;
 export type ROLE = "BOARD_DIRECTOR" | "PUBLIC" | "SHAREHOLDER";
 
 export const getRoleName = (role: ROLE) => {
@@ -37,7 +37,7 @@ export interface Unclaimed {
     address: string;
     name: string;
     balances: { amount: string; partition: string }[];
-    captableAddress: string;
+    capTableAddress: string;
 }
 
 export type Options = {
@@ -194,47 +194,47 @@ export const useBrok = () => {
         // const bearerToken = await tryFetchPermissionTokenFromSigner();
         // const url = REACT_APP_USE_LOCAL_ENVIROMENT === "true" ? "http://localhost:3004" : REACT_APP_BROK_HELPERS_URL;
 
-        // return {
-        //     status: 200,
-        //     statusText: "Alt i orden",
-        //     config: {},
-        //     headers: {},
-        //     data: {
-        //         yourRole: "PUBLIC",
-        //         shareholders: [
-        //             {
-        //                 address: "0x2114d77a3d3376149db0435991c8dbd62d48413e",
-        //                 identifier: undefined,
-        //                 name: "Asgeir Ågård",
-        //                 city: "Nordfjordeid",
-        //                 postcode: undefined,
-        //                 email: undefined,
-        //                 birthdate: "12.10.1984",
-        //                 id: "1",
-        //             },
-        //             {
-        //                 address: "0x4e9ea31029f8c01a8f1c5326a5348f8fb5ceb616",
-        //                 identifier: undefined,
-        //                 name: "Fredrik Tangen",
-        //                 city: "Oslo",
-        //                 postcode: undefined,
-        //                 email: undefined,
-        //                 birthdate: "03.05.1971",
-        //                 id: "1",
-        //             },
-        //             {
-        //                 address: "0x64832336798d9816ad42a023958df48104fb5650",
-        //                 identifier: undefined,
-        //                 name: "Ola Jensen",
-        //                 city: "Oslo",
-        //                 postcode: undefined,
-        //                 email: undefined,
-        //                 birthdate: "28.09.1993",
-        //                 id: "1",
-        //             },
-        //         ] as Shareholder[],
-        //     },
-        // };
+        return {
+            status: 200,
+            statusText: "Alt i orden",
+            config: {},
+            headers: {},
+            data: {
+                yourRole: "PUBLIC",
+                shareholders: [
+                    {
+                        address: "0x2114d77a3d3376149db0435991c8dbd62d48413e",
+                        identifier: undefined,
+                        name: "Asgeir Ågård",
+                        city: "Nordfjordeid",
+                        postcode: undefined,
+                        email: undefined,
+                        birthdate: "12.10.1984",
+                        id: "1",
+                    },
+                    {
+                        address: "0x4e9ea31029f8c01a8f1c5326a5348f8fb5ceb616",
+                        identifier: undefined,
+                        name: "Fredrik Tangen",
+                        city: "Oslo",
+                        postcode: undefined,
+                        email: undefined,
+                        birthdate: "03.05.1971",
+                        id: "1",
+                    },
+                    {
+                        address: "0x64832336798d9816ad42a023958df48104fb5650",
+                        identifier: undefined,
+                        name: "Ola Jensen",
+                        city: "Oslo",
+                        postcode: undefined,
+                        email: undefined,
+                        birthdate: "28.09.1993",
+                        id: "1",
+                    },
+                ] as Shareholder[],
+            },
+        };
 
         return {
             status: 200,
@@ -299,13 +299,35 @@ export const useBrok = () => {
 
     // requires in jwt ['cacheable', 'domain', 'paths']; and user need to have entity in brok helpers
     const getUnclaimedShares = async () => {
-        const bearerToken = await tryFetchPermissionTokenFromSigner();
-        const url = REACT_APP_USE_LOCAL_ENVIROMENT === "true" ? "http://localhost:3004" : REACT_APP_BROK_HELPERS_URL;
-        return await axios.get<Unclaimed[]>(`${url}/unclaimed/list`, {
-            headers: {
-                Authorization: `Bearer ${bearerToken}`,
-            },
-        });
+        // const bearerToken = await tryFetchPermissionTokenFromSigner();
+
+        return {
+            status: 200,
+            statusText: "Alt i orden",
+            config: {},
+            headers: {},
+            data: [
+                {
+                    capTableName: "K3 BYGG AS",
+                    address: "0x123",
+                    name: "Testnavn 123",
+                    balances: [
+                        {
+                            amount: "25000000000000000000",
+                            partition: "Ordinære",
+                        },
+                    ],
+                    capTableAddress: "0x321",
+                },
+            ],
+        };
+
+        // const url = REACT_APP_USE_LOCAL_ENVIROMENT === "true" ? "http://localhost:3004" : REACT_APP_BROK_HELPERS_URL;
+        // return await axios.get<Unclaimed[]>(`${url}/unclaimed/list`, {
+        //     headers: {
+        //         Authorization: `Bearer ${bearerToken}`,
+        //     },
+        // });
     };
 
     // TODO operatorTransfer needs to be discussed. If true, brreg handles transfer for us

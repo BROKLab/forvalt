@@ -47,7 +47,7 @@ export const CapTableBalances: React.FC<Props> = ({ ...props }) => {
                 const shareholder = shareholders.find((s) => s.address === balance.tokenHolder.address);
                 if (!shareholder) {
                     console.warn("Could not find shareholder belonging to balance");
-                    return undefined
+                    return undefined;
                 }
                 return {
                     ...shareholder,
@@ -74,13 +74,12 @@ export const CapTableBalances: React.FC<Props> = ({ ...props }) => {
             if ("message" in error) {
                 debug(error.message);
             } else {
-                debug("error in getUnclaimedShares", error);
+                debug("error in getCapTableShareholders", error);
             }
         }
     }, []);
 
-
-    const roleDependendtColums= () => {
+    const roleDependendtColums = () => {
         return [
             // {
             //     property: "address",
@@ -90,7 +89,7 @@ export const CapTableBalances: React.FC<Props> = ({ ...props }) => {
             {
                 property: "name",
                 header: <Text>Navn</Text>,
-                render: (data : CapTableBalance) => data.name,
+                render: (data: CapTableBalance) => data.name,
             },
             {
                 property: "city",
@@ -137,31 +136,26 @@ export const CapTableBalances: React.FC<Props> = ({ ...props }) => {
                     );
                 },
             },
-        ].filter(row => {
-            if(role !== "BOARD_DIRECTOR"){
-                if(["identifier", "email", "postcode"].includes(row.property)){
-                    return false
+        ].filter((row) => {
+            if (role !== "BOARD_DIRECTOR") {
+                if (["identifier", "email", "postcode"].includes(row.property)) {
+                    return false;
                 }
             }
-            return true
-        })
-    }
+            return true;
+        });
+    };
 
- 
     return (
         <Box>
             {error && <Paragraph>Noe galt skjedde</Paragraph>}
 
-            {data && 
-                <DataTable
-                data={capTableBalance ? capTableBalance : []}
-                primaryKey={false}
-                columns={roleDependendtColums()}
-                ></DataTable>
-                    }
+            {data && <DataTable data={capTableBalance ? capTableBalance : []} primaryKey={false} columns={roleDependendtColums()}></DataTable>}
             {capTableBalance && (
                 <Box fill="horizontal" direction="row" margin="small" align="center" justify="between">
-                    <Text size="small" color="blue">Vises som {getRoleName(role).toLocaleLowerCase()}</Text>
+                    <Text size="small" color="blue">
+                        Vises som {getRoleName(role).toLocaleLowerCase()}
+                    </Text>
                     <ExportExcel capTableName={props.name} data={capTableBalance} />
                 </Box>
             )}
