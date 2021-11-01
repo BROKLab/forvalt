@@ -15,7 +15,7 @@ const BROK_HELPERS_VERIFIER = process.env.REACT_APP_BROK_HELPERS_VERIFIER;
 const REACT_APP_BROK_HELPERS_URL = process.env.REACT_APP_BROK_HELPERS_URL;
 const REACT_APP_USE_LOCAL_ENVIROMENT = process.env.REACT_APP_USE_LOCAL_ENVIROMENT;
 
-export type CapTableBalance = Shareholder & CapTableGraphQLTypes.BalancesQuery.Balance ;
+export type CapTableBalance = Shareholder & CapTableGraphQLTypes.BalancesQuery.Balance;
 export type ROLE = "BOARD_DIRECTOR" | "PUBLIC" | "SHAREHOLDER";
 
 export const getRoleName = (role: ROLE) => {
@@ -327,6 +327,13 @@ export const useBrok = () => {
         });
     };
 
+    const updateShareholder = async (jwt: string) => {
+        const url = REACT_APP_USE_LOCAL_ENVIROMENT === "true" ? "http://localhost:3004" : REACT_APP_BROK_HELPERS_URL;
+        return await axios.post<BrokHelpersPresentResponse>(`${url}/vcs/present`, {
+            jwt: jwt,
+        });
+    };
+
     return {
         createCaptable,
         getCaptableShareholders,
@@ -335,6 +342,7 @@ export const useBrok = () => {
         createUnclaimed,
         claim,
         getCaptableLegacy,
+        updateShareholder,
     };
 };
 
