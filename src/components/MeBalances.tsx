@@ -47,7 +47,7 @@ export const MeBalances: React.FC<Props> = ({ ...props }) => {
                 return {
                     capTableAddress: unclm.address,
                     capTableName: unclm.capTableName,
-                    partition: bl.partition,
+                    partition: ethers.utils.parseBytes32String(bl.partition),
                     amount: bl.amount,
                     claimed: false,
                 } as Balance;
@@ -59,7 +59,7 @@ export const MeBalances: React.FC<Props> = ({ ...props }) => {
                 return {
                     capTableAddress: clm.address,
                     capTableName: bl.capTable.name,
-                    partition: ethers.utils.parseBytes32String(bl.partition),
+                    partition: bl.partition,
                     amount: bl.amount,
                     claimed: true,
                 } as Balance;
@@ -90,30 +90,27 @@ export const MeBalances: React.FC<Props> = ({ ...props }) => {
         }
     };
 
-    useAsyncEffect(
-        async (isMounted) => {
-            try {
-                setUnclaimedLoading(true);
-                const response = await getUnclaimedShares();
-                if (response.status === 200) {
-                    debug("getUnclaimed response:");
-                    debug(response);
-                    if (isMounted()) {
-                        setUnclaimed(response.data);
-                        setUnclaimedLoading(false);
-                    }
+    useAsyncEffect(async (isMounted) => {
+        try {
+            setUnclaimedLoading(true);
+            const response = await getUnclaimedShares();
+            if (response.status === 200) {
+                debug("getUnclaimed response:");
+                debug(response);
+                if (isMounted()) {
+                    setUnclaimed(response.data);
+                    setUnclaimedLoading(false);
                 }
-            } catch (error: any) {
-                if ("message" in error) {
-                    debug(error.message);
-                } else {
-                    debug("error in getUnclaimedShares", error);
-                }
-                setUnclaimedLoading(false);
             }
-        },
-        []
-    );
+        } catch (error: any) {
+            if ("message" in error) {
+                debug(error.message);
+            } else {
+                debug("error in getUnclaimedShares", error);
+            }
+            setUnclaimedLoading(false);
+        }
+    }, []);
 
     const toggleToBeClaim = (address: string) => {
         if (toBeClaimed.includes(address)) {
