@@ -1,5 +1,4 @@
 import { EventEmitter } from "events";
-var debug = require("debug")("utils:SignatureRequestHandler");
 export interface ErrorResponse {
     code: number;
     message: string;
@@ -31,12 +30,12 @@ export class SignatureRequestHandler {
     }
 
     public done(result: any[]) {
-        debug("SignatureRequestHandler done()", result);
+        console.log("SignatureRequestHandler done()", result);
         this.events.emit("done", result);
     }
 
     public reject(reason?: ErrorResponse) {
-        debug("SignatureRequestHandler reject()", reason);
+        console.log("SignatureRequestHandler reject()", reason);
         this.events.emit("rejected", reason);
     }
 
