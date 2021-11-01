@@ -2,85 +2,86 @@ import { ethers } from "ethers";
 import { useQuery } from "graphql-hooks";
 import { Box, Button, DataTable, Paragraph, Spinner, Text } from "grommet";
 import { Edit } from "grommet-icons";
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useState } from "react";
+import { toast } from "react-toastify";
 import { useAsyncEffect } from "use-async-effect";
-import { BrokContext, CapTableBalance, getRoleName, ROLE, Shareholder } from "../context/BrokContext";
+import { BalanceAndMaybePrivateData, BrokContext, getRoleName, ROLE } from "../context/BrokContext";
 import { CapTableGraphQL, CapTableGraphQLTypes } from "../utils/CapTableGraphQL.utils";
 import { ExportExcel } from "../utils/ExportExcel";
-import useInterval from "../utils/useInterval";
+import { EditShareholderModal } from "./EditShareholderModal";
 var debug = require("debug")("component:CapTableBalances");
 
 interface Props {
     capTableAddress: string;
     name: string;
 }
-
+export type UpdateShareholderData = {
+    name: string;
+    email: string;
+    birthdate: string;
+    postcode: number;
+    city: string;
+};
 export const CapTableBalances: React.FC<Props> = ({ ...props }) => {
-    const { loading, error, data, refetch } = useQuery<CapTableGraphQLTypes.BalancesQuery.Response>(
-        CapTableGraphQL.BALANCES_QUERY(props.capTableAddress)
-    );
-    const [shareholdersLoading, getShareholdersLoading] = useState(false);
+    const {
+        loading,
+        error,
+        data: graphData,
+    } = useQuery<CapTableGraphQLTypes.BalancesQuery.Response>(CapTableGraphQL.BALANCES_QUERY(props.capTableAddress));
     const [role, setRole] = useState<ROLE>("PUBLIC");
-    const [shareholders, setShareholders] = useState<Shareholder[]>([]);
-    const [capTableBalance, setCapTableBalance] = useState<CapTableBalance[]>([]);
+    const [editEntity, setEditShareholder] = useState<BalanceAndMaybePrivateData>();
+    const [balancesAndPrivateData, setBalancesAndPrivateData] = useState<BalanceAndMaybePrivateData[]>([]);
 
-    const { getCaptableShareholders } = useContext(BrokContext);
+    const { getCaptableShareholders, updateShareholder } = useContext(BrokContext);
 
-    useEffect(() => {
-        if (shareholdersLoading || loading) return;
-        if (!data) return;
+    // useInterval(() => {
+    //     refetch();
+    // }, 4000);
 
-        const _capTableBalance = mergeBalancesWithShareholderDate(data.balances, shareholders);
-        setCapTableBalance(_capTableBalance);
-    }, [shareholdersLoading, loading, data, shareholders]);
-
-    useInterval(() => {
-        refetch();
-    }, 4000);
-
-    const mergeBalancesWithShareholderDate = (balances: CapTableGraphQLTypes.BalancesQuery.Balance[], shareholders: Shareholder[]) => {
-        const isSameLength = balances.length === shareholders.length;
-        debug("Balances and shareholder is same length", isSameLength);
-
-        return balances
-            .map((balance) => {
-                const shareholder = shareholders.find((s) => s.address === balance.tokenHolder.address);
-                if (!shareholder) {
-                    console.warn("Could not find shareholder belonging to balance");
-                    return undefined
-                }
-                return {
-                    ...shareholder,
-                    ...balance,
-                };
-            })
-            .filter((obj): obj is CapTableBalance => !!obj);
-    };
-
-    useAsyncEffect(async (isMounted) => {
-        try {
-            getShareholdersLoading(true);
-            const response = await getCaptableShareholders(props.capTableAddress);
-
-            if (response.status === 200) {
+    useAsyncEffect(
+        async (isMounted) => {
+            try {
+                if (!graphData) return;
+                const _balances = graphData.balances.map((bal) => {
+                    return {
+                        ...bal,
+                    } as BalanceAndMaybePrivateData;
+                });
                 if (isMounted()) {
-                    setShareholders(response.data.shareholders);
-                    setRole(response.data.yourRole as ROLE);
-                    getShareholdersLoading(false);
-                    debug("role", response.data.yourRole);
+                    setBalancesAndPrivateData(_balances);
                 }
-            }
-        } catch (error: any) {
-            if ("message" in error) {
-                debug(error.message);
-            } else {
-                debug("error in getUnclaimedShares", error);
-            }
-        }
-    }, []);
+                const response = await getCaptableShareholders(props.capTableAddress).catch((err) => {
+                    toast("Kunne ikke hente ekstra informasjon om aksjeholdere");
+                });
+                debug("response", response);
+                if (!response || response.status !== 200) return;
 
+                const _balancesAndPrivateData = graphData.balances.map((balance) => {
+                    const shareholder = response.data.shareholders.find((s) => s.address.toLowerCase() === balance.tokenHolder.address.toLowerCase());
+                    if (!shareholder) {
+                        debug("Could not find shareholder belonging to balance");
+                        return balance as BalanceAndMaybePrivateData;
+                    }
+                    return {
+                        ...shareholder,
+                        ...balance,
+                    } as BalanceAndMaybePrivateData;
+                });
+                // .filter((obj): obj is BalanceAndMaybePrivateData => !!obj);
 
-    const roleDependendtColums= () => {
+                if (isMounted()) {
+                    debug("Setting _balancesAndPrivateData", _balancesAndPrivateData);
+                    setBalancesAndPrivateData(_balancesAndPrivateData);
+                    setRole(response.data.yourRole as ROLE);
+                }
+            } catch (error) {
+                debug("error in useAsyncEffect", error);
+            }
+        },
+        [graphData]
+    );
+
+    const roleDependendtColums = () => {
         return [
             // {
             //     property: "address",
@@ -90,83 +91,91 @@ export const CapTableBalances: React.FC<Props> = ({ ...props }) => {
             {
                 property: "name",
                 header: <Text>Navn</Text>,
-                render: (data : CapTableBalance) => data.name,
+                render: (data: BalanceAndMaybePrivateData) => data.name ?? "Ukjent bruker",
             },
             {
                 property: "city",
                 header: <Text>By</Text>,
-                render: (data: CapTableBalance) => data.city,
+                render: (data: BalanceAndMaybePrivateData) => data.city ?? "-",
             },
             {
                 property: "postcode",
                 header: <Text>Postkode</Text>,
-                render: (data: CapTableBalance) => data.postcode ?? "",
+                render: (data: BalanceAndMaybePrivateData) => data.postcode ?? "-",
             },
             {
                 property: "email",
                 header: <Text>Epost</Text>,
-                render: (data: CapTableBalance) => data.email ?? "",
+                render: (data: BalanceAndMaybePrivateData) => data.email ?? "-",
             },
             {
                 property: "birthday",
                 header: <Text>Født</Text>,
-                render: (data: CapTableBalance) => data.birthdate ?? "",
+                render: (data: BalanceAndMaybePrivateData) => data.birthdate ?? "-",
             },
             {
                 property: "balance",
                 header: <Text>Aksjer</Text>,
-                render: (data: CapTableBalance) => ethers.utils.formatEther(data.amount),
+                render: (data: BalanceAndMaybePrivateData) => ethers.utils.formatEther(data.amount),
             },
             {
                 property: "balanceByPartition",
                 header: <Text>Aksjeklasser</Text>,
-                render: (data: CapTableBalance) => data.partition,
+                render: (data: BalanceAndMaybePrivateData) => data.partition,
             },
             {
                 property: "virtual",
                 header: "",
-                render: (data: CapTableBalance) => {
-                    return (
-                        <Button
-                            icon={<Edit></Edit>}
-                            // onClick={() => setEditEntity(data.tokenHolder.address)}
-                            // disabled={
-                            //     data.capTable.owner.toLowerCase() !== address?.toLowerCase()
-                            // }
-                        ></Button>
-                    );
+                render: (data: BalanceAndMaybePrivateData) => {
+                    return <Button icon={<Edit></Edit>} onClick={() => setEditShareholder(data)} />;
                 },
             },
-        ].filter(row => {
-            if(role !== "BOARD_DIRECTOR"){
-                if(["identifier", "email", "postcode"].includes(row.property)){
-                    return false
+        ].filter((row) => {
+            if (role !== "BOARD_DIRECTOR") {
+                if (["identifier", "email", "postcode", "birthday"].includes(row.property)) {
+                    return false;
                 }
             }
-            return true
-        })
-    }
+            return true;
+        });
+    };
 
- 
+    const updateShareholderData = (updateShareholderData: UpdateShareholderData) => {
+        // TODO fix jwt and do request
+
+        debug("updateShareholderData", updateShareholderData);
+        setEditShareholder(undefined);
+        updateShareholder("");
+    };
+
     return (
         <Box>
             {error && <Paragraph>Noe galt skjedde</Paragraph>}
+            {editEntity && (
+                <EditShareholderModal
+                    onDismiss={() => setEditShareholder(undefined)}
+                    updateShareholderData={{
+                        name: editEntity.name ?? "",
+                        email: editEntity.email ?? "",
+                        city: editEntity.city ?? "",
+                        birthdate: editEntity.birthdate ?? "",
+                        postcode: editEntity.postcode ?? 0,
+                    }}
+                    onConfirm={updateShareholderData}
+                />
+            )}
 
-            {data && 
-                <DataTable
-                data={capTableBalance ? capTableBalance : []}
-                primaryKey={false}
-                columns={roleDependendtColums()}
-                ></DataTable>
-                    }
-            {capTableBalance && (
+            {graphData && <DataTable data={balancesAndPrivateData} primaryKey={false} columns={roleDependendtColums()}></DataTable>}
+            {balancesAndPrivateData && (
                 <Box fill="horizontal" direction="row" margin="small" align="center" justify="between">
-                    <Text size="small" color="blue">Vises som {getRoleName(role).toLocaleLowerCase()}</Text>
-                    <ExportExcel capTableName={props.name} data={capTableBalance} />
+                    <Text size="small" color="blue">
+                        Vises som {getRoleName(role).toLocaleLowerCase()}
+                    </Text>
+                    <ExportExcel capTableName={props.name} data={balancesAndPrivateData} />
                 </Box>
             )}
             <Box margin="small" align="center" height="small">
-                {loading || (shareholdersLoading && <Spinner></Spinner>)}
+                {loading && <Spinner></Spinner>}
             </Box>
         </Box>
     );
