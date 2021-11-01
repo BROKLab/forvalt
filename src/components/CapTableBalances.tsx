@@ -1,6 +1,6 @@
 import { ethers } from "ethers";
 import { useQuery } from "graphql-hooks";
-import { Box, Button, DataTable, Paragraph, Spinner, Text } from "grommet";
+import { Box, Button, DataTable, Heading, Paragraph, Spinner, Text } from "grommet";
 import { Edit } from "grommet-icons";
 import React, { useContext, useState } from "react";
 import { toast } from "react-toastify";
@@ -9,21 +9,29 @@ import { BalanceAndMaybePrivateData, BrokContext, getRoleName, ROLE } from "../c
 import { CapTableGraphQL, CapTableGraphQLTypes } from "../utils/CapTableGraphQL.utils";
 import { ExportExcel } from "../utils/ExportExcel";
 import useInterval from "../utils/useInterval";
+import { EditShareholderModal } from "./EditShareholderModal";
 var debug = require("debug")("component:CapTableBalances");
 
 interface Props {
     capTableAddress: string;
     name: string;
 }
-
+export type UpdateShareholderData = {
+    name: string;
+    email: string;
+    birthdate: string;
+    postcode: number;
+    city: string;
+};
 export const CapTableBalances: React.FC<Props> = ({ ...props }) => {
     const { loading, error, data: graphData, refetch } = useQuery<CapTableGraphQLTypes.BalancesQuery.Response>(
         CapTableGraphQL.BALANCES_QUERY(props.capTableAddress)
     );
     const [role, setRole] = useState<ROLE>("PUBLIC");
+    const [editEntity, setEditShareholder] = useState<BalanceAndMaybePrivateData>();
     const [balancesAndPrivateData, setBalancesAndPrivateData] = useState<BalanceAndMaybePrivateData[]>([]);
 
-    const { getCaptableShareholders } = useContext(BrokContext);
+    const { getCaptableShareholders, updateShareholder } = useContext(BrokContext);
 
     // useInterval(() => {
     //     refetch();
@@ -110,16 +118,8 @@ export const CapTableBalances: React.FC<Props> = ({ ...props }) => {
                 property: "virtual",
                 header: "",
                 render: (data: BalanceAndMaybePrivateData) => {
-                    return (
-                        <Button
-                            icon={<Edit></Edit>}
-                            // onClick={() => setEditEntity(data.tokenHolder.address)}
-                            // disabled={
-                            //     data.capTable.owner.toLowerCase() !== address?.toLowerCase()
-                            // }
-                        ></Button>
-                    );
-                },
+                    return <Button icon={<Edit></Edit>} onClick={() => setEditShareholder(data)} />
+                }
             },
         ].filter((row) => {
             if (role !== "BOARD_DIRECTOR") {
@@ -131,9 +131,31 @@ export const CapTableBalances: React.FC<Props> = ({ ...props }) => {
         });
     };
 
+    const updateShareholderData = (updateShareholderData: UpdateShareholderData) => {
+        // TODO fix jwt and do request
+
+        debug("updateShareholderData", updateShareholderData);
+        setEditShareholder(undefined);
+        updateShareholder("");
+    };
+
     return (
         <Box>
             {error && <Paragraph>Noe galt skjedde</Paragraph>}
+            {editEntity && (
+                <EditShareholderModal
+                    onDismiss={() => setEditShareholder(undefined)}
+                    updateShareholderData={{
+                        name: editEntity.name ?? "",
+                        email: editEntity.email ?? "",
+                        city: editEntity.city ?? "",
+                        birthdate: editEntity.birthdate ?? "",
+                        postcode: editEntity.postcode ?? 0,
+                    }}
+                    onConfirm={updateShareholderData}
+                />
+            )}
+
             {graphData && <DataTable data={balancesAndPrivateData} primaryKey={false} columns={roleDependendtColums()}></DataTable>}
             {balancesAndPrivateData && (
                 <Box fill="horizontal" direction="row" margin="small" align="center" justify="between">
