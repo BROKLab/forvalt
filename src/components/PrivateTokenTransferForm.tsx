@@ -276,6 +276,8 @@ export const PrivateTokenTransferForm: React.FC<Props> = ({ ...props }) => {
                                 labelKey={(option) => ethers.utils.parseBytes32String(option)}
                                 emptySearchMessage={"Foreslå en partisjon ovenfor"}
                                 onChange={({ option }) => {
+                                    console.log("Settinng partiton");
+                                    
                                     setValue(`${enviroment}.${index}.partition`, option);
                                     return option;
                                 }}></Select>

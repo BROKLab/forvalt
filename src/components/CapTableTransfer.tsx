@@ -145,7 +145,7 @@ export const CapTableTransfer: React.FC<Props> = ({ ...props }) => {
     return (
         <Box gap="small">
             <Text>Overfør aksjer til: </Text>
-            <PrivateTokenTransferForm onSubmit={transfer} submitLabel={requireSigner ? "Koble til lommebok" : "Overfør"}  ></PrivateTokenTransferForm>
+            <PrivateTokenTransferForm onSubmit={transfer} submitLabel={requireSigner ? "Koble til lommebok" : "Overfør"}  selectPartiton={false} ></PrivateTokenTransferForm>
         </Box>
     )
 }

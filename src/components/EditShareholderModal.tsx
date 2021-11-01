@@ -16,6 +16,14 @@ export const EditShareholderModal: React.FC<Props> = ({ ...props }) => {
     const { getValues, control, register } = useForm({ defaultValues });
 
     const handleOnSubmit = () => {
+        debug("onSubmut", {
+            ...getValues(),
+            birthdate: new Date(getValues().birthdate).toLocaleDateString("no-NO", {
+                year: "numeric",
+                month: "2-digit",
+                day: "2-digit",
+            })
+        })
         const updated = {
             ...getValues(),
             birthdate: new Date(getValues().birthdate).toLocaleDateString("no-NO", {
