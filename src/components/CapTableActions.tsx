@@ -20,9 +20,7 @@ export const CapTableActions: React.FC<Props> = ({ ...props }) => {
                     capTableAddress={props.capTableAddress}
                     done={() => {
                         setShowTransfers(false);
-                    }}
-                    
-                    ></CapTableTransfer>
+                    }}></CapTableTransfer>
             </Modal>
         </Box>
     )

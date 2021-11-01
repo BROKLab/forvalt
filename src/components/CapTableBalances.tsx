@@ -1,6 +1,6 @@
 import { ethers } from "ethers";
 import { useQuery } from "graphql-hooks";
-import { Box, Button, DataTable, Paragraph, Spinner, Text } from "grommet";
+import { Box, Button, DataTable, Heading, Paragraph, Spinner, Text } from "grommet";
 import { Edit } from "grommet-icons";
 import React, { useContext, useState } from "react";
 import { toast } from "react-toastify";
@@ -8,6 +8,7 @@ import { useAsyncEffect } from "use-async-effect";
 import { BalanceAndMaybePrivateData, BrokContext, getRoleName, ROLE } from "../context/BrokContext";
 import { CapTableGraphQL, CapTableGraphQLTypes } from "../utils/CapTableGraphQL.utils";
 import { ExportExcel } from "../utils/ExportExcel";
+import useInterval from "../utils/useInterval";
 import { EditShareholderModal } from "./EditShareholderModal";
 var debug = require("debug")("component:CapTableBalances");
 
@@ -27,6 +28,7 @@ export const CapTableBalances: React.FC<Props> = ({ ...props }) => {
         loading,
         error,
         data: graphData,
+        refetch,
     } = useQuery<CapTableGraphQLTypes.BalancesQuery.Response>(CapTableGraphQL.BALANCES_QUERY(props.capTableAddress));
     const [role, setRole] = useState<ROLE>("PUBLIC");
     const [editEntity, setEditShareholder] = useState<BalanceAndMaybePrivateData>();

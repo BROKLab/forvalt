@@ -8,7 +8,6 @@ import { CapTableBalances } from "../components/CapTableBalances";
 import { CapTableDetails } from "../components/CapTableDetails";
 import { SymfoniContext } from "../context/SymfoniContext";
 import { CapTableGraphQL, CapTableGraphQLTypes } from "../utils/CapTableGraphQL.utils";
-// var debug = require("debug")("page:CapTablePage");
 
 interface Props {}
 
@@ -34,11 +33,13 @@ export const CapTablePage: React.FC<Props> = ({ ...props }) => {
     // }, [erc1400, address])
     const isCurrentWalletConntroller = !!currentSignerAddress && !!data && data.capTable.controllers.includes(currentSignerAddress);
 
+    console.log("data", data);
+
     return (
         <Box>
             {loading && <Spinner></Spinner>}
             {error && <Paragraph>Noe galt skjedde</Paragraph>}
-            {data && (
+            {data?.capTable && (
                 <Box gap="small">
                     <Heading level={3}>Nøkkelopplysninger</Heading>
                     <CapTableDetails
