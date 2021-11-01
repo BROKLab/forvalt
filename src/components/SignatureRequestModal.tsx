@@ -30,7 +30,6 @@ export const SignatureRequestModal: React.FC<Props> = ({ ...props }) => {
                 setProcess(i);
                 try {
                     const res = await requests[i].fn();
-                    debug("res => ", res)
                     result.push(res);
                 } catch (e: any) {
                     debug("error in process doAsync functions. error:", (e as ErrorResponse).message);

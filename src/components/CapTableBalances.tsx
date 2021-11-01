@@ -2,10 +2,9 @@ import { ethers } from "ethers";
 import { useQuery } from "graphql-hooks";
 import { Box, Button, DataTable, Paragraph, Spinner, Text } from "grommet";
 import { Edit } from "grommet-icons";
-import React, { useContext, useState } from "react";
-import { toast } from "react-toastify";
+import React, { useContext, useEffect, useState } from "react";
 import { useAsyncEffect } from "use-async-effect";
-import { BalanceAndMaybePrivateData, BrokContext, getRoleName, ROLE } from "../context/BrokContext";
+import { BrokContext, CapTableBalance, getRoleName, ROLE, Shareholder } from "../context/BrokContext";
 import { CapTableGraphQL, CapTableGraphQLTypes } from "../utils/CapTableGraphQL.utils";
 import { ExportExcel } from "../utils/ExportExcel";
 import useInterval from "../utils/useInterval";
@@ -17,54 +16,71 @@ interface Props {
 }
 
 export const CapTableBalances: React.FC<Props> = ({ ...props }) => {
-    const { loading, error, data: graphData, refetch } = useQuery<CapTableGraphQLTypes.BalancesQuery.Response>(
+    const { loading, error, data, refetch } = useQuery<CapTableGraphQLTypes.BalancesQuery.Response>(
         CapTableGraphQL.BALANCES_QUERY(props.capTableAddress)
     );
+    const [shareholdersLoading, getShareholdersLoading] = useState(false);
     const [role, setRole] = useState<ROLE>("PUBLIC");
-    const [balancesAndPrivateData, setBalancesAndPrivateData] = useState<BalanceAndMaybePrivateData[]>([]);
+    const [shareholders, setShareholders] = useState<Shareholder[]>([]);
+    const [capTableBalance, setCapTableBalance] = useState<CapTableBalance[]>([]);
 
     const { getCaptableShareholders } = useContext(BrokContext);
 
-    // useInterval(() => {
-    //     refetch();
-    // }, 4000);
+    useEffect(() => {
+        if (shareholdersLoading || loading) return;
+        if (!data) return;
 
-    useAsyncEffect(
-        async (isMounted) => {
-            try {
-                if (!graphData) return;
-                const response = await getCaptableShareholders(props.capTableAddress).catch((err) => {
-                    toast("Kunne ikke hente ekstra informasjon om aksjeholdere");
-                });
-                debug("response", response);
-                if (!response || response.status !== 200) return;
+        const _capTableBalance = mergeBalancesWithShareholderDate(data.balances, shareholders);
+        setCapTableBalance(_capTableBalance);
+    }, [shareholdersLoading, loading, data, shareholders]);
 
-                const _balancesAndPrivateData = graphData.balances.map((balance) => {
-                    const shareholder = response.data.shareholders.find((s) => s.address.toLowerCase() === balance.tokenHolder.address.toLowerCase());
-                    if (!shareholder) {
-                        debug("Could not find shareholder belonging to balance");
-                        return balance as BalanceAndMaybePrivateData;
-                    }
-                    return {
-                        ...shareholder,
-                        ...balance,
-                    } as BalanceAndMaybePrivateData;
-                });
-                // .filter((obj): obj is BalanceAndMaybePrivateData => !!obj);
+    useInterval(() => {
+        refetch();
+    }, 4000);
 
-                if (isMounted()) {
-                    debug("Setting _balancesAndPrivateData", _balancesAndPrivateData);
-                    setBalancesAndPrivateData(_balancesAndPrivateData);
-                    setRole(response.data.yourRole as ROLE);
+    const mergeBalancesWithShareholderDate = (balances: CapTableGraphQLTypes.BalancesQuery.Balance[], shareholders: Shareholder[]) => {
+        const isSameLength = balances.length === shareholders.length;
+        debug("Balances and shareholder is same length", isSameLength);
+
+        return balances
+            .map((balance) => {
+                const shareholder = shareholders.find((s) => s.address === balance.tokenHolder.address);
+                if (!shareholder) {
+                    console.warn("Could not find shareholder belonging to balance");
+                    return undefined
                 }
-            } catch (error) {
-                debug("error in useAsyncEffect", error);
-            }
-        },
-        [graphData]
-    );
+                return {
+                    ...shareholder,
+                    ...balance,
+                };
+            })
+            .filter((obj): obj is CapTableBalance => !!obj);
+    };
 
-    const roleDependendtColums = () => {
+    useAsyncEffect(async (isMounted) => {
+        try {
+            getShareholdersLoading(true);
+            const response = await getCaptableShareholders(props.capTableAddress);
+
+            if (response.status === 200) {
+                if (isMounted()) {
+                    setShareholders(response.data.shareholders);
+                    setRole(response.data.yourRole as ROLE);
+                    getShareholdersLoading(false);
+                    debug("role", response.data.yourRole);
+                }
+            }
+        } catch (error: any) {
+            if ("message" in error) {
+                debug(error.message);
+            } else {
+                debug("error in getUnclaimedShares", error);
+            }
+        }
+    }, []);
+
+
+    const roleDependendtColums= () => {
         return [
             // {
             //     property: "address",
@@ -74,42 +90,42 @@ export const CapTableBalances: React.FC<Props> = ({ ...props }) => {
             {
                 property: "name",
                 header: <Text>Navn</Text>,
-                render: (data: BalanceAndMaybePrivateData) => data.name ?? "Ukjent bruker",
+                render: (data : CapTableBalance) => data.name,
             },
             {
                 property: "city",
                 header: <Text>By</Text>,
-                render: (data: BalanceAndMaybePrivateData) => data.city ?? "-",
+                render: (data: CapTableBalance) => data.city,
             },
             {
                 property: "postcode",
                 header: <Text>Postkode</Text>,
-                render: (data: BalanceAndMaybePrivateData) => data.postcode ?? "-",
+                render: (data: CapTableBalance) => data.postcode ?? "",
             },
             {
                 property: "email",
                 header: <Text>Epost</Text>,
-                render: (data: BalanceAndMaybePrivateData) => data.email ?? "-",
+                render: (data: CapTableBalance) => data.email ?? "",
             },
             {
                 property: "birthday",
                 header: <Text>Født</Text>,
-                render: (data: BalanceAndMaybePrivateData) => data.birthdate ?? "-",
+                render: (data: CapTableBalance) => data.birthdate ?? "",
             },
             {
                 property: "balance",
                 header: <Text>Aksjer</Text>,
-                render: (data: BalanceAndMaybePrivateData) => ethers.utils.formatEther(data.amount),
+                render: (data: CapTableBalance) => ethers.utils.formatEther(data.amount),
             },
             {
                 property: "balanceByPartition",
                 header: <Text>Aksjeklasser</Text>,
-                render: (data: BalanceAndMaybePrivateData) => data.partition,
+                render: (data: CapTableBalance) => data.partition,
             },
             {
                 property: "virtual",
                 header: "",
-                render: (data: BalanceAndMaybePrivateData) => {
+                render: (data: CapTableBalance) => {
                     return (
                         <Button
                             icon={<Edit></Edit>}
@@ -121,30 +137,36 @@ export const CapTableBalances: React.FC<Props> = ({ ...props }) => {
                     );
                 },
             },
-        ].filter((row) => {
-            if (role !== "BOARD_DIRECTOR") {
-                if (["identifier", "email", "postcode"].includes(row.property)) {
-                    return false;
+        ].filter(row => {
+            if(role !== "BOARD_DIRECTOR"){
+                if(["identifier", "email", "postcode"].includes(row.property)){
+                    return false
                 }
             }
-            return true;
-        });
-    };
+            return true
+        })
+    }
 
+ 
     return (
         <Box>
             {error && <Paragraph>Noe galt skjedde</Paragraph>}
-            {graphData && <DataTable data={balancesAndPrivateData} primaryKey={false} columns={roleDependendtColums()}></DataTable>}
-            {balancesAndPrivateData && (
+
+            {data && 
+                <DataTable
+                data={capTableBalance ? capTableBalance : []}
+                primaryKey={false}
+                columns={roleDependendtColums()}
+                ></DataTable>
+                    }
+            {capTableBalance && (
                 <Box fill="horizontal" direction="row" margin="small" align="center" justify="between">
-                    <Text size="small" color="blue">
-                        Vises som {getRoleName(role).toLocaleLowerCase()}
-                    </Text>
-                    <ExportExcel capTableName={props.name} data={balancesAndPrivateData} />
+                    <Text size="small" color="blue">Vises som {getRoleName(role).toLocaleLowerCase()}</Text>
+                    <ExportExcel capTableName={props.name} data={capTableBalance} />
                 </Box>
             )}
             <Box margin="small" align="center" height="small">
-                {loading && <Spinner></Spinner>}
+                {loading || (shareholdersLoading && <Spinner></Spinner>)}
             </Box>
         </Box>
     );

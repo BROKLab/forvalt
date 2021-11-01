@@ -126,7 +126,6 @@ export const useSymfoni = () => {
     );
 
     return {
-        state,
         loading,
         walletConnectURI,
         setWalletConnectURI,
