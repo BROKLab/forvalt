@@ -8,7 +8,7 @@ import { useLocalStorage } from "./../utils/useLocalstorage";
 import { SymfoniContext } from "./SymfoniContext";
 import { STATE } from "./useSymfoni";
 
-var debug = require("debug")("context:brok:");
+var debug = require("debug")("context:brok");
 
 interface Props {}
 
@@ -173,7 +173,7 @@ export const useBrok = () => {
         // TODO - fix real valid check of token
         // TODO - There is probably a signer race condition here
 
-        debug("Token is", token);
+        debug("has Access token", token !== "" && token !== "undefined");
         if (token !== "" && token !== "undefined") {
             return token;
         }
