@@ -146,10 +146,10 @@ export const CapTableBalances: React.FC<Props> = ({ ...props }) => {
                 <EditShareholderModal
                     onDismiss={() => setEditShareholder(undefined)}
                     updateShareholderData={{
-                        name: editEntity.name,
+                        name: editEntity.name ?? "",
                         email: editEntity.email ?? "",
-                        city: editEntity.city,
-                        birthdate: editEntity.birthdate,
+                        city: editEntity.city ?? "",
+                        birthdate: editEntity.birthdate ?? "",
                         postcode: editEntity.postcode ?? 0,
                     }}
                     onConfirm={updateShareholderData}
