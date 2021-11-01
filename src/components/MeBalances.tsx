@@ -112,7 +112,7 @@ export const MeBalances: React.FC<Props> = ({ ...props }) => {
                 setUnclaimedLoading(false);
             }
         },
-        [claim]
+        []
     );
 
     const toggleToBeClaim = (address: string) => {

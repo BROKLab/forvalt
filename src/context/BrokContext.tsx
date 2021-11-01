@@ -210,10 +210,11 @@ export const useBrok = () => {
         debug(`url ${url}`);
         return axios.post<BrokHelpersPresentResponse>(`${url}/vcs/present`, {
             jwt,
-            skipAmountControl: process.env.REACT_APP_IS_TEST === "true" ? true : false,
-            skipBoardDirector: process.env.REACT_APP_IS_TEST === "true" ? true : false,
-            skipDigitalEntityCheck: process.env.REACT_APP_IS_TEST === "true" ? true : false,
             skipVerifyCapTableAmount: process.env.REACT_APP_IS_TEST === "true" ? true : false,
+            skipVerifyNationalIdentityVC: process.env.REACT_APP_IS_TEST === "true" ? true : false,
+            skipVerifyBoardDirector: process.env.REACT_APP_IS_TEST === "true" ? true : false,
+            skipVerifyDirectTransfers: process.env.REACT_APP_IS_TEST === "true" ? true : false,
+            skipDigitalEntityCheck: process.env.REACT_APP_IS_TEST === "true" ? true : false,
         });
     };
 
