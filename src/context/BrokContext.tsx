@@ -302,13 +302,6 @@ export const useBrok = () => {
         });
     };
 
-    const updateShareholder = async (jwt: string) => {
-        const url = REACT_APP_USE_LOCAL_ENVIROMENT === "true" ? "http://localhost:3004" : REACT_APP_BROK_HELPERS_URL;
-        return await axios.post<BrokHelpersPresentResponse>(`${url}/vcs/present`, {
-            jwt: jwt,
-        });
-    };
-
     return {
         createCaptable,
         getCaptableShareholders,
@@ -317,7 +310,6 @@ export const useBrok = () => {
         createUnclaimed,
         claim,
         getCaptableLegacy,
-        updateShareholder,
     };
 };
 
