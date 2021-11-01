@@ -133,14 +133,29 @@ export const useBrok = () => {
             message: "Gi Brønnøysundregistrene Forvalt applikasjonen tilgang til å gjøre spørringer på dine vegne",
             fn: async () => {
                 const url = REACT_APP_USE_LOCAL_ENVIROMENT === "true" ? "http://localhost:3004" : REACT_APP_BROK_HELPERS_URL;
-                const paths = ["/captable/*", "/unclaimed/*"].map((path) => `${url}${path}`);
                 await signer.request("symfoniID_accessVP", [
                     {
                         verifier: BROK_HELPERS_VERIFIER,
                         payload: {
-                            accessTo: "localhost:3000",
-                            cacheable: true,
-                            paths: paths,
+                            access: {
+                                delegatedTo: {
+                                  id: process.env.PUBLIC_URL,
+                                },
+                                scopes: [
+                                    {
+                                        id: `${url}/captable/:captableAddress/shareholder/list`,
+                                        name: 'Fetch list of shareholders for all captables',
+                                      },
+                                      {
+                                        id: `${url}/captable/:captableAddress/shareholder/:shareholderId`,
+                                        name: 'Fetch shareholder for captable',
+                                      },
+                                      {
+                                        id: `${url}/unclaimed/list`,
+                                        name: 'Fetch all unclaimed captable transfers.',
+                                      },
+                                ],
+                              },
                         },
                     },
                 ]);
@@ -169,10 +184,10 @@ export const useBrok = () => {
         debug(`url ${url}`);
         return axios.post<BrokHelpersPresentResponse>(`${url}/vcs/present`, {
             jwt,
-            skipAmountControl: process.env.REACT_APP_IS_TEST ? true : false,
-            skipBoardDirector: process.env.REACT_APP_IS_TEST ? true : false,
-            skipDigitalEntityCheck: process.env.REACT_APP_IS_TEST ? true : false,
-            skipVerifyCapTableAmount: process.env.REACT_APP_IS_TEST ? true : false,
+            skipAmountControl: process.env.REACT_APP_IS_TEST === "true" ? true : false,
+            skipBoardDirector: process.env.REACT_APP_IS_TEST  === "true"? true : false,
+            skipDigitalEntityCheck: process.env.REACT_APP_IS_TEST  === "true" ? true : false,
+            skipVerifyCapTableAmount: process.env.REACT_APP_IS_TEST   === "true"? true : false,
         });
     };
 
