@@ -8,6 +8,7 @@ import { toast } from 'react-toastify';
 import { SignatureRequest } from '../utils/SignerRequestHandler';
 import { BrokContext } from '../context/BrokContext';
 import { useHistory } from 'react-router';
+import { AxiosError } from 'axios';
 var debug = require("debug")("page:createCapTable");
 
 
@@ -101,7 +102,13 @@ export const CapTableCreatePage: React.FC<Props> = ({ ...props }) => {
         const createCapTableVP = response[0].createCapTableVP
 
         debug("signature result", createCapTableVP);
-        const createCapTableRespone = await createCaptable(createCapTableVP).catch(error => {
+        const createCapTableRespone = await createCaptable(createCapTableVP).catch((error: AxiosError<{message: string}>) => {
+            if(error.isAxiosError){
+                if(error.response && error.response.data && "message" in error.response.data){
+                    toast( error.response.data.message)
+                }
+                debug("createCapTableRespone", error.response);
+            }
             toast(error.message)
             return undefined
         })
