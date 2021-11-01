@@ -252,35 +252,14 @@ export const useBrok = () => {
 
     // requires in jwt ['cacheable', 'domain', 'paths']; and user need to have entity in brok helpers
     const getUnclaimedShares = async () => {
-        // const bearerToken = await tryFetchPermissionTokenFromSigner();
-
-        return {
-            status: 200,
-            statusText: "Alt i orden",
-            config: {},
-            headers: {},
-            data: [
-                {
-                    capTableName: "K3 BYGG AS",
-                    address: "0x123",
-                    name: "Testnavn 123",
-                    balances: [
-                        {
-                            amount: "25000000000000000000",
-                            partition: "Ordinære",
-                        },
-                    ],
-                    capTableAddress: "0x321",
-                },
-            ],
-        };
-
-        // const url = REACT_APP_USE_LOCAL_ENVIROMENT === "true" ? "http://localhost:3004" : REACT_APP_BROK_HELPERS_URL;
-        // return await axios.get<Unclaimed[]>(`${url}/unclaimed/list`, {
-        //     headers: {
-        //         Authorization: `Bearer ${bearerToken}`,
-        //     },
-        // });
+        const bearerToken = await tryFetchPermissionTokenFromSigner();
+        if(!bearerToken) throw Error("Cant get unclaimed without token ")
+        const url = REACT_APP_USE_LOCAL_ENVIROMENT === "true" ? "http://localhost:3004" : REACT_APP_BROK_HELPERS_URL;
+        return await axios.get<Unclaimed[]>(`${url}/unclaimed/list`, {
+            headers: {
+                Authorization: `Bearer ${bearerToken}`,
+            },
+        });
     };
 
     // TODO operatorTransfer needs to be discussed. If true, brreg handles transfer for us

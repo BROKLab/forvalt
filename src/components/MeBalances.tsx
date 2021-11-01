@@ -70,8 +70,8 @@ export const MeBalances: React.FC<Props> = ({ ...props }) => {
     useAsyncEffect(async (isMounted) => {
         try {
             setUnclaimedLoading(true);
-            const response = await getUnclaimedShares();
-            if (response.status === 200) {
+            const response = await getUnclaimedShares().catch(error => error)
+            if (response && response.status === 200) {
                 debug("getUnclaimed response:");
                 debug(response);
                 if (isMounted()) {
