@@ -104,12 +104,12 @@ export const PrivateTokenTransferForm: React.FC<Props> = ({ ...props }) => {
                 prepend({
                     identifier: "",
                     address: "",
-                    amount: "100",
+                    amount: "0",
                     partition: DEFAULT_CAPTABLE_PARTITION,
-                    name:  "",
-                    streetAddress:process.env.REACT_APP_USE_TEST_DATA === "true" ? "Styrveien 55" : "", 
-                    postalcode:process.env.REACT_APP_USE_TEST_DATA === "true" ? "0654":  "",
-                    email: process.env.REACT_APP_USE_TEST_DATA === "true" ? "styreepost@email.com" : "",
+                    name: "",
+                    streetAddress: "",
+                    postalcode: "",
+                    email: "",
                     isBoardDirector: true,
                 }, {})
             }
@@ -276,8 +276,6 @@ export const PrivateTokenTransferForm: React.FC<Props> = ({ ...props }) => {
                                 labelKey={(option) => ethers.utils.parseBytes32String(option)}
                                 emptySearchMessage={"Foreslå en partisjon ovenfor"}
                                 onChange={({ option }) => {
-                                    console.log("Settinng partiton");
-                                    
                                     setValue(`${enviroment}.${index}.partition`, option);
                                     return option;
                                 }}></Select>

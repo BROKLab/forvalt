@@ -16,7 +16,7 @@ interface Props {
 }
 
 export const CapTableTransfer: React.FC<Props> = ({ ...props }) => {
-    const { signatureRequestHandler, CapTableRegistry, signer, initSigner } = useContext(SymfoniContext)
+    const { signatureRequestHandler, CapTable, CapTableRegistry, signer, initSigner } = useContext(SymfoniContext)
     const { createUnclaimed } = useContext(BrokContext)
 
     const requireSigner = (!signer || !("request" in signer));
@@ -70,7 +70,7 @@ export const CapTableTransfer: React.FC<Props> = ({ ...props }) => {
         signatureRequestHandler.add([request]);
         let result;
         try {
-            const results = (await signatureRequestHandler.results()) as { capTablePrivateTransferTokenVP: string }[]
+            const results = (await signatureRequestHandler.results()) as [{ capTablePrivateTransferTokenVP: string }]
             result = results[0];
         } catch (error: any) {
             debug("symfonID_capTablePrivateTransferTokenVP response error", error)
@@ -103,49 +103,42 @@ export const CapTableTransfer: React.FC<Props> = ({ ...props }) => {
         const address = ethers.utils.isAddress(privateTokenTransferData.address) ? privateTokenTransferData.address : await resolvePrivateTokenTransfer(privateTokenTransferData);
         debug(`transfer address: ${address}`)
 
-        if (props.done) {
-            return props.done();
+        if (!address) {
+            if (props.done) {
+                return props.done();
+            }
+            return;
         }
-        return;
+        const amountEther = ethers.utils.parseEther(privateTokenTransferData.amount.toString());
+        if (amountEther === ethers.constants.Zero) return alert("Kan ikke overføre 0 beløp");
 
-        // TODO - Not handling self transfers yet
+        if (!CapTable.factory) {
+            return toast("Kunne ikke koble til Blokkkjeden")
+        }
+        const capTable = CapTable.factory.attach(props.capTableAddress)
 
-        // if (!address) {
-        //     if (props.done) {
-        //         return props.done();
-        //     }
-        //     return;
-        // }
-        // const amountEther = ethers.utils.parseEther(privateTokenTransferData.amount.toString());
-        // if (amountEther === ethers.constants.Zero) return alert("Kan ikke overføre 0 beløp");
+        const request: SignatureRequest = {
+            message: `Overfør aksjer til ${privateTokenTransferData.name}`,
+            fn: async () => {
+                const tx = await capTable.transferByPartition(privateTokenTransferData.partition, address, amountEther, "0x11");
+                await tx.wait();
+            },
+        };
 
-        // if (!CapTable.factory) {
-        //     return toast("Kunne ikke koble til Blokkkjeden")
-        // }
-        // const capTable = CapTable.factory.attach(props.capTableAddress)
+        signatureRequestHandler.add([request]);
+        await signatureRequestHandler.results();
+        if (props.done) {
+            props.done();
+        }
 
-        // const request: SignatureRequest = {
-        //     message: `Overfør aksjer til ${privateTokenTransferData.name}`,
-        //     fn: async () => {
-        //         const tx = await capTable.transferByPartition(privateTokenTransferData.partition, address, amountEther, "0x11");
-        //         await tx.wait();
-        //     },
-        // };
-
-        // signatureRequestHandler.add([request]);
-        // await signatureRequestHandler.results();
-        // if (props.done) {
-        //     props.done();
-        // }
-
-        // if (props.done) props.done();
+        if (props.done) props.done();
     };
 
 
     return (
         <Box gap="small">
             <Text>Overfør aksjer til: </Text>
-            <PrivateTokenTransferForm onSubmit={transfer} submitLabel={requireSigner ? "Koble til lommebok" : "Overfør"}  selectPartiton={false} ></PrivateTokenTransferForm>
+            <PrivateTokenTransferForm onSubmit={transfer} submitLabel={requireSigner ? "Koble til lommebok" : "Overfør"}  ></PrivateTokenTransferForm>
         </Box>
     )
 }

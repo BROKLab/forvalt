@@ -85,7 +85,7 @@ export class CapTableGraphQL {
     static BALANCES_QUERY(address: string) {
         return `
     {
-        balances(where: {capTable: "${address.toLowerCase()}", amount_gt: 0}) {
+        balances(where: {capTable: "${address.toLowerCase()}"}) {
           amount
           partition
           tokenHolder {

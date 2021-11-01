@@ -1,4 +1,4 @@
-import React, { useCallback, useContext, useEffect, useState } from 'react';
+import React, { useCallback, useContext, useState } from 'react';
 import { Accordion, AccordionPanel, Box, Button, Grid, Heading, Paragraph, Spinner, Text } from 'grommet';
 import { OrgData, SelectOrg } from '../components/SelectOrg';
 import { PrivateTokenTransferData, PrivateTokenTransferForm } from '../components/PrivateTokenTransferForm';
@@ -101,32 +101,17 @@ export const CapTableCreatePage: React.FC<Props> = ({ ...props }) => {
         const createCapTableVP = response[0].createCapTableVP
 
         debug("signature result", createCapTableVP);
-        const createCapTableRespone = await createCaptable(createCapTableVP).catch(error => {
-            toast(error.message)
-            return undefined
-        })
-        debug("deployed contract", createCapTableRespone);
+        const createCapTableRespone = await createCaptable(createCapTableVP);
+        debug("deployed contract", createCapTableRespone.data);
 
         setDeploying(false);
-        // history.push("/");
-        if (createCapTableRespone && createCapTableRespone.data.capTableAddress) {
+        history.push("/");
+        if (createCapTableRespone.data.capTableAddress) {
             history.push("/captable/" + createCapTableRespone.data.capTableAddress);
         }
     };
 
-    useEffect(() => {
-        if(process.env.NODE_ENV !== "production"){
-            console.log("Fnr", `11126138727`);
-            console.log("Fnr", `14102123973`);
-            console.log("Fnr", `26090286144`);
-            console.log("Fnr", `09050319935`, "Jon");
-            console.log("One - time password", `otp`);
-            console.log("Personal password", `qwer1234`);
-        }
-    }, []);
 
-
-  
     return (
         <Box gap="small">
             <Heading>Opprett aksjeeierbok</Heading>
@@ -145,7 +130,8 @@ export const CapTableCreatePage: React.FC<Props> = ({ ...props }) => {
                 {/* Token issue */}
                 <AccordionPanel label="2. Utsted aksjer" onClickCapture={() => setStep(STEP.ISSUE_SHARES)}>
                     <Box pad="medium">
-                    <PrivateTokenTransferForm
+                        {orgData ? (
+                            <PrivateTokenTransferForm
                                 submitLabel="Lagre og gå videre"
                                 multiple
                                 selectPartiton={useDefaultPartitions ? true : false}
@@ -179,6 +165,9 @@ export const CapTableCreatePage: React.FC<Props> = ({ ...props }) => {
                                     </Box>
                                 </Box>
                             </PrivateTokenTransferForm>
+                        ) : (
+                            <Paragraph fill>Vennligst velg en aksjeeierbok</Paragraph>
+                        )}
                     </Box>
                 </AccordionPanel>
 

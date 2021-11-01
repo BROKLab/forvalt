@@ -3,7 +3,7 @@ import * as FileSaver from "file-saver";
 import { Box, Button, RadioButtonGroup } from "grommet";
 import React, { useState } from "react";
 import * as XLSX from "xlsx";
-import { BalanceAndMaybePrivateData } from "../context/BrokContext";
+import { CapTableBalance } from "../context/BrokContext";
 import { CapTableGraphQLTypes } from "./CapTableGraphQL.utils";
 
 interface FileType {
@@ -24,7 +24,7 @@ const Excel: FileType = {
 };
 
 interface Props {
-    data: BalanceAndMaybePrivateData[];
+    data: CapTableBalance[];
     capTableName: string;
 }
 
