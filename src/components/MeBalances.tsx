@@ -1,14 +1,14 @@
 import { ethers } from "ethers";
 import { useQuery } from "graphql-hooks";
-import { Box, Button, DataTable, Heading, Spinner, Text } from "grommet";
 import { Add } from "grommet-icons";
+import { Box, DataTable, Heading, Text, Button, Spinner } from "grommet";
 import React, { useContext, useEffect, useState } from "react";
-import { toast } from "react-toastify";
 import useAsyncEffect from "use-async-effect";
 import { BrokContext, Unclaimed } from "../context/BrokContext";
-import { SymfoniContext } from "../context/SymfoniContext";
-import { SignatureRequest } from "../utils/SignerRequestHandler";
 import { TokenHolderGraphQL, TokenHoldersGraphQLTypes } from "../utils/TokenHoldersGraphQL.utils";
+import { SymfoniContext } from "../context/SymfoniContext";
+import { ExportExcel } from "../utils/ExportExcel";
+import useInterval from "../utils/useInterval";
 var debug = require("debug")("component:MeBalances");
 
 interface Balance {
@@ -25,7 +25,7 @@ interface Props {
 
 export const MeBalances: React.FC<Props> = ({ ...props }) => {
     debug("Render");
-    const { getUnclaimedShares, claim } = useContext(BrokContext);
+    const { getUnclaimedShares } = useContext(BrokContext);
     const { signatureRequestHandler, CapTable, CapTableRegistry, signer, initSigner } = useContext(SymfoniContext);
     const requireSigner = !signer || !("request" in signer);
 
@@ -35,8 +35,6 @@ export const MeBalances: React.FC<Props> = ({ ...props }) => {
     const [unclaimedLoading, setUnclaimedLoading] = useState<boolean>(false);
     const [unclaimed, setUnclaimed] = useState<Unclaimed[]>([]);
     const [balances, setBalances] = useState<Balance[]>();
-    const [toBeClaimed, setToBeClaimed] = useState<string[]>([]);
-    const [claiming, setClaiming] = useState<boolean>(false);
 
     useEffect(() => {
         if (loading || unclaimedLoading) return;
@@ -59,7 +57,7 @@ export const MeBalances: React.FC<Props> = ({ ...props }) => {
                 return {
                     capTableAddress: clm.address,
                     capTableName: bl.capTable.name,
-                    partition: ethers.utils.parseBytes32String(bl.partition),
+                    partition: bl.partition,
                     amount: bl.amount,
                     claimed: true,
                 } as Balance;
@@ -69,16 +67,17 @@ export const MeBalances: React.FC<Props> = ({ ...props }) => {
         setBalances([..._clm, ..._unclm]);
     }, [loading, data, unclaimed, unclaimedLoading]);
 
-    // TODO almost as useAsyncEffect as under... :()
-    const fetchUnclaimed = async () => {
+    useAsyncEffect(async (isMounted) => {
         try {
             setUnclaimedLoading(true);
             const response = await getUnclaimedShares();
             if (response.status === 200) {
                 debug("getUnclaimed response:");
                 debug(response);
-                setUnclaimed(response.data);
-                setUnclaimedLoading(false);
+                if (isMounted()) {
+                    setUnclaimed(response.data);
+                    setUnclaimedLoading(false);
+                }
             }
         } catch (error: any) {
             if ("message" in error) {
@@ -88,89 +87,12 @@ export const MeBalances: React.FC<Props> = ({ ...props }) => {
             }
             setUnclaimedLoading(false);
         }
-    };
-
-    useAsyncEffect(
-        async (isMounted) => {
-            try {
-                setUnclaimedLoading(true);
-                const response = await getUnclaimedShares();
-                if (response.status === 200) {
-                    debug("getUnclaimed response:");
-                    debug(response);
-                    if (isMounted()) {
-                        setUnclaimed(response.data);
-                        setUnclaimedLoading(false);
-                    }
-                }
-            } catch (error: any) {
-                if ("message" in error) {
-                    debug(error.message);
-                } else {
-                    debug("error in getUnclaimedShares", error);
-                }
-                setUnclaimedLoading(false);
-            }
-        },
-        [claim]
-    );
-
-    const toggleToBeClaim = (address: string) => {
-        if (toBeClaimed.includes(address)) {
-            const t = toBeClaimed.filter((toB) => toB !== address);
-            setToBeClaimed(t);
-        } else {
-            setToBeClaimed([...toBeClaimed, address]);
-        }
-    };
-
-    const claimAllUnclaimed = async () => {
-        setClaiming(true);
-        const BROK_HELPERS_VERIFIER = process.env.REACT_APP_BROK_HELPERS_VERIFIER;
-        if (!signer || !("request" in signer)) {
-            debug(`No signer or request in signer found, running initSigner`);
-            return initSigner();
-        }
-        const request: SignatureRequest = {
-            message: "Signer på at du ønsker å gjøre krav på aksjene",
-            fn: async () =>
-                await signer.request("symfoniID_capTableClaimToken", [
-                    {
-                        verifier: BROK_HELPERS_VERIFIER,
-                        claimTokens: toBeClaimed,
-                    },
-                ]),
-        };
-
-        debug(`Created request in signatureRequestHandler`);
-        signatureRequestHandler.add([request]);
-        let response = (await signatureRequestHandler.results().catch((error) => {
-            debug(error);
-            return undefined;
-        })) as { claimTokensVp: string }[] | undefined;
-        if (!response) {
-            toast(`Signering ble avbrutt.`);
-            setClaiming(false);
-            return;
-        }
-        if (!Array.isArray(response) || !response[0]) {
-            toast(`Feil i respons fra Lommebok.`)!;
-            setClaiming(false);
-            return;
-        }
-        const claimVp = response[0].claimTokensVp;
-        const claimUnclaimedResponse = await claim(claimVp).catch((error) => {
-            toast(error.message);
-            return undefined;
-        });
-        debug("claimed result", claimUnclaimedResponse);
-        await fetchUnclaimed();
-        setToBeClaimed([]);
-        setClaiming(false);
-    };
+    }, []);
+    debug("balances", balances);
 
     return (
         <Box gap="small">
+            <Heading level={3}>Mine aksjer</Heading>
             {balances && (
                 <DataTable
                     data={balances ? balances : []}
@@ -198,12 +120,11 @@ export const MeBalances: React.FC<Props> = ({ ...props }) => {
                                 return data.claimed ? null : (
                                     <Box direction="row">
                                         <Button
-                                            color={toBeClaimed.includes(data.capTableAddress) ? "blue" : "green"}
                                             icon={<Add />}
                                             size="small"
-                                            label={toBeClaimed.includes(data.capTableAddress) ? "Angre" : "Gjør krav"}
+                                            label="Gjør krav"
                                             title="Gjør krav på aksjene som er tildelt deg ved å trykke her"
-                                            onClick={() => toggleToBeClaim(data.capTableAddress)}
+                                            // onClick={() => claimUnclaimed()}
                                             // disabled={}
                                         ></Button>
                                     </Box>
@@ -211,16 +132,6 @@ export const MeBalances: React.FC<Props> = ({ ...props }) => {
                             },
                         },
                     ]}></DataTable>
-            )}
-            {toBeClaimed.length > 0 && (
-                <Box>
-                    <Text>Trykk her for gå gjøre krav på aksjer for {toBeClaimed} selskap(er)</Text>
-                    <Button
-                        size="small"
-                        label="Gjør krav på aksjer"
-                        title="Trykk her for å gjøre krav på aksjene"
-                        onClick={() => claimAllUnclaimed()}></Button>
-                </Box>
             )}
             <Box margin="small" align="center" height="small">
                 {(loading || unclaimedLoading) && <Spinner></Spinner>}
