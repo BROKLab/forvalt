@@ -119,7 +119,7 @@ export const useBrok = () => {
             debug("Klarer ikke å koble til din lommebok.");
             return undefined;
         }
-        debug("delegating to ", process.env.REACT_APP_PUBLIC_URL)
+        debug("delegating to ", process.env.REACT_APP_PUBLIC_URL);
         const request: SignatureRequest = {
             message: "Gi Brønnøysundregistrene Forvalt applikasjonen tilgang til å gjøre spørringer på dine vegne",
             fn: async () => {
@@ -173,7 +173,7 @@ export const useBrok = () => {
         // TODO - fix real valid check of token
         // TODO - There is probably a signer race condition here
 
-        debug("Token is", token)
+        debug("Token is", token);
         if (token !== "" && token !== "undefined") {
             return token;
         }
@@ -252,35 +252,13 @@ export const useBrok = () => {
 
     // requires in jwt ['cacheable', 'domain', 'paths']; and user need to have entity in brok helpers
     const getUnclaimedShares = async () => {
-        // const bearerToken = await tryFetchPermissionTokenFromSigner();
-
-        return {
-            status: 200,
-            statusText: "Alt i orden",
-            config: {},
-            headers: {},
-            data: [
-                {
-                    capTableName: "K3 BYGG AS",
-                    address: "0x123",
-                    name: "Testnavn 123",
-                    balances: [
-                        {
-                            amount: "25000000000000000000",
-                            partition: "Ordinære",
-                        },
-                    ],
-                    capTableAddress: "0x321",
-                },
-            ],
-        };
-
-        // const url = REACT_APP_USE_LOCAL_ENVIROMENT === "true" ? "http://localhost:3004" : REACT_APP_BROK_HELPERS_URL;
-        // return await axios.get<Unclaimed[]>(`${url}/unclaimed/list`, {
-        //     headers: {
-        //         Authorization: `Bearer ${bearerToken}`,
-        //     },
-        // });
+        const bearerToken = await tryFetchPermissionTokenFromSigner();
+        const url = REACT_APP_USE_LOCAL_ENVIROMENT === "true" ? "http://localhost:3004" : REACT_APP_BROK_HELPERS_URL;
+        return await axios.get<Unclaimed[]>(`${url}/unclaimed/list`, {
+            headers: {
+                Authorization: `Bearer ${bearerToken}`,
+            },
+        });
     };
 
     // TODO operatorTransfer needs to be discussed. If true, brreg handles transfer for us

@@ -24,9 +24,12 @@ export type UpdateShareholderData = {
     city: string;
 };
 export const CapTableBalances: React.FC<Props> = ({ ...props }) => {
-    const { loading, error, data: graphData, refetch } = useQuery<CapTableGraphQLTypes.BalancesQuery.Response>(
-        CapTableGraphQL.BALANCES_QUERY(props.capTableAddress)
-    );
+    const {
+        loading,
+        error,
+        data: graphData,
+        refetch,
+    } = useQuery<CapTableGraphQLTypes.BalancesQuery.Response>(CapTableGraphQL.BALANCES_QUERY(props.capTableAddress));
     const [role, setRole] = useState<ROLE>("PUBLIC");
     const [editEntity, setEditShareholder] = useState<BalanceAndMaybePrivateData>();
     const [balancesAndPrivateData, setBalancesAndPrivateData] = useState<BalanceAndMaybePrivateData[]>([]);
@@ -41,6 +44,14 @@ export const CapTableBalances: React.FC<Props> = ({ ...props }) => {
         async (isMounted) => {
             try {
                 if (!graphData) return;
+                const _balances = graphData.balances.map((bal) => {
+                    return {
+                        ...bal,
+                    } as BalanceAndMaybePrivateData;
+                });
+                if (isMounted()) {
+                    setBalancesAndPrivateData(_balances);
+                }
                 const response = await getCaptableShareholders(props.capTableAddress).catch((err) => {
                     toast("Kunne ikke hente ekstra informasjon om aksjeholdere");
                 });
@@ -118,12 +129,12 @@ export const CapTableBalances: React.FC<Props> = ({ ...props }) => {
                 property: "virtual",
                 header: "",
                 render: (data: BalanceAndMaybePrivateData) => {
-                    return <Button icon={<Edit></Edit>} onClick={() => setEditShareholder(data)} />
-                }
+                    return <Button icon={<Edit></Edit>} onClick={() => setEditShareholder(data)} />;
+                },
             },
         ].filter((row) => {
             if (role !== "BOARD_DIRECTOR") {
-                if (["identifier", "email", "postcode"].includes(row.property)) {
+                if (["identifier", "email", "postcode", "birthday"].includes(row.property)) {
                     return false;
                 }
             }
