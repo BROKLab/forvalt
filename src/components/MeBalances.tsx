@@ -134,7 +134,7 @@ export const MeBalances: React.FC<Props> = ({ ...props }) => {
         const request: SignatureRequest = {
             message: "Signer på at du ønsker å gjøre krav på aksjene",
             fn: async () =>
-                await signer.request("symfoniID_capTableClaimUnclaimed", [
+                await signer.request("symfoniID_capTableClaimToken", [
                     {
                         verifier: BROK_HELPERS_VERIFIER,
                         claimTokens: toBeClaimed,
