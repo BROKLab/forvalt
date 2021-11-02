@@ -144,7 +144,7 @@ export const MeBalances: React.FC<Props> = ({ ...props }) => {
         let response = (await signatureRequestHandler.results().catch((error) => {
             debug(error);
             return undefined;
-        })) as { claimTokensVp: string }[] | undefined;
+        })) as { vp: string }[] | undefined;
         if (!response) {
             toast(`Signering ble avbrutt.`);
             setClaiming(false);
@@ -155,7 +155,7 @@ export const MeBalances: React.FC<Props> = ({ ...props }) => {
             setClaiming(false);
             return;
         }
-        const claimVp = response[0].claimTokensVp;
+        const claimVp = response[0].vp;
         const claimUnclaimedResponse = await claim(claimVp).catch((error) => {
             toast(error.message);
             return undefined;
