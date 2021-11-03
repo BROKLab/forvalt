@@ -15,7 +15,7 @@ import { CapTableRegistryPage } from './pages/CapTableRegistryPage';
 import { ClientContext, GraphQLClient } from "graphql-hooks";
 import { CapTableQuePage } from './pages/CapTableQuePage';
 import { CapTablePage } from './pages/CapTablePage';
-import { ProfilPage } from './pages/ProfilePage';
+import { LogoutPage } from './pages/LogoutPage';
 
 
 function App() {
@@ -25,7 +25,6 @@ function App() {
   const client = new GraphQLClient({
     url: process.env.REACT_APP_BROK_CAPTABLE_GRAPHQL,
   });
-
 
 
   return (
@@ -46,7 +45,7 @@ function App() {
                     <Route path="/register" component={CapTableRegistryPage} />
                     <Route path="/que" component={CapTableQuePage} />
                     <Route path="/me" component={MePage} />
-                    <Route path="/profile" component={ProfilPage} />
+                    <Route path="/logout" component={LogoutPage} />
                   </Switch>
                 </Main>
                 {/* footer */}
