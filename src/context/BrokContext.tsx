@@ -155,10 +155,10 @@ export const useBrok = () => {
         let userTokenJwt;
         try {
             const results = (await signatureRequestHandler.results()) as {
-                vp: string;
+                jwt: string;
             }[];
             debug("Acceess VP results", results);
-            userTokenJwt = results[0].vp;
+            userTokenJwt = results[0].jwt;
             if (userTokenJwt) {
                 debug("Access VC fra Wallet", userTokenJwt);
                 setToken(userTokenJwt);

@@ -84,7 +84,7 @@ export const CapTableCreatePage: React.FC<Props> = ({ ...props }) => {
         let response = (await signatureRequestHandler.results().catch((error) => {
             debug(error);
             return undefined;
-        })) as { vp: string }[] | undefined;
+        })) as { jwt: string }[] | undefined;
         if (!response) {
             toast(`Signering ble avbrutt.`);
             setDeploying(false);
@@ -95,7 +95,7 @@ export const CapTableCreatePage: React.FC<Props> = ({ ...props }) => {
             setDeploying(false);
             return;
         }
-        const createCapTableVP = response[0].vp;
+        const createCapTableVP = response[0].jwt;
 
         debug("signature result", createCapTableVP);
         const createCapTableRespone = await createCaptable(createCapTableVP).catch((error: AxiosError<{ message: string }>) => {
