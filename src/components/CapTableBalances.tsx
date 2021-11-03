@@ -81,6 +81,14 @@ export const CapTableBalances: React.FC<Props> = ({ ...props }) => {
         [graphData]
     );
 
+    const toHoursMonthYear = (date: string) => {
+        return new Date(date).toLocaleDateString("no-NO", {
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit",
+        });
+    };
+
     const roleDependendtColums = () => {
         return [
             // {
@@ -111,7 +119,7 @@ export const CapTableBalances: React.FC<Props> = ({ ...props }) => {
             {
                 property: "birthday",
                 header: <Text>Født</Text>,
-                render: (data: BalanceAndMaybePrivateData) => data.birthdate ?? "-",
+                render: (data: BalanceAndMaybePrivateData) => (!data.birthdate ? "-" : toHoursMonthYear(data.birthdate)),
             },
             {
                 property: "balance",

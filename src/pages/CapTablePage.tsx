@@ -32,7 +32,7 @@ export const CapTablePage: React.FC<Props> = ({ ...props }) => {
     //     const _capTable = erc1400.connect(address)
     //     setCapTable(_capTable)
     // }, [erc1400, address])
-    const isCurrentWalletConntroller = !!currentSignerAddress && !!data && data.capTable.controllers.includes(currentSignerAddress);
+    const isCurrentWalletConntroller = !!currentSignerAddress && !!data && data.capTable.controllers.includes(currentSignerAddress.toLowerCase());
 
     return (
         <Box>

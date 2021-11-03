@@ -134,15 +134,15 @@ export const useBrok = () => {
                             scopes: [
                                 {
                                     id: `${url}/captable/:captableAddress/shareholder/list`,
-                                    name: "Fetch list of shareholders for all captables",
+                                    name: "All shareholders for all captables",
                                 },
                                 {
                                     id: `${url}/captable/:captableAddress/shareholder/:shareholderId`,
-                                    name: "Fetch shareholder for captable",
+                                    name: "One shareholder for all captables",
                                 },
                                 {
                                     id: `${url}/unclaimed/list`,
-                                    name: "Fetch all unclaimed captable transfers.",
+                                    name: "All unclaimed tokens for your identifier ",
                                 },
                             ],
                         },
@@ -155,10 +155,10 @@ export const useBrok = () => {
         let userTokenJwt;
         try {
             const results = (await signatureRequestHandler.results()) as {
-                accessVP: string;
+                jwt: string;
             }[];
             debug("Acceess VP results", results);
-            userTokenJwt = results[0].accessVP;
+            userTokenJwt = results[0].jwt;
             if (userTokenJwt) {
                 debug("Access VC fra Wallet", userTokenJwt);
                 setToken(userTokenJwt);
@@ -210,10 +210,11 @@ export const useBrok = () => {
         debug(`url ${url}`);
         return axios.post<BrokHelpersPresentResponse>(`${url}/vcs/present`, {
             jwt,
-            skipAmountControl: process.env.REACT_APP_IS_TEST === "true" ? true : false,
-            skipBoardDirector: process.env.REACT_APP_IS_TEST === "true" ? true : false,
-            skipDigitalEntityCheck: process.env.REACT_APP_IS_TEST === "true" ? true : false,
             skipVerifyCapTableAmount: process.env.REACT_APP_IS_TEST === "true" ? true : false,
+            skipVerifyNationalIdentityVC: process.env.REACT_APP_IS_TEST === "true" ? true : false,
+            skipVerifyBoardDirector: process.env.REACT_APP_IS_TEST === "true" ? true : false,
+            skipVerifyDirectTransfers: process.env.REACT_APP_IS_TEST === "true" ? true : false,
+            skipDigitalEntityCheck: process.env.REACT_APP_IS_TEST === "true" ? true : false,
         });
     };
 

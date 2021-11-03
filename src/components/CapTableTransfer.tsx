@@ -70,7 +70,7 @@ export const CapTableTransfer: React.FC<Props> = ({ ...props }) => {
         signatureRequestHandler.add([request]);
         let result;
         try {
-            const results = (await signatureRequestHandler.results()) as { capTablePrivateTransferTokenVP: string }[]
+            const results = (await signatureRequestHandler.results()) as { jwt: string }[]
             result = results[0];
         } catch (error: any) {
             debug("symfonID_capTablePrivateTransferTokenVP response error", error)
@@ -78,7 +78,7 @@ export const CapTableTransfer: React.FC<Props> = ({ ...props }) => {
             return undefined
         }
 
-        const res = await createUnclaimed(result.capTablePrivateTransferTokenVP).catch((error: AxiosError<{ message: string; code: number }>) => {
+        const res = await createUnclaimed(result.jwt).catch((error: AxiosError<{ message: string; code: number }>) => {
             if (error.response && error.response.data.message) {
                 throw Error(error.response.data.message);
             }

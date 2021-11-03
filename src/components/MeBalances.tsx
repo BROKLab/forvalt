@@ -1,6 +1,6 @@
 import { ethers } from "ethers";
 import { useQuery } from "graphql-hooks";
-import { Box, Button, DataTable, Heading, Spinner, Text } from "grommet";
+import { Box, Button, DataTable, Spinner, Text } from "grommet";
 import { Add } from "grommet-icons";
 import React, { useContext, useEffect, useState } from "react";
 import { toast } from "react-toastify";
@@ -26,17 +26,16 @@ interface Props {
 export const MeBalances: React.FC<Props> = ({ ...props }) => {
     debug("Render");
     const { getUnclaimedShares, claim } = useContext(BrokContext);
-    const { signatureRequestHandler, CapTable, CapTableRegistry, signer, initSigner } = useContext(SymfoniContext);
-    const requireSigner = !signer || !("request" in signer);
+    const { signatureRequestHandler, signer, initSigner } = useContext(SymfoniContext);
+    // const requireSigner = !signer || !("request" in signer);
 
-    const { loading, error, data, refetch } = useQuery<TokenHoldersGraphQLTypes.TokenHolderQuery.Response>(
+    const { loading, error, data } = useQuery<TokenHoldersGraphQLTypes.TokenHolderQuery.Response>(
         TokenHolderGraphQL.TOKEN_HOLDER_QUERY(props.address)
     );
     const [unclaimedLoading, setUnclaimedLoading] = useState<boolean>(false);
     const [unclaimed, setUnclaimed] = useState<Unclaimed[]>([]);
     const [balances, setBalances] = useState<Balance[]>();
     const [toBeClaimed, setToBeClaimed] = useState<string[]>([]);
-    const [claiming, setClaiming] = useState<boolean>(false);
 
     useEffect(() => {
         if (loading || unclaimedLoading) return;
@@ -47,7 +46,7 @@ export const MeBalances: React.FC<Props> = ({ ...props }) => {
                 return {
                     capTableAddress: unclm.address,
                     capTableName: unclm.capTableName,
-                    partition: bl.partition,
+                    partition: ethers.utils.parseBytes32String(bl.partition),
                     amount: bl.amount,
                     claimed: false,
                 } as Balance;
@@ -59,7 +58,7 @@ export const MeBalances: React.FC<Props> = ({ ...props }) => {
                 return {
                     capTableAddress: clm.address,
                     capTableName: bl.capTable.name,
-                    partition: ethers.utils.parseBytes32String(bl.partition),
+                    partition: bl.partition,
                     amount: bl.amount,
                     claimed: true,
                 } as Balance;
@@ -80,40 +79,29 @@ export const MeBalances: React.FC<Props> = ({ ...props }) => {
                 setUnclaimed(response.data);
                 setUnclaimedLoading(false);
             }
-        } catch (error: any) {
-            if ("message" in error) {
-                debug(error.message);
-            } else {
-                debug("error in getUnclaimedShares", error);
-            }
+        } catch (error) {
+            debug("error in getUnclaimedShares", error);
             setUnclaimedLoading(false);
         }
     };
 
-    useAsyncEffect(
-        async (isMounted) => {
-            try {
-                setUnclaimedLoading(true);
-                const response = await getUnclaimedShares();
-                if (response.status === 200) {
-                    debug("getUnclaimed response:");
-                    debug(response);
-                    if (isMounted()) {
-                        setUnclaimed(response.data);
-                        setUnclaimedLoading(false);
-                    }
+    useAsyncEffect(async (isMounted) => {
+        try {
+            setUnclaimedLoading(true);
+            const response = await getUnclaimedShares();
+            if (response.status === 200) {
+                debug("getUnclaimed response:");
+                debug(response);
+                if (isMounted()) {
+                    setUnclaimed(response.data);
+                    setUnclaimedLoading(false);
                 }
-            } catch (error: any) {
-                if ("message" in error) {
-                    debug(error.message);
-                } else {
-                    debug("error in getUnclaimedShares", error);
-                }
-                setUnclaimedLoading(false);
             }
-        },
-        [claim]
-    );
+        } catch (error) {
+            debug("error in getUnclaimedShares", error);
+            setUnclaimedLoading(false);
+        }
+    }, []);
 
     const toggleToBeClaim = (address: string) => {
         if (toBeClaimed.includes(address)) {
@@ -125,7 +113,6 @@ export const MeBalances: React.FC<Props> = ({ ...props }) => {
     };
 
     const claimAllUnclaimed = async () => {
-        setClaiming(true);
         const BROK_HELPERS_VERIFIER = process.env.REACT_APP_BROK_HELPERS_VERIFIER;
         if (!signer || !("request" in signer)) {
             debug(`No signer or request in signer found, running initSigner`);
@@ -147,18 +134,16 @@ export const MeBalances: React.FC<Props> = ({ ...props }) => {
         let response = (await signatureRequestHandler.results().catch((error) => {
             debug(error);
             return undefined;
-        })) as { claimTokensVp: string }[] | undefined;
+        })) as { jwt: string }[] | undefined;
         if (!response) {
             toast(`Signering ble avbrutt.`);
-            setClaiming(false);
             return;
         }
         if (!Array.isArray(response) || !response[0]) {
             toast(`Feil i respons fra Lommebok.`)!;
-            setClaiming(false);
             return;
         }
-        const claimVp = response[0].claimTokensVp;
+        const claimVp = response[0].jwt;
         const claimUnclaimedResponse = await claim(claimVp).catch((error) => {
             toast(error.message);
             return undefined;
@@ -166,11 +151,15 @@ export const MeBalances: React.FC<Props> = ({ ...props }) => {
         debug("claimed result", claimUnclaimedResponse);
         await fetchUnclaimed();
         setToBeClaimed([]);
-        setClaiming(false);
     };
 
     return (
         <Box gap="small">
+            {error && (
+                <Box>
+                    <Text>{error}</Text>
+                </Box>
+            )}
             {balances && (
                 <DataTable
                     data={balances ? balances : []}
