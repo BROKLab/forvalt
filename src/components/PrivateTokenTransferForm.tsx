@@ -4,6 +4,7 @@ import { Box, Button, Grid, Select, Text, TextInput } from "grommet";
 import { Trash } from "grommet-icons";
 import React, { useEffect, useState } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
+import { toast } from "react-toastify";
 import { DEFAULT_CAPTABLE_PARTITION } from "./../context/defaults";
 
 type PropsSingel = {
@@ -13,6 +14,7 @@ type PropsSingel = {
     multiple?: never;
     createPartition?: boolean;
     selectPartiton?: boolean;
+    requiredTotal?: number;
 };
 type PropsMultiple = {
     capTable?: CapTable;
@@ -21,6 +23,7 @@ type PropsMultiple = {
     multiple: true;
     createPartition?: boolean;
     selectPartiton?: boolean;
+    requiredTotal?: number;
 };
 type Props = PropsSingel | PropsMultiple;
 
@@ -39,7 +42,6 @@ export interface PrivateTokenTransferData {
 
 const defaultValues: Record<string, PrivateTokenTransferData[]> = {
     test: [
-
         {
             identifier: "11126138727",
             address: "",
@@ -79,7 +81,6 @@ const defaultValues: Record<string, PrivateTokenTransferData[]> = {
 };
 
 export const PrivateTokenTransferForm: React.FC<Props> = ({ ...props }) => {
-
     const { control, watch, register, setValue } = useForm({ defaultValues });
     const enviroment = process.env.NODE_ENV === "development" ? "test" : "production";
     const { fields, append, remove, prepend } = useFieldArray({
@@ -96,25 +97,28 @@ export const PrivateTokenTransferForm: React.FC<Props> = ({ ...props }) => {
     const [partitions, setPartitions] = useState<BytesLike[]>([DEFAULT_CAPTABLE_PARTITION]);
     const [newPartition, setNewPartition] = useState("");
 
-    // TODO - Make this more explicit. Add borad director if multiple 
+    // TODO - Make this more explicit. Add borad director if multiple
     useEffect(() => {
         if (props.multiple) {
             // if no boardDirector, add it
-            if (!watchFieldArray.some(s => s.isBoardDirector)) {
-                prepend({
-                    identifier: "",
-                    address: "",
-                    amount: "100",
-                    partition: DEFAULT_CAPTABLE_PARTITION,
-                    name:  "",
-                    streetAddress:process.env.REACT_APP_USE_TEST_DATA === "true" ? "Styrveien 55" : "", 
-                    postalcode:process.env.REACT_APP_USE_TEST_DATA === "true" ? "0654":  "",
-                    email: process.env.REACT_APP_USE_TEST_DATA === "true" ? "styreepost@email.com" : "",
-                    isBoardDirector: true,
-                }, {})
+            if (!watchFieldArray.some((s) => s.isBoardDirector)) {
+                prepend(
+                    {
+                        identifier: "",
+                        address: "",
+                        amount: "100",
+                        partition: DEFAULT_CAPTABLE_PARTITION,
+                        name: "",
+                        streetAddress: process.env.REACT_APP_USE_TEST_DATA === "true" ? "Styrveien 55" : "",
+                        postalcode: process.env.REACT_APP_USE_TEST_DATA === "true" ? "0654" : "",
+                        email: process.env.REACT_APP_USE_TEST_DATA === "true" ? "styreepost@email.com" : "",
+                        isBoardDirector: true,
+                    },
+                    {}
+                );
             }
         }
-    }, [prepend, props.multiple, watchFieldArray])
+    }, [prepend, props.multiple, watchFieldArray]);
 
     // Get partitions if capTable is set
     useEffect(() => {
@@ -138,6 +142,15 @@ export const PrivateTokenTransferForm: React.FC<Props> = ({ ...props }) => {
     }, [props.capTable]);
 
     const handleOnSubmit = () => {
+        if (props.requiredTotal) {
+            const total = controlledFields.reduce((prev: number, curr: PrivateTokenTransferData) => {
+                return prev + parseInt(curr.amount);
+            }, 0);
+            if (total !== props.requiredTotal) {
+                toast(`Required total shares is ${props.requiredTotal}, but only assigning ${total}. Add ${props.requiredTotal - total}`);
+                return;
+            }
+        }
         if (props.multiple) {
             props.onSubmit(controlledFields);
         } else {
@@ -277,7 +290,7 @@ export const PrivateTokenTransferForm: React.FC<Props> = ({ ...props }) => {
                                 emptySearchMessage={"Foreslå en partisjon ovenfor"}
                                 onChange={({ option }) => {
                                     console.log("Settinng partiton");
-                                    
+
                                     setValue(`${enviroment}.${index}.partition`, option);
                                     return option;
                                 }}></Select>
@@ -294,16 +307,14 @@ export const PrivateTokenTransferForm: React.FC<Props> = ({ ...props }) => {
                             color="black"
                             label="Legg til person"
                             onClick={() => append(defaultValues[enviroment][1])}
-                            style={{ borderRadius: "0px" }}>
-                        </Button>
+                            style={{ borderRadius: "0px" }}></Button>
                     )}
                     <Button
                         color="black"
                         label={!!props.submitLabel ? props.submitLabel : "Send inn"}
                         style={{ borderRadius: "0px" }}
                         // {...props.onSubmitButtonProps}
-                        onClick={() => handleOnSubmit()}>
-                    </Button>
+                        onClick={() => handleOnSubmit()}></Button>
                 </Box>
             </Box>
         </Box>
