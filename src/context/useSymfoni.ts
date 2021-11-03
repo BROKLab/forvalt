@@ -63,6 +63,7 @@ export const useSymfoni = () => {
             if ("request" in signer) {
                 await signer.close();
                 setSigner(undefined);
+                localStorage.removeItem("permissionBrokToken");
             } else {
                 throw Error("TODO - Not handling closing any other signers");
             }
