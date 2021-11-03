@@ -1,12 +1,14 @@
 import { Box, Button, Header, Image, ResponsiveContext, Text } from 'grommet';
-import React from 'react';
+import React, { useContext } from 'react';
 import { Link } from 'react-router-dom';
+import { SymfoniContext } from '../context/SymfoniContext';
 import BRREG_LOGO_SMALL_PNG from './../assets/images/brreg_logo.png';
 import BRREG_LOGO_SVG from './../assets/images/brreg_logo.svg';
 
 interface Props {}
 
 export const Navigation: React.FC<Props> = () => {
+    const { signer } = useContext(SymfoniContext);
     const size = React.useContext(ResponsiveContext);
 
 
@@ -22,6 +24,9 @@ export const Navigation: React.FC<Props> = () => {
                 <Text size="large" margin={{ "left": "3em" }}>Aksjeeierbok</Text>
             </Box>
             <Box direction="row" gap="small" >
+                {signer && <Link to="/logout">
+                    <Button size="small" label="Koble fra" hoverIndicator focusIndicator={false} />
+                </Link>}
                 <Link to="/captable/create">
                     <Button size="small" label="Opprett" hoverIndicator focusIndicator={false} />
                 </Link>
@@ -32,12 +37,7 @@ export const Navigation: React.FC<Props> = () => {
                 <Link to="/me">
                     <Button label={"Mine aksjer"} size="small" hoverIndicator focusIndicator={false}></Button>
                 </Link>
-                <Link to="/profile">
-                    <Button label={"Profil"} size="small" hoverIndicator focusIndicator={false}></Button>
-                </Link>
-
             </Box>
-
         </Header>
     )
 }
