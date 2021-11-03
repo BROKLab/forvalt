@@ -46,13 +46,27 @@ export const useSymfoni = () => {
     // contracts
     const contracts = useContracts();
 
-    const initSigner = async (opts: { provider?: ProviderTypes } = {}) => {
-        if (opts.provider && opts.provider !== selectedProvider) {
-            setSelectedProvider(opts.provider);
+    const initSigner = useCallback(
+        async (opts: { provider?: ProviderTypes } = {}) => {
+            if (opts.provider && opts.provider !== selectedProvider) {
+                setSelectedProvider(opts.provider);
+            }
+            debug(`Setting signer reques attempts from ${signerRequestAttempts} to ${signerRequestAttempts + 1}`);
+            setSignerRequestAttempts(signerRequestAttempts + 1);
+            setLazySigner(false);
+        },
+        [selectedProvider, signerRequestAttempts, setSignerRequestAttempts, setLazySigner]
+    );
+
+    const closeSigner = async () => {
+        if (signer) {
+            if ("request" in signer) {
+                await signer.close();
+                setSigner(undefined);
+            } else {
+                throw Error("TODO - Not handling closing any other signers");
+            }
         }
-        debug(`Setting signer reques attempts from ${signerRequestAttempts} to ${signerRequestAttempts + 1}`);
-        setSignerRequestAttempts((old) => old++);
-        setLazySigner(false);
     };
 
     const getProvider = useCallback(async () => {
@@ -137,6 +151,7 @@ export const useSymfoni = () => {
         initSigner,
         address,
         chainId,
+        closeSigner,
         ...contracts,
     };
 };
