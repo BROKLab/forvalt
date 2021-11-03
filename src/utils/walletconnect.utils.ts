@@ -18,10 +18,8 @@ export function getWalletConnectSigner(params: GetWalletConnectSignerParams) {
             chainId: CHAIN_ID,
             walletConnectOpts: {
                 metadata: WALLETCONNECT_METADATA,
+                // relayProvider: "wss://localhost:5555"
             },
-            // walletConnectOpts: {
-            //     relayProvider: "wss://localhost:5555"
-            // }
         });
         if (params.provider) {
             _signer = _signer.connect(params.provider);

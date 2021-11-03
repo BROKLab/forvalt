@@ -134,15 +134,15 @@ export const useBrok = () => {
                             scopes: [
                                 {
                                     id: `${url}/captable/:captableAddress/shareholder/list`,
-                                    name: "Fetch list of shareholders for all captables",
+                                    name: "All shareholders for all captables",
                                 },
                                 {
                                     id: `${url}/captable/:captableAddress/shareholder/:shareholderId`,
-                                    name: "Fetch shareholder for captable",
+                                    name: "One shareholder for all captables",
                                 },
                                 {
                                     id: `${url}/unclaimed/list`,
-                                    name: "Fetch all unclaimed captable transfers.",
+                                    name: "All unclaimed tokens for your identifier ",
                                 },
                             ],
                         },
