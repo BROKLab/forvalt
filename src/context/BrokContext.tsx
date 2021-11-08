@@ -185,7 +185,8 @@ export const useBrok = () => {
                 <Box gap="small">
                     <Text size="xsmall">Se mer informasjon om aksjeeierene ved å koble til en lommebok.</Text>
                     <Button size="small" label="Koble til lommebok" onClick={() => initSigner()}></Button>
-                </Box>
+                </Box>,
+                { autoClose: 10000, onClose: () => setHasPromptedSigner(false) }
             );
             return undefined;
         }
@@ -197,7 +198,8 @@ export const useBrok = () => {
                 <Box gap="small">
                     <Text size="xsmall">Se mer informasjon om aksjeeierene ved å gi Forvalt tilgang til å hente data på dine vegne.</Text>
                     <Button size="small" label="Gi tilgang" onClick={() => fetchToken()}></Button>
-                </Box>
+                </Box>,
+                { autoClose: 10000, onClose: () => setHasPromptedToken(false) }
             );
         }
     }, [fetchToken, hasPromptedSigner, hasPromptedToken, initSigner, signer, state, token]);

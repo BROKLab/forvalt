@@ -3,6 +3,7 @@ import { useQuery } from "graphql-hooks";
 import { Box, Button, DataTable, Spinner, Text } from "grommet";
 import { Add } from "grommet-icons";
 import React, { useContext, useEffect, useState } from "react";
+import { useHistory } from "react-router";
 import { toast } from "react-toastify";
 import useAsyncEffect from "use-async-effect";
 import { BrokContext, Unclaimed } from "../context/BrokContext";
@@ -36,6 +37,7 @@ export const MeBalances: React.FC<Props> = ({ ...props }) => {
     const [unclaimed, setUnclaimed] = useState<Unclaimed[]>([]);
     const [balances, setBalances] = useState<Balance[]>();
     const [toBeClaimed, setToBeClaimed] = useState<string[]>([]);
+    const history = useHistory();
 
     useEffect(() => {
         if (loading || unclaimedLoading) return;
@@ -44,7 +46,7 @@ export const MeBalances: React.FC<Props> = ({ ...props }) => {
         const _unclm = unclaimed.flatMap((unclm) => {
             return unclm.balances.map((bl) => {
                 return {
-                    capTableAddress: unclm.address,
+                    capTableAddress: unclm.capTableAddress,
                     capTableName: unclm.capTableName,
                     partition: ethers.utils.parseBytes32String(bl.partition),
                     amount: bl.amount,
@@ -88,6 +90,7 @@ export const MeBalances: React.FC<Props> = ({ ...props }) => {
     useAsyncEffect(async (isMounted) => {
         try {
             setUnclaimedLoading(true);
+            debug("inAsync before getUnclaimed");
             const response = await getUnclaimedShares();
             if (response.status === 200) {
                 debug("getUnclaimed response:");
@@ -184,17 +187,23 @@ export const MeBalances: React.FC<Props> = ({ ...props }) => {
                             property: "virtual",
                             header: "",
                             render: (data: Balance) => {
-                                return data.claimed ? null : (
+                                return (
                                     <Box direction="row">
+                                        {!data.claimed && (
+                                            <Button
+                                                color={toBeClaimed.includes(data.capTableAddress) ? "blue" : "green"}
+                                                icon={<Add />}
+                                                size="small"
+                                                label={toBeClaimed.includes(data.capTableAddress) ? "Angre" : "Gjør krav"}
+                                                title="Gjør krav på aksjene som er tildelt deg ved å trykke her"
+                                                onClick={() => toggleToBeClaim(data.capTableAddress)}
+                                                // disabled={}
+                                            ></Button>
+                                        )}
                                         <Button
-                                            color={toBeClaimed.includes(data.capTableAddress) ? "blue" : "green"}
-                                            icon={<Add />}
                                             size="small"
-                                            label={toBeClaimed.includes(data.capTableAddress) ? "Angre" : "Gjør krav"}
-                                            title="Gjør krav på aksjene som er tildelt deg ved å trykke her"
-                                            onClick={() => toggleToBeClaim(data.capTableAddress)}
-                                            // disabled={}
-                                        ></Button>
+                                            label={"Gå til aksjeeierbok"}
+                                            onClick={() => history.push(`/captable/${data.capTableAddress}`)}></Button>
                                     </Box>
                                 );
                             },
