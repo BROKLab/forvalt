@@ -32,13 +32,14 @@ export const CapTablePage: React.FC<Props> = ({ ...props }) => {
     //     const _capTable = erc1400.connect(address)
     //     setCapTable(_capTable)
     // }, [erc1400, address])
-    const isCurrentWalletConntroller = !!currentSignerAddress && !!data && data.capTable.controllers.includes(currentSignerAddress.toLowerCase());
+    const isCurrentWalletConntroller =
+        !!currentSignerAddress && !!data && !!data.capTable && data.capTable.controllers.includes(currentSignerAddress.toLowerCase());
 
     return (
         <Box>
-            {loading && <Spinner></Spinner>}
+            {!data || !data.capTable || (loading && <Spinner></Spinner>)}
             {error && <Paragraph>Noe galt skjedde</Paragraph>}
-            {data && (
+            {data && data.capTable && (
                 <Box gap="small">
                     <Heading level={3}>Nøkkelopplysninger</Heading>
                     <CapTableDetails
