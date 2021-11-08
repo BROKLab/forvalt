@@ -1,5 +1,5 @@
 import { Box, Button, Heading, Paragraph, Text } from "grommet";
-import { Notes } from "grommet-icons";
+import { Group, Inspect, LinkNext, Notes, UserManager } from "grommet-icons";
 import React from "react";
 import { Link } from "react-router-dom";
 
@@ -14,35 +14,36 @@ export const Home: React.FC<Props> = () => {
                     Brønnøysundregistrene Aksjeeierbok
                 </Text>
             </Heading>
-            <Box direction="row">
+            <Box direction="row" margin={{ vertical: "large" }}>
                 {[
                     {
                         title: "For selskapseiere",
-                        icon: <Notes />,
+                        icon: <UserManager />,
                         description: "Er du styreleder av et unotert aksjeselskap? Da kan flytte aksjeeierboken din til BRØK.",
                         buttonText: "Opprett aksjeeierbok",
                         link: "/captable/create",
                     },
                     {
                         title: "For aksjonærer",
-                        icon: <Notes />,
+                        icon: <Group />,
                         description: "Har du mottatt epost om å sjekke porteføljen? Ett eller flere selskaper du er aksjonær i, har tatt i bruk BRØK",
                         buttonText: "Min portfølje",
                         link: "/me",
                     },
                     {
                         title: "Innsyn",
-                        icon: <Notes />,
+                        icon: <Inspect />,
                         description: "Alle aksjeeierbøkene på BRØK er åpne. Her får du en liste over alle selskaper på plattformen.",
                         buttonText: "Aksjeeierbokregisteret",
                         link: "/register/list",
                     },
-                ].map((homeAction) => {
+                ].map((homeAction, index) => {
                     return (
                         <Box
+                            key={index}
                             direction="column"
                             justify="between"
-                            style={{ width: 300, height: 300 }}
+                            style={{ minWidth: 300, maxWidth: 300 }}
                             border={{ color: "brand", size: "medium" }}
                             margin="small"
                             pad="medium">
@@ -55,7 +56,14 @@ export const Home: React.FC<Props> = () => {
                             </Box>
                             <Box direction="row" justify="end">
                                 <Link to={homeAction.link}>
-                                    <Button size="small" label={homeAction.buttonText} hoverIndicator focusIndicator={false} />
+                                    <Button size="small" hoverIndicator focusIndicator={false}>
+                                        <Box border={{ size: "small", color: "brand" }} pad="small" direction="row" align="center" gap="small">
+                                            <Text color="black" size="small">
+                                                {homeAction.buttonText}
+                                            </Text>
+                                            <LinkNext size="small" />
+                                        </Box>
+                                    </Button>
                                 </Link>
                             </Box>
                         </Box>
