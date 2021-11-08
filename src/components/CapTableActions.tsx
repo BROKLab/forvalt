@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
-import { Box, Button } from 'grommet';
-import { Modal } from './Modal';
-import { CapTableTransfer } from './CapTableTransfer';
+import React, { useState } from "react";
+import { Box, Button, Heading } from "grommet";
+import { Modal } from "./Modal";
+import { CapTableTransfer } from "./CapTableTransfer";
 
 interface Props {
-    capTableAddress: string
+    capTableAddress: string;
 }
 
 export const CapTableActions: React.FC<Props> = ({ ...props }) => {
@@ -12,6 +12,7 @@ export const CapTableActions: React.FC<Props> = ({ ...props }) => {
 
     return (
         <Box>
+            <Heading level={3}>Handlinger</Heading>
             <Box gap="small" direction="row">
                 <Button size="small" label={"Overføre"} onClick={() => setShowTransfers(!showTransfers)}></Button>
             </Box>
@@ -20,10 +21,8 @@ export const CapTableActions: React.FC<Props> = ({ ...props }) => {
                     capTableAddress={props.capTableAddress}
                     done={() => {
                         setShowTransfers(false);
-                    }}
-                    
-                    ></CapTableTransfer>
+                    }}></CapTableTransfer>
             </Modal>
         </Box>
-    )
-}
+    );
+};

@@ -1,15 +1,12 @@
 import React from "react";
 import { Box, Grid, Text } from "grommet";
-import { FormatEthereumAddress } from "./FormatEthereumAddress";
 
 interface Props {
     data: {
         name: string;
-        organizationNuber: string;
-        boardDirector: string;
-        active: boolean;
+        organizationNumber: string;
+        boardDirectorName: string;
         totalSupply: string;
-        isCurrentWalletConntroller: boolean;
     };
 }
 
@@ -22,25 +19,16 @@ export const CapTableDetails: React.FC<Props> = ({ data, ...props }) => {
             </Grid>
             <Grid columns={["small", "flex"]}>
                 <Text>Organisasjonsnummer</Text>
-                <Text weight="bold">{data.organizationNuber}</Text>
+                <Text weight="bold">{data.organizationNumber}</Text>
             </Grid>
             <Grid columns={["small", "flex"]}>
                 <Text>Styreleder</Text>
-                <Text weight="bold">
-                    <FormatEthereumAddress address={data.boardDirector}></FormatEthereumAddress>
-                </Text>
+                <Text weight="bold">{data.boardDirectorName}</Text>
             </Grid>
-            <Grid columns={["small", "flex"]}>
-                <Text>Aktivt</Text>
-                <Text weight="bold">{data.active ? "Ja" : "Nei"}</Text>
-            </Grid>
+
             <Grid columns={["small", "flex"]}>
                 <Text>Antall aksjer</Text>
-                <Text weight="bold">{data.totalSupply}</Text>
-            </Grid>
-            <Grid columns={["small", "flex"]}>
-                <Text>Skriverettigheter</Text>
-                <Text weight="bold">{data.isCurrentWalletConntroller ? "Ja" : "Nei"}</Text>
+                <Text weight="bold">{parseInt(data.totalSupply)}</Text>
             </Grid>
         </Box>
     );
