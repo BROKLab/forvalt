@@ -27,6 +27,11 @@ export const CapTablePage: React.FC<Props> = ({ ...props }) => {
     const [boardDirectorName, setBoardDirectorName] = useState<string>("");
 
     const { loading, error, data } = useQuery<CapTableGraphQLTypes.CapTableQuery.Response>(CapTableGraphQL.CAP_TABLE_QUERY(address));
+    const {
+        loading: loadingBalances,
+        error: errorBalances,
+        data: balancesData,
+    } = useQuery<CapTableGraphQLTypes.BalancesQuery.Response>(CapTableGraphQL.BALANCES_QUERY(address));
 
     // const { loading, error, data } = useQuery<CapTableTypes.Types.CapTable>(CapTableTypes.Queries.CAP_TABLE_QUERY(address), {
     //     variables: {
@@ -39,17 +44,13 @@ export const CapTablePage: React.FC<Props> = ({ ...props }) => {
     //     setCapTable(_capTable)
     // }, [erc1400, address])
     const { getCaptableShareholders, updateShareholder } = useContext(BrokContext);
-    const isCurrentWalletController = !!currentSignerAddress && !!data && data.capTable.controllers.includes(currentSignerAddress.toLowerCase());
-    const {
-        loading: loadingBalances,
-        error: errorBalances,
-        data: balancesData,
-    } = useQuery<CapTableGraphQLTypes.BalancesQuery.Response>(CapTableGraphQL.BALANCES_QUERY(address));
+    const isCurrentWalletController =
+        !!currentSignerAddress && !!data && data.capTable && data.capTable.controllers.includes(currentSignerAddress.toLowerCase());
 
     useAsyncEffect(
         async (isMounted) => {
             try {
-                if (!balancesData) return;
+                if (!balancesData || !data) return;
                 const _balances = balancesData.balances.map((bal) => {
                     return {
                         ...bal,
@@ -59,7 +60,7 @@ export const CapTablePage: React.FC<Props> = ({ ...props }) => {
                     setBalancesAndPrivateData(_balances);
                 }
                 debug("address", address);
-                const response = await getCaptableShareholders(address.toLocaleLowerCase()).catch((err) => {
+                const response = await getCaptableShareholders(address.toLowerCase()).catch((err) => {
                     toast("Kunne ikke hente ekstra informasjon om aksjeholdere");
                 });
                 debug("response", response);

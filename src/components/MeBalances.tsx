@@ -58,7 +58,7 @@ export const MeBalances: React.FC<Props> = ({ ...props }) => {
         const _clm = data.tokenHolders.flatMap((clm) => {
             return clm.balances.map((bl) => {
                 return {
-                    capTableAddress: clm.address,
+                    capTableAddress: bl.capTable.id,
                     capTableName: bl.capTable.name,
                     partition: bl.partition,
                     amount: bl.amount,
