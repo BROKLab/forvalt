@@ -4,6 +4,7 @@ import { Edit } from "grommet-icons";
 import React, { useContext, useState } from "react";
 import { BalanceAndMaybePrivateData, BrokContext, getRoleName, ROLE } from "../context/BrokContext";
 import { ExportExcel } from "../utils/ExportExcel";
+import useInterval from "../utils/useInterval";
 import { EditShareholderModal } from "./EditShareholderModal";
 var debug = require("debug")("component:CapTableBalances");
 
@@ -25,10 +26,6 @@ export const CapTableBalances: React.FC<Props> = ({ ...props }) => {
     const [editEntity, setEditShareholder] = useState<BalanceAndMaybePrivateData>();
 
     const { updateShareholder } = useContext(BrokContext);
-
-    // useInterval(() => {
-    //     refetch();
-    // }, 4000);
 
     const toHoursMonthYear = (date: string) => {
         return new Date(date).toLocaleDateString("no-NO", {

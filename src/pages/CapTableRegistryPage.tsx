@@ -32,7 +32,7 @@ export const CapTableRegistryPage: React.FC<Props> = ({ ...props }) => {
     });
 
     useInterval(() => {
-        //refetch()
+        refetch();
     }, 5000);
 
     return (
