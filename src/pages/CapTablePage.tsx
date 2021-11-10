@@ -34,6 +34,7 @@ export const CapTablePage: React.FC<Props> = ({ ...props }) => {
         error: errorCapTable,
         data: capTableData,
     } = useQuery<CapTableGraphQLTypes.CapTableQuery.Response>(CapTableGraphQL.CAP_TABLE_QUERY(address));
+
     const {
         loading: loadingBalances,
         error: errorBalances,
