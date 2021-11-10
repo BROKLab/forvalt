@@ -64,7 +64,7 @@ export interface Shareholder {
     birthdate: string;
     address: string;
     id: string;
-    postcode?: number;
+    postcode?: string;
     email?: string;
     identifier?: string;
 }
@@ -183,7 +183,7 @@ export const useBrok = () => {
             debug("Prompting for signer");
             toast(
                 <Box gap="small">
-                    <Text size="xsmall">Se mer informasjon om aksjeeierene ved å koble til en lommebok.</Text>
+                    <Text size="xsmall">Se mer informasjon ved å koble til en lommebok.</Text>
                     <Button size="small" label="Koble til lommebok" onClick={() => initSigner()}></Button>
                 </Box>,
                 { autoClose: 10000, onClose: () => setHasPromptedSigner(false) }
@@ -196,7 +196,7 @@ export const useBrok = () => {
             setHasPromptedToken(true);
             toast(
                 <Box gap="small">
-                    <Text size="xsmall">Se mer informasjon om aksjeeierene ved å gi Forvalt tilgang til å hente data på dine vegne.</Text>
+                    <Text size="xsmall">Se mer informasjon ved å gi Forvalt tilgang til å hente data på dine vegne.</Text>
                     <Button size="small" label="Gi tilgang" onClick={() => fetchToken()}></Button>
                 </Box>,
                 { autoClose: 10000, onClose: () => setHasPromptedToken(false) }
@@ -299,6 +299,7 @@ export const useBrok = () => {
         claim,
         getCaptableLegacy,
         updateShareholder,
+        setToken,
     };
 };
 
