@@ -12,7 +12,7 @@ export const MePage: React.FC<Props> = () => {
 
     return (
         <Box gap="small">
-            <Heading level={3}>Mine aksjer</Heading>
+            <Heading level={1}>Mine aksjer</Heading>
             {address && <MeBalances address={address} />}
             {!address && <Button size="small" label="Koble til lommebok" onClick={() => initSigner()}></Button>}
         </Box>

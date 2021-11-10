@@ -236,7 +236,7 @@ export const PrivateTokenTransferForm: React.FC<Props> = ({ ...props }) => {
                 </Grid>
 
                 {controlledFields.map((field, index) => (
-                    <Grid columns={{ count: columsCount(), size: "xsmall" }} gap="small" key={index}>
+                    <Grid columns={{ count: columsCount(), size: "xsmall" }} gap="small" key={field.id}>
                         <Box>
                             <TextInput
                                 {...register(`${enviroment}.${index}.identifier` as const)}
