@@ -1,6 +1,8 @@
 export declare module TokenHoldersGraphQLTypes {
     export module TokenHolderQuery {
         export interface CapTable {
+            //address of captable
+            id: string;
             name: string;
         }
 
@@ -33,6 +35,7 @@ export class TokenHolderGraphQL {
         id
         balances {
           capTable {
+            id
             name
           }
           amount
