@@ -1,6 +1,6 @@
 import { ethers } from "ethers";
 import { useQuery } from "graphql-hooks";
-import { Box, Button, DataTable, Spinner, Text } from "grommet";
+import { Box, Button, DataTable, Heading, Spinner, Text } from "grommet";
 import { Add } from "grommet-icons";
 import React, { useContext, useEffect, useState } from "react";
 import { useHistory } from "react-router";
@@ -35,7 +35,7 @@ export const MeBalances: React.FC<Props> = ({ ...props }) => {
     );
     const [unclaimedLoading, setUnclaimedLoading] = useState<boolean>(false);
     const [unclaimed, setUnclaimed] = useState<Unclaimed[]>([]);
-    const [balances, setBalances] = useState<Balance[]>();
+    const [balances, setBalances] = useState<Balance[]>([]);
     const [toBeClaimed, setToBeClaimed] = useState<string[]>([]);
     const history = useHistory();
 
@@ -58,7 +58,7 @@ export const MeBalances: React.FC<Props> = ({ ...props }) => {
         const _clm = data.tokenHolders.flatMap((clm) => {
             return clm.balances.map((bl) => {
                 return {
-                    capTableAddress: clm.address,
+                    capTableAddress: bl.capTable.id,
                     capTableName: bl.capTable.name,
                     partition: bl.partition,
                     amount: bl.amount,
@@ -158,12 +158,11 @@ export const MeBalances: React.FC<Props> = ({ ...props }) => {
 
     return (
         <Box gap="small">
-            {error && (
-                <Box>
-                    <Text>{error}</Text>
-                </Box>
-            )}
-            {balances && (
+            {!signer || (balances.length === 0 && !loading && !unclaimedLoading && <Heading level={2}>Du har ingen aksjer</Heading>)}
+            <Box margin="small" align="center" height="small">
+                {(loading || unclaimedLoading) && <Spinner size="large"></Spinner>}
+            </Box>
+            {balances.length > 0 && (
                 <DataTable
                     data={balances ? balances : []}
                     primaryKey={false}
@@ -176,7 +175,7 @@ export const MeBalances: React.FC<Props> = ({ ...props }) => {
                         {
                             property: "amount",
                             header: <Text>Antall</Text>,
-                            render: (data: Balance) => ethers.utils.formatEther(data.amount),
+                            render: (data: Balance) => parseInt(ethers.utils.formatEther(data.amount)),
                         },
                         {
                             property: "balanceByPartition",
@@ -220,9 +219,6 @@ export const MeBalances: React.FC<Props> = ({ ...props }) => {
                         onClick={() => claimAllUnclaimed()}></Button>
                 </Box>
             )}
-            <Box margin="small" align="center" height="small">
-                {(loading || unclaimedLoading) && <Spinner></Spinner>}
-            </Box>
         </Box>
     );
 };

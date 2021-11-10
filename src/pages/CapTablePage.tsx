@@ -8,7 +8,7 @@ import useAsyncEffect from "use-async-effect";
 import { CapTableActions } from "../components/CapTableActions";
 import { CapTableBalances } from "../components/CapTableBalances";
 import { CapTableDetails } from "../components/CapTableDetails";
-import { BalanceAndMaybePrivateData, BrokContext, ROLE } from "../context/BrokContext";
+import { BalanceAndMaybePrivateData, BrokContext, ROLE, Shareholder } from "../context/BrokContext";
 import { SymfoniContext } from "../context/SymfoniContext";
 import { CapTableGraphQL, CapTableGraphQLTypes } from "../utils/CapTableGraphQL.utils";
 var debug = require("debug")("page:CapTablePage");
@@ -24,76 +24,77 @@ export const CapTablePage: React.FC<Props> = ({ ...props }) => {
     const { address: currentSignerAddress } = useContext(SymfoniContext);
     const [balancesAndPrivateData, setBalancesAndPrivateData] = useState<BalanceAndMaybePrivateData[]>([]);
     const [role, setRole] = useState<ROLE>("PUBLIC");
-    const [boardDirectorName, setBoardDirectorName] = useState<string>("");
+    const [boardDirectorName, setBoardDirectorName] = useState<string>("Laster.....");
 
-    const { loading, error, data } = useQuery<CapTableGraphQLTypes.CapTableQuery.Response>(CapTableGraphQL.CAP_TABLE_QUERY(address));
+    const [loadingShareholders, setLoadingShareholders] = useState<boolean>(false);
+    const [shareholderData, setShareHolderData] = useState<{ shareholders: Shareholder[]; yourRole: string }>();
 
-    // const { loading, error, data } = useQuery<CapTableTypes.Types.CapTable>(CapTableTypes.Queries.CAP_TABLE_QUERY(address), {
-    //     variables: {
-    //         limit: 10
-    //     }
-    // })
-
-    // useEffect(() => {
-    //     const _capTable = erc1400.connect(address)
-    //     setCapTable(_capTable)
-    // }, [erc1400, address])
-    const { getCaptableShareholders, updateShareholder } = useContext(BrokContext);
-    const isCurrentWalletController = !!currentSignerAddress && !!data && data.capTable.controllers.includes(currentSignerAddress.toLowerCase());
+    const {
+        loading: loadingCapTable,
+        error: errorCapTable,
+        data: capTableData,
+    } = useQuery<CapTableGraphQLTypes.CapTableQuery.Response>(CapTableGraphQL.CAP_TABLE_QUERY(address));
     const {
         loading: loadingBalances,
         error: errorBalances,
         data: balancesData,
     } = useQuery<CapTableGraphQLTypes.BalancesQuery.Response>(CapTableGraphQL.BALANCES_QUERY(address));
 
+    const { getCaptableShareholders } = useContext(BrokContext);
+    const isCurrentWalletController =
+        !!currentSignerAddress &&
+        !!capTableData &&
+        capTableData.capTable &&
+        capTableData.capTable.controllers.includes(currentSignerAddress.toLowerCase());
+
+    const isError = errorBalances || errorCapTable;
+
+    useAsyncEffect(async (isMounted) => {
+        setLoadingShareholders(true);
+        const response = await getCaptableShareholders(address.toLowerCase()).catch((err) => {
+            toast("Kunne ikke hente ekstra informasjon om aksjeholdere");
+        });
+        debug("response", response);
+        if (!response || response.status !== 200) {
+            setLoadingShareholders(false);
+            return;
+        }
+        if (isMounted()) {
+            setShareHolderData(response.data);
+            setLoadingShareholders(false);
+        }
+    }, []);
+
     useAsyncEffect(
         async (isMounted) => {
-            try {
-                if (!balancesData) return;
-                const _balances = balancesData.balances.map((bal) => {
-                    return {
-                        ...bal,
-                    } as BalanceAndMaybePrivateData;
-                });
-                if (isMounted()) {
-                    setBalancesAndPrivateData(_balances);
+            if (!capTableData || !balancesData || !shareholderData) return;
+            const _balancesAndPrivateData = balancesData.balances.map((balance) => {
+                const shareholder = shareholderData.shareholders.find((s) => s.address.toLowerCase() === balance.tokenHolder.address.toLowerCase());
+
+                if (!shareholder) {
+                    debug("Could not find shareholder belonging to balance");
+                    return balance as BalanceAndMaybePrivateData;
                 }
-                debug("address", address);
-                const response = await getCaptableShareholders(address.toLocaleLowerCase()).catch((err) => {
-                    toast("Kunne ikke hente ekstra informasjon om aksjeholdere");
-                });
-                debug("response", response);
-                if (!response || response.status !== 200) return;
+                return {
+                    ...shareholder,
+                    ...balance,
+                } as BalanceAndMaybePrivateData;
+            });
 
-                const _balancesAndPrivateData = balancesData.balances.map((balance) => {
-                    const shareholder = response.data.shareholders.find((s) => s.address.toLowerCase() === balance.tokenHolder.address.toLowerCase());
-                    if (!shareholder) {
-                        debug("Could not find shareholder belonging to balance");
-                        return balance as BalanceAndMaybePrivateData;
-                    }
-                    return {
-                        ...shareholder,
-                        ...balance,
-                    } as BalanceAndMaybePrivateData;
-                });
+            const _boardDirector = shareholderData.shareholders.find(
+                (sh) => sh.address.toLowerCase() === capTableData.capTable.boardDirector.toLowerCase()
+            )?.name;
 
-                const _boardDirector = response.data.shareholders.find(
-                    (sh) => sh.address.toLowerCase() === data?.capTable.boardDirector.toLowerCase()
-                )?.name;
-                debug("shareholders", response.data.shareholders);
-                debug("boardDirector", _boardDirector);
+            debug("balancesAndPrivateData", _balancesAndPrivateData);
+            debug("boardDirector", _boardDirector);
 
-                if (isMounted()) {
-                    debug("Setting _balancesAndPrivateData", _balancesAndPrivateData);
-                    setBalancesAndPrivateData(_balancesAndPrivateData);
-                    setRole(response.data.yourRole as ROLE);
-                    setBoardDirectorName(_boardDirector ?? "");
-                }
-            } catch (error) {
-                debug("error in useAsyncEffect", error);
+            if (isMounted()) {
+                setBalancesAndPrivateData(_balancesAndPrivateData);
+                setBoardDirectorName(_boardDirector ?? "Ukjent");
+                setRole(shareholderData.yourRole as ROLE);
             }
         },
-        [balancesData, data]
+        [capTableData, balancesData, shareholderData]
     );
 
     const getStatusMessageForStatus = (status: string) => {
@@ -116,31 +117,32 @@ export const CapTablePage: React.FC<Props> = ({ ...props }) => {
 
     return (
         <Box>
-            <Heading level={3}>Aksjeeierboken</Heading>
-            {loading && <Spinner></Spinner>}
-            {error && <Paragraph>Noe galt skjedde</Paragraph>}
-            {data && data.capTable && (
+            <Heading level={2}>Aksjeeierboken</Heading>
+            {(loadingBalances || loadingCapTable || loadingShareholders) && <Spinner></Spinner>}
+            {isError && <Paragraph>Noe galt skjedde</Paragraph>}
+            {capTableData && capTableData.capTable && (
                 <Box gap="small">
-                    {data.capTable.status !== "APPROVED" && (
+                    {capTableData.capTable.status !== "APPROVED" && (
                         <Box background="red">
-                            <Paragraph>{getStatusMessageForStatus(data.capTable.status)}</Paragraph>
+                            <Paragraph>{getStatusMessageForStatus(capTableData.capTable.status)}</Paragraph>
                         </Box>
                     )}
                     <Heading level={3}>Nøkkelopplysninger</Heading>
                     <CapTableDetails
                         data={{
-                            boardDirectorName: boardDirectorName,
-                            name: data.capTable.name,
-                            organizationNumber: data.capTable.orgnr,
-                            totalSupply: ethers.utils.formatEther(data.capTable.totalSupply),
-                        }}></CapTableDetails>
+                            boardDirectorName: boardDirectorName ?? "Laster",
+                            name: capTableData.capTable.name,
+                            organizationNumber: capTableData.capTable.orgnr,
+                            totalSupply: ethers.utils.formatEther(capTableData.capTable.totalSupply),
+                        }}
+                    />
 
-                    {isCurrentWalletController && <CapTableActions capTableAddress={address}></CapTableActions>}
+                    {isCurrentWalletController && <CapTableActions capTableAddress={address} />}
 
                     {balancesAndPrivateData.length === 0 && <Heading level={4}>Fant ingen aksjeholdere</Heading>}
                     <CapTableBalances
                         capTableAddress={address}
-                        name={data.capTable.name}
+                        name={capTableData.capTable.name}
                         boardDirectorName={boardDirectorName}
                         userRole={role}
                         balances={balancesAndPrivateData}

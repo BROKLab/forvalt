@@ -16,31 +16,33 @@ export const EditShareholderModal: React.FC<Props> = ({ ...props }) => {
     const { getValues, control, register } = useForm({ defaultValues });
 
     const handleOnSubmit = () => {
-        debug("onSubmut", {
-            ...getValues(),
-            birthdate: new Date(getValues().birthdate).toLocaleDateString("no-NO", {
-                year: "numeric",
-                month: "2-digit",
-                day: "2-digit",
-            })
-        })
-        const updated = {
-            ...getValues(),
-            birthdate: new Date(getValues().birthdate).toLocaleDateString("no-NO", {
-                year: "numeric",
-                month: "2-digit",
-                day: "2-digit",
-            }),
-        };
+        const birthdate = getValues().birthdate;
+
+        let updated: UpdateShareholderData;
+
+        if (birthdate !== undefined && birthdate !== null) {
+            updated = {
+                ...getValues(),
+                birthdate: birthdate,
+            };
+        } else {
+            updated = {
+                ...getValues(),
+            };
+        }
         props.onConfirm(updated);
     };
 
     const formDateToIsoString = (date: string) => {
-        const newDate = new Date(date);
-        const dateInEpochMilliseconds = newDate.getTime() + newDate.getTimezoneOffset() * 60 * 1000 * -1;
-        const time = new Date(dateInEpochMilliseconds);
-        time.setHours(6);
-        return time.toISOString();
+        try {
+            const newDate = new Date(date);
+            const dateInEpochMilliseconds = newDate.getTime() + newDate.getTimezoneOffset() * 60 * 1000 * -1;
+            const time = new Date(dateInEpochMilliseconds);
+            time.setHours(6);
+            return time.toISOString();
+        } catch (err: any) {
+            debug("formatDateToString error", err);
+        }
     };
 
     return (
@@ -64,8 +66,8 @@ export const EditShareholderModal: React.FC<Props> = ({ ...props }) => {
                                     format="dd.mm.yyyy"
                                     type="datetime"
                                     ref={field.ref}
-                                    value={field.value}
-                                    placeholder={defaultValues.birthdate}
+                                    value={field.value ?? ""}
+                                    placeholder={defaultValues.birthdate ?? "Ingen dato satt. Klikk for å velge"}
                                     onChange={(date) => {
                                         field.onChange(formDateToIsoString(date.value as string));
                                     }}></DateInput>

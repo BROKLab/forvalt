@@ -159,7 +159,7 @@ export const CapTableCreatePage: React.FC<Props> = ({ ...props }) => {
                     multiple
                     selectPartiton={useDefaultPartitions ? true : false}
                     createPartition={useDefaultPartitions ? false : true}
-                    requiredTotal={orgData ? orgData.kapital : undefined}
+                    requiredTotal={orgData ? orgData.aksjer : undefined}
                     onSubmit={handlePrivateTokenTransferData}>
                     <Box gap="small">
                         <Grid columns="1" fill="horizontal" gap="small">

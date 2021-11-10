@@ -2,9 +2,12 @@ import { ethers } from "ethers";
 import { Box, Button, DataTable, Text } from "grommet";
 import { Edit } from "grommet-icons";
 import React, { useContext, useState } from "react";
-import { BalanceAndMaybePrivateData, BrokContext, getRoleName, ROLE } from "../context/BrokContext";
+import { useHistory } from "react-router";
+import { toast } from "react-toastify";
+import { BalanceAndMaybePrivateData, BrokContext, ROLE } from "../context/BrokContext";
+import { SymfoniContext } from "../context/SymfoniContext";
 import { ExportExcel } from "../utils/ExportExcel";
-import useInterval from "../utils/useInterval";
+import { SignatureRequest } from "../utils/SignerRequestHandler";
 import { EditShareholderModal } from "./EditShareholderModal";
 var debug = require("debug")("component:CapTableBalances");
 
@@ -16,16 +19,20 @@ interface Props {
     userRole: ROLE;
 }
 export type UpdateShareholderData = {
-    name: string;
-    email: string;
-    birthdate: string;
-    postcode: number;
-    city: string;
+    name?: string | null;
+    email?: string | null;
+    birthdate?: string | null;
+    postcode?: string | null;
+    city?: string | null;
 };
 export const CapTableBalances: React.FC<Props> = ({ ...props }) => {
     const [editEntity, setEditShareholder] = useState<BalanceAndMaybePrivateData>();
+    const history = useHistory();
 
     const { updateShareholder } = useContext(BrokContext);
+    const { signatureRequestHandler, signer, initSigner } = useContext(SymfoniContext);
+
+    const requireSigner = !signer || !("request" in signer);
 
     const toHoursMonthYear = (date: string) => {
         return new Date(date).toLocaleDateString("no-NO", {
@@ -70,7 +77,7 @@ export const CapTableBalances: React.FC<Props> = ({ ...props }) => {
             {
                 property: "balance",
                 header: <Text>Aksjer</Text>,
-                render: (data: BalanceAndMaybePrivateData) => ethers.utils.formatEther(data.amount),
+                render: (data: BalanceAndMaybePrivateData) => parseInt(ethers.utils.formatEther(data.amount)),
             },
             {
                 property: "balanceByPartition",
@@ -94,20 +101,56 @@ export const CapTableBalances: React.FC<Props> = ({ ...props }) => {
         });
     };
 
-    const updateShareholderData = (updateShareholderData: UpdateShareholderData) => {
-        // TODO fix jwt and do request
+    const updateShareholderData = async (updateShareholderData: UpdateShareholderData) => {
+        debug("updatreShareholderData", updateShareholderData);
+        if (!editEntity) {
+            debug("editEntity is undefined");
+            toast("Noe gikk galt. Prøv å gjør en refresh av siden");
+            return;
+        }
+        const BROK_HELPERS_VERIFIER = process.env.REACT_APP_BROK_HELPERS_VERIFIER;
+        if (requireSigner) {
+            initSigner();
+            return undefined;
+        }
+        const request: SignatureRequest = {
+            message: "Bekreft endring av data",
+            fn: async () =>
+                await signer.request("symfoniID_updateShareholderVP", [
+                    {
+                        verifier: BROK_HELPERS_VERIFIER,
+                        capTableAddress: props.capTableAddress,
+                        shareholderId: editEntity.id,
+                        shareholderData: {
+                            ...updateShareholderData,
+                        },
+                    },
+                ]),
+        };
+        debug("symfonID_updateShareholderVP request");
+        signatureRequestHandler.add([request]);
+
+        let result;
+        try {
+            const results = (await signatureRequestHandler.results()) as { jwt: string }[];
+            result = results[0];
+        } catch (error: any) {
+            debug("symfonID_updateShareholderVP response error", error);
+            toast("feil ved endring av data");
+            return undefined;
+        }
 
         debug("updateShareholderData", updateShareholderData);
-        setEditShareholder(undefined);
-        updateShareholder("");
+        await updateShareholder(result.jwt);
+        history.go(0);
     };
 
     const ShowAsRoleRow = ({ role }: { role: ROLE }) => {
         switch (role) {
             case "BOARD_DIRECTOR":
-                return <Text>Du ser aksjeeierboka basert på din rolle som styreleder</Text>;
+                return <Text size="xsmall">Du ser aksjeeierboka basert på din rolle som styreleder</Text>;
             case "SHAREHOLDER":
-                return <Text>Du ser aksjeeierboka basert på din rolle som aksjeeier</Text>;
+                return <Text size="xsmall">Du ser aksjeeierboka basert på din rolle som aksjeeier</Text>;
             case "PUBLIC": {
                 return (
                     <Box direction="row" align="center" gap="medium">
@@ -125,11 +168,11 @@ export const CapTableBalances: React.FC<Props> = ({ ...props }) => {
                 <EditShareholderModal
                     onDismiss={() => setEditShareholder(undefined)}
                     updateShareholderData={{
-                        name: editEntity.name ?? "",
-                        email: editEntity.email ?? "",
-                        city: editEntity.city ?? "",
-                        birthdate: editEntity.birthdate ?? "",
-                        postcode: editEntity.postcode ?? 0,
+                        name: editEntity.name,
+                        email: editEntity.email,
+                        city: editEntity.city,
+                        birthdate: editEntity.birthdate,
+                        postcode: editEntity.postcode,
                     }}
                     onConfirm={updateShareholderData}
                 />
