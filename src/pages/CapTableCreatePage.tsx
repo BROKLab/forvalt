@@ -28,9 +28,11 @@ export const CapTableCreatePage: React.FC<Props> = ({ ...props }) => {
     const [privateTokenTransfers, setPrivateTokenTransfers] = useState<PrivateTokenTransferData[]>();
     const [useDefaultPartitions, setUseDefaultPartitions] = useState(true);
     const [deploying, setDeploying] = useState(false);
+    const [resetTokenTransferData, setResetTokenTransferData] = useState(0);
 
     const handleOrgData = useCallback(
         (data: OrgData) => {
+            setResetTokenTransferData(resetTokenTransferData + 1);
             setStep(step + 1);
             setOrgData(data);
         },
@@ -160,7 +162,8 @@ export const CapTableCreatePage: React.FC<Props> = ({ ...props }) => {
                     selectPartiton={useDefaultPartitions ? true : false}
                     createPartition={useDefaultPartitions ? false : true}
                     requiredTotal={orgData ? orgData.aksjer : undefined}
-                    onSubmit={handlePrivateTokenTransferData}>
+                    onSubmit={handlePrivateTokenTransferData}
+                    resetForm={resetTokenTransferData}>
                     <Box gap="small">
                         <Grid columns="1" fill="horizontal" gap="small">
                             <Text size="small" weight="bold" truncate>

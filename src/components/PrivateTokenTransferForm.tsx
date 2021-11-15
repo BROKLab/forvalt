@@ -10,11 +10,13 @@ import { toast } from "react-toastify";
 import * as yup from "yup";
 import { validateEmail } from "../utils/validator";
 import { DEFAULT_CAPTABLE_PARTITION } from "./../context/defaults";
+var debug = require("debug")("component:PrivateTokenTransferForm");
 const postalCodes = require("norway-postal-codes");
 
 type PropsSingel = {
     capTable?: CapTable;
     onSubmit: (batchIssueData: PrivateTokenTransferData) => void;
+    resetForm?: number;
     submitLabel?: string;
     multiple?: never;
     createPartition?: boolean;
@@ -24,6 +26,7 @@ type PropsSingel = {
 type PropsMultiple = {
     capTable?: CapTable;
     onSubmit: (batchIssueData: PrivateTokenTransferData[]) => void;
+    resetForm?: number;
     submitLabel?: string;
     multiple: true;
     createPartition?: boolean;
@@ -109,11 +112,12 @@ const fieldsSchema = yup.object().shape({
 });
 
 export const PrivateTokenTransferForm: React.FC<Props> = ({ ...props }) => {
-    const { control, watch, register, setValue, formState } = useForm({
+    const { control, watch, register, setValue, formState, reset } = useForm({
         resolver: yupResolver(fieldsSchema),
         mode: "onChange",
         defaultValues,
     });
+
     const { fields, append, remove, prepend } = useFieldArray({
         control,
         name: enviroment,
@@ -127,6 +131,13 @@ export const PrivateTokenTransferForm: React.FC<Props> = ({ ...props }) => {
     });
     const [partitions, setPartitions] = useState<BytesLike[]>([DEFAULT_CAPTABLE_PARTITION]);
     const [newPartition, setNewPartition] = useState("");
+
+    useEffect(() => {
+        debug("reset", props.resetForm);
+        if (props.resetForm) {
+            reset();
+        }
+    }, [props.resetForm]);
 
     // TODO - Make this more explicit. Add borad director if multiple
     useEffect(() => {
@@ -370,9 +381,7 @@ export const PrivateTokenTransferForm: React.FC<Props> = ({ ...props }) => {
                         <Button
                             color="black"
                             label="Legg til person"
-                            onClick={() => {
-                                append(defaultValues[enviroment][0]);
-                            }}
+                            onClick={() => append(defaultValues[enviroment][0])}
                             style={{ borderRadius: "0px" }}></Button>
                     )}
                     <Button

@@ -68,7 +68,7 @@ export const CapTablePage: React.FC<Props> = ({ ...props }) => {
 
     useAsyncEffect(
         async (isMounted) => {
-            if (!capTableData || !balancesData || !shareholderData) return;
+            if (!capTableData?.capTable || !balancesData?.balances || !shareholderData) return;
             const _balancesAndPrivateData = balancesData.balances.map((balance) => {
                 const shareholder = shareholderData.shareholders.find((s) => s.address.toLowerCase() === balance.tokenHolder.address.toLowerCase());
 
