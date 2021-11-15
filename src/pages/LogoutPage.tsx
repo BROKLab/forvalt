@@ -12,7 +12,7 @@ export function LogoutPage() {
         debug("Closing WC connection");
         closeSigner();
         setToken("");
-    }, [closeSigner]);
+    }, [closeSigner, setToken]);
 
     return <Redirect to={"/"} />;
 }

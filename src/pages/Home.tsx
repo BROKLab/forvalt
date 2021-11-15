@@ -1,5 +1,5 @@
 import { Box, Button, Heading, Paragraph, Text } from "grommet";
-import { Group, Inspect, LinkNext, Notes, UserManager } from "grommet-icons";
+import { Group, Inspect, LinkNext, UserManager } from "grommet-icons";
 import React from "react";
 import { Link } from "react-router-dom";
 

@@ -30,9 +30,7 @@ export const MeBalances: React.FC<Props> = ({ ...props }) => {
     const { signatureRequestHandler, signer, initSigner } = useContext(SymfoniContext);
     // const requireSigner = !signer || !("request" in signer);
 
-    const { loading, error, data } = useQuery<TokenHoldersGraphQLTypes.TokenHolderQuery.Response>(
-        TokenHolderGraphQL.TOKEN_HOLDER_QUERY(props.address)
-    );
+    const { loading, data } = useQuery<TokenHoldersGraphQLTypes.TokenHolderQuery.Response>(TokenHolderGraphQL.TOKEN_HOLDER_QUERY(props.address));
     const [unclaimedLoading, setUnclaimedLoading] = useState<boolean>(false);
     const [unclaimed, setUnclaimed] = useState<Unclaimed[]>([]);
     const [balances, setBalances] = useState<Balance[]>([]);

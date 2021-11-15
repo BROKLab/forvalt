@@ -36,7 +36,7 @@ export const CapTableCreatePage: React.FC<Props> = ({ ...props }) => {
             setStep(step + 1);
             setOrgData(data);
         },
-        [step]
+        [resetTokenTransferData, step]
     );
 
     const handlePrivateTokenTransferData = useCallback(

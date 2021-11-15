@@ -92,7 +92,7 @@ const formSchema = {
     identifier: yup
         .string()
         .required("Fødselsnummerer er påkrevd")
-        .test("Ugyldig personummer", "Ugyldig personummer", (value) => validateNorwegianIdNumber(value ?? "") == true),
+        .test("Ugyldig personummer", "Ugyldig personummer", (value) => validateNorwegianIdNumber(value ?? "") === true),
     amount: yup.string().required("Antall aksjer er påkrevd").min(1, "Må være 1 eller flere aksjer"),
     partition: yup.string().required("partition required"),
     name: yup.string().required("Navn er påkrevd felt").min(1, "For kort navn"),
@@ -101,7 +101,7 @@ const formSchema = {
         .string()
         .test("Ikke gyldig postkode", "ikke gyldig postkode", (value) => postalCodes[value ?? ""] !== undefined)
         .required("postalcode required"),
-    email: yup.string().test("Ikke gyldig epost", "Ikke gyldig epost", (value) => validateEmail(value ?? "") == true),
+    email: yup.string().test("Ikke gyldig epost", "Ikke gyldig epost", (value) => validateEmail(value ?? "") === true),
     isBoardDirector: yup.boolean(),
 };
 
@@ -137,7 +137,7 @@ export const PrivateTokenTransferForm: React.FC<Props> = ({ ...props }) => {
         if (props.resetForm) {
             reset();
         }
-    }, [props.resetForm]);
+    }, [props.resetForm, reset]);
 
     // TODO - Make this more explicit. Add borad director if multiple
     useEffect(() => {
