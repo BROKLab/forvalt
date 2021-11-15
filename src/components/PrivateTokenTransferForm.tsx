@@ -6,10 +6,12 @@ import React, { useEffect, useState } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
 import { toast } from "react-toastify";
 import { DEFAULT_CAPTABLE_PARTITION } from "./../context/defaults";
+var debug = require("debug")("component:PrivateTokenTransferForm");
 
 type PropsSingel = {
     capTable?: CapTable;
     onSubmit: (batchIssueData: PrivateTokenTransferData) => void;
+    resetForm?: number;
     submitLabel?: string;
     multiple?: never;
     createPartition?: boolean;
@@ -19,6 +21,7 @@ type PropsSingel = {
 type PropsMultiple = {
     capTable?: CapTable;
     onSubmit: (batchIssueData: PrivateTokenTransferData[]) => void;
+    resetForm?: number;
     submitLabel?: string;
     multiple: true;
     createPartition?: boolean;
@@ -81,7 +84,7 @@ const defaultValues: Record<string, PrivateTokenTransferData[]> = {
 };
 
 export const PrivateTokenTransferForm: React.FC<Props> = ({ ...props }) => {
-    const { control, watch, register, setValue } = useForm({ defaultValues });
+    const { control, watch, register, setValue, reset } = useForm({ defaultValues });
     const enviroment = process.env.NODE_ENV === "development" ? "test" : "production";
     const { fields, append, remove, prepend } = useFieldArray({
         control,
@@ -96,6 +99,13 @@ export const PrivateTokenTransferForm: React.FC<Props> = ({ ...props }) => {
     });
     const [partitions, setPartitions] = useState<BytesLike[]>([DEFAULT_CAPTABLE_PARTITION]);
     const [newPartition, setNewPartition] = useState("");
+
+    useEffect(() => {
+        debug("reset", props.resetForm);
+        if (props.resetForm) {
+            reset();
+        }
+    }, [props.resetForm]);
 
     // TODO - Make this more explicit. Add borad director if multiple
     useEffect(() => {
@@ -306,7 +316,7 @@ export const PrivateTokenTransferForm: React.FC<Props> = ({ ...props }) => {
                         <Button
                             color="black"
                             label="Legg til person"
-                            onClick={() => append(defaultValues[enviroment][1])}
+                            onClick={() => append(defaultValues[enviroment][0])}
                             style={{ borderRadius: "0px" }}></Button>
                     )}
                     <Button
