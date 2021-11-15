@@ -1,12 +1,17 @@
 import { CapTable } from "@brok/captable-contracts";
+import { yupResolver } from "@hookform/resolvers/yup";
 import { BytesLike, ethers } from "ethers";
 import { Box, Button, Grid, Select, Text, TextInput } from "grommet";
 import { Trash } from "grommet-icons";
+import { validateNorwegianIdNumber } from "norwegian-national-id-validator";
 import React, { useEffect, useState } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
 import { toast } from "react-toastify";
+import * as yup from "yup";
+import { validateEmail } from "../utils/validator";
 import { DEFAULT_CAPTABLE_PARTITION } from "./../context/defaults";
 var debug = require("debug")("component:PrivateTokenTransferForm");
+const postalCodes = require("norway-postal-codes");
 
 type PropsSingel = {
     capTable?: CapTable;
@@ -83,9 +88,36 @@ const defaultValues: Record<string, PrivateTokenTransferData[]> = {
     ],
 };
 
+const formSchema = {
+    identifier: yup
+        .string()
+        .required("Fødselsnummerer er påkrevd")
+        .test("Ugyldig personummer", "Ugyldig personummer", (value) => validateNorwegianIdNumber(value ?? "") == true),
+    amount: yup.string().required("Antall aksjer er påkrevd").min(1, "Må være 1 eller flere aksjer"),
+    partition: yup.string().required("partition required"),
+    name: yup.string().required("Navn er påkrevd felt").min(1, "For kort navn"),
+    streetAddress: yup.string().required("Veiaddresse er påkrevd felt").min(3, "Ugyldig. Må være lengre enn 2").max(255, "For langt"),
+    postalcode: yup
+        .string()
+        .test("Ikke gyldig postkode", "ikke gyldig postkode", (value) => postalCodes[value ?? ""] !== undefined)
+        .required("postalcode required"),
+    email: yup.string().test("Ikke gyldig epost", "Ikke gyldig epost", (value) => validateEmail(value ?? "") == true),
+    isBoardDirector: yup.boolean(),
+};
+
+const enviroment = process.env.NODE_ENV === "development" ? "test" : "production";
+
+const fieldsSchema = yup.object().shape({
+    [enviroment]: yup.array().of(yup.object().shape(formSchema)),
+});
+
 export const PrivateTokenTransferForm: React.FC<Props> = ({ ...props }) => {
-    const { control, watch, register, setValue, reset } = useForm({ defaultValues });
-    const enviroment = process.env.NODE_ENV === "development" ? "test" : "production";
+    const { control, watch, register, setValue, formState, reset } = useForm({
+        resolver: yupResolver(fieldsSchema),
+        mode: "onChange",
+        defaultValues,
+    });
+
     const { fields, append, remove, prepend } = useFieldArray({
         control,
         name: enviroment,
@@ -254,6 +286,11 @@ export const PrivateTokenTransferForm: React.FC<Props> = ({ ...props }) => {
                                 disabled={field.isBoardDirector}
                                 placeholder={field.isBoardDirector ? "Styreleder" : "Fødselsnummer"}
                                 size="small"></TextInput>
+                            {formState.errors?.[enviroment]?.[index]?.identifier && (
+                                <Text color="red" size="xsmall">
+                                    {formState.errors?.[enviroment]?.[index]?.identifier?.message}
+                                </Text>
+                            )}
                         </Box>
                         <Box>
                             <TextInput
@@ -261,6 +298,11 @@ export const PrivateTokenTransferForm: React.FC<Props> = ({ ...props }) => {
                                 disabled={field.isBoardDirector || hasAddress(index)}
                                 placeholder={field.isBoardDirector ? "Hentes automatisk" : "Navn"}
                                 size="small"></TextInput>
+                            {formState.errors?.[enviroment]?.[index]?.name && (
+                                <Text color="red" size="xsmall">
+                                    {formState.errors?.[enviroment]?.[index]?.name?.message}
+                                </Text>
+                            )}
                         </Box>
                         <Box>
                             <TextInput
@@ -268,6 +310,11 @@ export const PrivateTokenTransferForm: React.FC<Props> = ({ ...props }) => {
                                 disabled={hasAddress(index)}
                                 placeholder={"Veiadresse"}
                                 size="small"></TextInput>
+                            {formState.errors?.[enviroment]?.[index]?.streetAddress && (
+                                <Text color="red" size="xsmall">
+                                    {formState.errors?.[enviroment]?.[index]?.streetAddress?.message}
+                                </Text>
+                            )}
                         </Box>
                         <Box>
                             <TextInput
@@ -275,6 +322,11 @@ export const PrivateTokenTransferForm: React.FC<Props> = ({ ...props }) => {
                                 disabled={hasAddress(index)}
                                 placeholder={"Postnummer"}
                                 size="small"></TextInput>
+                            {formState.errors?.[enviroment]?.[index]?.postalcode && (
+                                <Text color="red" size="xsmall">
+                                    {formState.errors?.[enviroment]?.[index]?.postalcode?.message}
+                                </Text>
+                            )}
                         </Box>
                         <Box>
                             <TextInput
@@ -282,6 +334,11 @@ export const PrivateTokenTransferForm: React.FC<Props> = ({ ...props }) => {
                                 disabled={hasAddress(index)}
                                 placeholder={"Epost"}
                                 size="small"></TextInput>
+                            {formState.errors?.[enviroment]?.[index]?.email && (
+                                <Text color="red" size="xsmall">
+                                    {formState.errors?.[enviroment]?.[index]?.email?.message}
+                                </Text>
+                            )}
                         </Box>
                         <Box>
                             <TextInput
@@ -289,6 +346,11 @@ export const PrivateTokenTransferForm: React.FC<Props> = ({ ...props }) => {
                                 type="number"
                                 placeholder={"Antall"}
                                 size="small"></TextInput>
+                            {formState.errors?.[enviroment]?.[index]?.amount && (
+                                <Text color="red" size="xsmall">
+                                    {formState.errors?.[enviroment]?.[index]?.amount?.message}
+                                </Text>
+                            )}
                         </Box>
                         <Box style={{ display: props.selectPartiton ? "none" : "inherit" }}>
                             <Select
@@ -299,11 +361,14 @@ export const PrivateTokenTransferForm: React.FC<Props> = ({ ...props }) => {
                                 labelKey={(option) => ethers.utils.parseBytes32String(option)}
                                 emptySearchMessage={"Foreslå en partisjon ovenfor"}
                                 onChange={({ option }) => {
-                                    console.log("Settinng partiton");
-
                                     setValue(`${enviroment}.${index}.partition`, option);
                                     return option;
                                 }}></Select>
+                            {formState.errors?.[enviroment]?.[index]?.partition && (
+                                <Text color="red" size="xsmall">
+                                    {formState.errors?.[enviroment]?.[index]?.partition?.message}
+                                </Text>
+                            )}
                         </Box>
                         <Box style={{ display: props.multiple ? "inherit" : "none" }}>
                             <Button onClick={() => remove(index)} disabled={field.isBoardDirector} icon={<Trash color="red"></Trash>}></Button>
@@ -321,6 +386,7 @@ export const PrivateTokenTransferForm: React.FC<Props> = ({ ...props }) => {
                     )}
                     <Button
                         color="black"
+                        disabled={formState.errors?.[enviroment]?.length > 0}
                         label={!!props.submitLabel ? props.submitLabel : "Send inn"}
                         style={{ borderRadius: "0px" }}
                         // {...props.onSubmitButtonProps}
