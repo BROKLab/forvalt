@@ -16,7 +16,7 @@ import { ClientContext, GraphQLClient } from "graphql-hooks";
 import { CapTableQuePage } from './pages/CapTableQuePage';
 import { CapTablePage } from './pages/CapTablePage';
 import { LogoutPage } from './pages/LogoutPage';
-import { AccessVPRequest } from './requests/AccessVPRequest';
+import { AccessPermissionRequest } from './permissionRequests/AccessPermissionRequest';
 
 
 function App() {
@@ -49,10 +49,8 @@ function App() {
                     <Route path="/logout" component={LogoutPage} />
                   </Switch>
                 </Main>
-
-                {/** Switch displaying modals */}
-                <VPRequestSwitch />
-
+                {/** Permission request switch */}
+                <PermissionRequestSwitch />
                 {/* footer */}
                 <Footer background="brand" pad="medium" height={{ min: "10vh" }}>
                   <Box align="center" justify="center" alignContent="center" fill="horizontal">
@@ -72,7 +70,7 @@ function App() {
   );
 }
 
-function VPRequestSwitch() {
+function PermissionRequestSwitch() {
   const location = useLocation();
   const history = useHistory();
 
@@ -91,9 +89,9 @@ function VPRequestSwitch() {
   );
   
   switch (location.hash) {
-    case "#access-vp-request": return (
+    case "#access-permission-request": return (
       <Layer onEsc={onReject} onClickOutside={onReject}>
-        <AccessVPRequest 
+        <AccessPermissionRequest 
           onResolve={onResolve}
           onReject={onReject}
         />

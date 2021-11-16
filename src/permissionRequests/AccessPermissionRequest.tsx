@@ -9,18 +9,17 @@ import { SymfoniContext } from "../context/SymfoniContext";
 import useAsyncEffect from "use-async-effect";
 import { Signer } from "../context/useSymfoni";
 import { useLocalStorage } from "../utils/useLocalstorage";
-var debug = require("debug")("AccessVPRequest");
+var debug = require("debug")("AccessPermissionRequest");
 
 
-interface AccessVPRequestProps {
+interface AccessPermissionRequestProps {
     onResolve: () => void; 
     onReject: () => void;
 }
 
-export function AccessVPRequest({ onReject, onResolve }: AccessVPRequestProps) {
+/** AccessPermissionRequest - Requests an AccessVP from SymfoniID */
+export function AccessPermissionRequest({ onReject, onResolve }: AccessPermissionRequestProps) {
     const [, setToken] = useLocalStorage<string>("permissionBrokToken", "");
-
-
     const { signer, initSigner, walletConnectURI: uri } = useContext(SymfoniContext);
     
     const connected = !!signer;
