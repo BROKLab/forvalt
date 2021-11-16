@@ -18,7 +18,7 @@ interface AccessPermissionRequestProps {
 }
 
 /** AccessPermissionRequest - Requests an AccessVP from SymfoniID */
-export function AccessPermissionRequest({ onReject, onResolve }: AccessPermissionRequestProps) {
+export function AccessPermissionRequest({ onResolve, onReject  }: AccessPermissionRequestProps) {
     const [, setToken] = useLocalStorage<string>("permissionBrokToken", "");
     const { signer, initSigner, walletConnectURI: uri } = useContext(SymfoniContext);
     
@@ -27,29 +27,33 @@ export function AccessPermissionRequest({ onReject, onResolve }: AccessPermissio
     /** Async effect - initSigner to get the uri for the QR code */
     useAsyncEffect(() => initSigner(), [])
 
-    /** Async effect - if connected with the wallet, request token from wallet, then redirect back */
+    /** Async effect - If connected with the wallet, request permission, then redirect back */
     useAsyncEffect(async (isMounted) => {
         if (!connected) {
             return;
         }
         // Connected!
-        const token = await fetchAccessVP(signer);
-        if (!token || !isMounted()) {
+        const permission = await requestAccessPermission(signer);
+        if (!isMounted()){
+            return;
+        }
+        if (!permission) {
+            onReject();
             return;
         }
 
         // Got permission from wallet!
-        setToken(token);
+        setToken(permission);
         onResolve();
     }, [connected, onReject])
 
 
-    /** No uri? - show spinner */
+    /** No URI and not connected? - Show spinner */
     if (!uri && !connected) {
         return  <Box gap="medium" margin="medium"><Spinner /></Box>
     }
 
-    /** Not connected? - Show QR code */
+    /** Has URI but Not connected? - Show QR code */
     if (uri && !connected) {
         return (
             <Box gap="medium" margin="medium">
@@ -67,30 +71,31 @@ export function AccessPermissionRequest({ onReject, onResolve }: AccessPermissio
                         label="Copy"
                         onClick={() => copy(uri)}></Button>
                 </Box>
-                <Button size="small" label="close" onClick={onReject} />
+                <Button size="small" label="close" onClick={() => onReject()} />
             </Box>
         );
     }
 
+    /** Is connected - Requesting permission...  */
     return (
         <Box gap="medium" margin="medium">
-            <Text>Venter på tilgang fra Symfoni ID...</Text>
+            <Text>Venter på tillatelse fra Symfoni ID...</Text>
             <Spinner alignSelf="center"/>
-            <Button size="small" label="Close" onClick={onReject} />
+            <Button size="small" label="Close" onClick={() => onReject()} />
         </Box>
     );
 }
 
 
 /** Fetch token - Send Verifiable Presentation request to wallet. Expect a VP.jwt to be returned. */
-async function fetchAccessVP(signer: Signer) : Promise<string|null> {
+async function requestAccessPermission(signer: Signer) : Promise<string|null> {
     if (!("request" in signer)) {
-        debug(`fetchAccessVP(): !("request" in signer")`);
+        debug(`requestAccessPermission(): !("request" in signer")`);
         return null;
     }
 
     const url = process.env.REACT_APP_USE_LOCAL_ENVIROMENT === "true" ? "http://localhost:3004" : process.env.REACT_APP_BROK_HELPERS_URL;
-    debug("fetchAccessVP(): fetching from: ", url);
+    debug("requestAccessPermission(): fetching from: ", url);
 
     let results;
     try {
@@ -119,17 +124,17 @@ async function fetchAccessVP(signer: Signer) : Promise<string|null> {
             },
         ]) as unknown;
     } catch (e) {
-        debug("fetchAccessVP(): await signatureRequestHandler.results() exception:", e);
+        debug("requestAccessPermission(): await signatureRequestHandler.results() exception:", e);
         return null;
     }
 
-    debug("fetchAccessVP(): Acceess VP results", results);
+    debug("requestAccessPermission(): Acceess VP results", results);
     let userTokenJwt = (results as { jwt: string }).jwt;
     if (!userTokenJwt) {
-        debug("fetchAccessVP(): !userTokenJwt");
+        debug("requestAccessPermission(): !userTokenJwt");
         return null;
     }
     
-    debug("fetchAccessVP(): Access VC fra Wallet", userTokenJwt);
+    debug("requestAccessPermission(): Access VC fra Wallet", userTokenJwt);
     return userTokenJwt;
 };

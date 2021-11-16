@@ -30,11 +30,12 @@ export const SymfoniProvider = ({ ...props }) => {
                 ? <Loading></Loading>
                 : props.children
             }
-            {symfoni.walletConnectURI &&
+            {/** @TODO Remove !location.pathname.includes("/me"), when finished migrating to new request permission system */}
+            {!location.pathname.includes("/me") && symfoni.walletConnectURI &&
                 <WalletConnectQr walletConnectURI={symfoni.walletConnectURI} handleClose={() => symfoni.setWalletConnectURI(undefined)}></WalletConnectQr>
             }
-            {/** @TODO Remove this !== check, when finished migrating to new modal-system */}
-            {location.hash !== "#request-access-shares-vp" && <SignatureRequestModal></SignatureRequestModal>}
+            {/** @TODO Remove !location.pathname.includes("/me"), when finished migrating to new request permission system */}
+            {!location.pathname.includes("/me") && <SignatureRequestModal></SignatureRequestModal>}
         </SymfoniContext.Provider>
     );
 };

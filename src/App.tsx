@@ -75,19 +75,17 @@ function PermissionRequestSwitch() {
   const history = useHistory();
 
   /** Callback */
-  const onReject = useCallback(
-    () => history.replace(`${location.pathname}${location.search}`), 
+  const onResolve = useCallback(
+    () => history.replace(`${location.pathname}${location.search}`),
     [history, location.pathname, location.search]
   );
 
   /** Callback */
-  const onResolve = useCallback(
-    () => {
-      history.replace(`${location.pathname}${location.search}`)
-    },
+  const onReject = useCallback(
+    () => history.replace(`${location.pathname}${location.search}`),
     [history, location.pathname, location.search]
   );
-  
+
   switch (location.hash) {
     case "#access-permission-request": return (
       <Layer onEsc={onReject} onClickOutside={onReject}>
