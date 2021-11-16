@@ -55,7 +55,7 @@ export function AccessVPRequest({ onReject, onResolve }: AccessVPRequestProps) {
         return (
             <Box gap="medium" margin="medium">
                 {/* TODO : Fix this, not safe */}
-                <Text textAlign="center" truncate>Koble til med en Symfoni ID app</Text>
+                <Text textAlign="center" truncate>Koble til med Symfoni ID</Text>
 
                 {/* TODO VERY NOT SAFE, just for testing */}
                 <Box align="center">
@@ -75,7 +75,7 @@ export function AccessVPRequest({ onReject, onResolve }: AccessVPRequestProps) {
 
     return (
         <Box gap="medium" margin="medium">
-            <Text>Venter på legitimasjon fra Symfoni ID...</Text>
+            <Text>Venter på tilgang fra Symfoni ID...</Text>
             <Spinner alignSelf="center"/>
             <Button size="small" label="Close" onClick={onReject} />
         </Box>

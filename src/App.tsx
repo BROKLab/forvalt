@@ -28,8 +28,6 @@ function App() {
   });
 
 
-
-
   return (
     <BrowserRouter basename={process.env.PUBLIC_URL}>
       <ClientContext.Provider value={client}>
@@ -39,7 +37,6 @@ function App() {
               <Box height={{ min: "100vh" }}>
                 {/* Navigation */}
                 <Navigation></Navigation>
-
                 {/* Content swtich */}
                 <Main pad="xlarge" height={{ min: "75vh" }}>
                   <Switch>
@@ -53,8 +50,8 @@ function App() {
                   </Switch>
                 </Main>
 
-                {/** Modal switch */}
-                <ModalRequest />
+                {/** Switch displaying modals */}
+                <VPRequestSwitch />
 
                 {/* footer */}
                 <Footer background="brand" pad="medium" height={{ min: "10vh" }}>
@@ -75,7 +72,7 @@ function App() {
   );
 }
 
-function ModalRequest() {
+function VPRequestSwitch() {
   const location = useLocation();
   const history = useHistory();
 
@@ -94,7 +91,7 @@ function ModalRequest() {
   );
   
   switch (location.hash) {
-    case "#request-access-shares-vp": return (
+    case "#access-vp-request": return (
       <Layer onEsc={onReject} onClickOutside={onReject}>
         <AccessVPRequest 
           onResolve={onResolve}

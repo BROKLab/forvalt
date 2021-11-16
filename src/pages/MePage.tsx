@@ -17,7 +17,7 @@ export const MePage: React.FC<Props> = () => {
         <Box gap="small">
             <Heading level={1}>Mine aksjer</Heading>
             {hasPermission &&  <MeBalances address={address} />}
-            {!hasPermission && <Button href="#request-access-shares-vp" size="small" label="Be om legitimasjon"></Button>}
+            {!hasPermission && <Button href="#access-vp-request" size="small" label="Be om tilgang"></Button>}
         </Box>
     );
 };
