@@ -1,5 +1,6 @@
 import { Box, Spinner, Text } from "grommet";
 import React from "react";
+import { useLocation } from "react-router";
 import { SignatureRequestModal } from "../components/SignatureRequestModal";
 import { WalletConnectQr } from "../components/WalletConnectQr";
 import { useSymfoni } from "./useSymfoni";
@@ -11,6 +12,7 @@ export const SymfoniContext = React.createContext<SymfoniContextInterface>(undef
 
 export const SymfoniProvider = ({ ...props }) => {
     const symfoni = useSymfoni()
+    const location = useLocation();
 
     const context = {
         ...symfoni
@@ -31,7 +33,8 @@ export const SymfoniProvider = ({ ...props }) => {
             {symfoni.walletConnectURI &&
                 <WalletConnectQr walletConnectURI={symfoni.walletConnectURI} handleClose={() => symfoni.setWalletConnectURI(undefined)}></WalletConnectQr>
             }
-            <SignatureRequestModal></SignatureRequestModal>
+            {/** @TODO Remove this !== check, when finished migrating to new modal-system */}
+            {location.hash !== "#request-access-shares-vp" && <SignatureRequestModal></SignatureRequestModal>}
         </SymfoniContext.Provider>
     );
 };
