@@ -105,19 +105,20 @@ async function requestAccessPermission(signer: Signer) : Promise<string|null> {
                 access: {
                     delegatedTo: {
                         id: process.env.REACT_APP_PUBLIC_URL,
+                        name: "Brønnøysundregistrene Aksjeeierbok"
                     },
                     scopes: [
                         {
                             id: `${url}/captable/:captableAddress/shareholder/list`,
-                            name: "All shareholders for all captables",
+                            name: "Lese alle aksjonærer",
                         },
                         {
                             id: `${url}/captable/:captableAddress/shareholder/:shareholderId`,
-                            name: "One shareholder for all captables",
+                            name: "Lese detaljer om aksjonærer",
                         },
                         {
                             id: `${url}/unclaimed/list`,
-                            name: "All unclaimed tokens for your identifier ",
+                            name: "Lese alle dine private aksjer",
                         },
                     ],
                 },
