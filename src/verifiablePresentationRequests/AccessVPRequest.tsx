@@ -33,17 +33,17 @@ export function AccessVPRequest({ onResolve, onReject  }: AccessVPRequestProps) 
             return;
         }
         // Connected!
-        const permission = await requestAccessVP(signer);
+        const accessVP = await requestAccessVP(signer);
         if (!isMounted()){
             return;
         }
-        if (!permission) {
+        if (!accessVP) {
             onReject();
             return;
         }
 
-        // Got permission from wallet!
-        setToken(permission);
+        // Got accessVP from wallet!
+        setToken(accessVP);
         onResolve();
     }, [connected, onReject])
 
