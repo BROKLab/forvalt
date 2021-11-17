@@ -1,5 +1,5 @@
-import React, {  useContext } from "react";
-import { Box, Button, Spinner, Text } from "grommet";
+import React, {  useCallback, useContext } from "react";
+import { Box, Button, Layer, Spinner, Text } from "grommet";
 import { Copy } from "grommet-icons";
 import QRCode from "qrcode.react";
 import copy from "clipboard-copy";
@@ -20,7 +20,7 @@ interface AccessPermissionRequestProps {
 /** AccessPermissionRequest - Requests an AccessVP from SymfoniID */
 export function AccessPermissionRequest({ onResolve, onReject  }: AccessPermissionRequestProps) {
     const [, setToken] = useLocalStorage<string>("permissionBrokToken", "");
-    const { signer, initSigner, walletConnectURI: uri } = useContext(SymfoniContext);
+    const { signer, initSigner, setWalletConnectURI, walletConnectURI } = useContext(SymfoniContext);
     
     const connected = !!signer;
     
@@ -47,42 +47,55 @@ export function AccessPermissionRequest({ onResolve, onReject  }: AccessPermissi
         onResolve();
     }, [connected, onReject])
 
+    /** Callback */
+    const onRejectQR = useCallback(() => {
+        setWalletConnectURI(undefined);
+        onReject();
+    },[setWalletConnectURI, onReject])
 
     /** No URI and not connected? - Show spinner */
-    if (!uri && !connected) {
-        return  <Box gap="medium" margin="medium"><Spinner /></Box>
+    if (!walletConnectURI && !connected) {
+        return (<Layer onEsc={onReject} onClickOutside={onReject}>
+            <Box gap="medium" margin="medium"><Spinner /></Box>
+        </Layer>);
     }
 
     /** Has URI but Not connected? - Show QR code */
-    if (uri && !connected) {
+    if (walletConnectURI && !connected) {
         return (
-            <Box gap="medium" margin="medium">
-                {/* TODO : Fix this, not safe */}
-                <Text textAlign="center" truncate>Koble til med Symfoni ID</Text>
+            <Layer onEsc={onRejectQR} onClickOutside={onRejectQR}>
+                <Box gap="medium" margin="medium">
+                    {/* TODO : Fix this, not safe */}
+                    <Text textAlign="center" truncate>Koble til med Symfoni ID</Text>
 
-                {/* TODO VERY NOT SAFE, just for testing */}
-                <Box align="center">
-                    <QRCode size={200} value={`${uri}`}></QRCode>
+                    {/* TODO VERY NOT SAFE, just for testing */}
+                    <Box align="center">
+                        <QRCode size={200} value={`${walletConnectURI}`}></QRCode>
+                    </Box>
+                    <Box align="center" >
+                        <Button
+                            size="small"
+                            icon={<Copy></Copy>}
+                            label="Copy"
+                            onClick={() => copy(walletConnectURI)}></Button>
+                    </Box>
+                    <Button size="small" label="close" onClick={() => onRejectQR()} />
                 </Box>
-                <Box align="center" >
-                    <Button
-                        size="small"
-                        icon={<Copy></Copy>}
-                        label="Copy"
-                        onClick={() => copy(uri)}></Button>
-                </Box>
-                <Button size="small" label="close" onClick={() => onReject()} />
-            </Box>
+            </Layer>
         );
     }
 
     /** Is connected - Requesting permission...  */
     return (
+        <Layer onEsc={onReject} onClickOutside={onReject}>
+
         <Box gap="medium" margin="medium">
             <Text>Venter på tillatelse fra Symfoni ID...</Text>
             <Spinner alignSelf="center"/>
             <Button size="small" label="Close" onClick={() => onReject()} />
         </Box>
+        </Layer>
+
     );
 }
 

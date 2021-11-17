@@ -88,12 +88,10 @@ function PermissionRequestSwitch() {
 
   switch (location.hash) {
     case "#access-permission-request": return (
-      <Layer onEsc={onReject} onClickOutside={onReject}>
         <AccessPermissionRequest 
           onResolve={onResolve}
           onReject={onReject}
         />
-      </Layer>
     )
     default: return null;
   }
