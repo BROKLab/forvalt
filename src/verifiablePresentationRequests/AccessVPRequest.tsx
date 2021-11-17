@@ -9,16 +9,16 @@ import { SymfoniContext } from "../context/SymfoniContext";
 import useAsyncEffect from "use-async-effect";
 import { Signer } from "../context/useSymfoni";
 import { useLocalStorage } from "../utils/useLocalstorage";
-var debug = require("debug")("AccessPermissionRequest");
+var debug = require("debug")("AccessVPRequest");
 
 
-interface AccessPermissionRequestProps {
+interface AccessVPRequestProps {
     onResolve: () => void; 
     onReject: () => void;
 }
 
-/** AccessPermissionRequest - Requests an AccessVP from SymfoniID */
-export function AccessPermissionRequest({ onResolve, onReject  }: AccessPermissionRequestProps) {
+/** AccessVPRequest - Requests an AccessVP from SymfoniID */
+export function AccessVPRequest({ onResolve, onReject  }: AccessVPRequestProps) {
     const [, setToken] = useLocalStorage<string>("permissionBrokToken", "");
     const { signer, initSigner, setWalletConnectURI, walletConnectURI } = useContext(SymfoniContext);
     
@@ -88,12 +88,11 @@ export function AccessPermissionRequest({ onResolve, onReject  }: AccessPermissi
     /** Is connected - Requesting permission...  */
     return (
         <Layer onEsc={onReject} onClickOutside={onReject}>
-
-        <Box gap="medium" margin="medium">
-            <Text>Venter på tillatelse fra Symfoni ID...</Text>
-            <Spinner alignSelf="center"/>
-            <Button size="small" label="Close" onClick={() => onReject()} />
-        </Box>
+            <Box gap="medium" margin="medium">
+                <Text>Venter på tillatelse fra Symfoni ID...</Text>
+                <Spinner alignSelf="center"/>
+                <Button size="small" label="Close" onClick={() => onReject()} />
+            </Box>
         </Layer>
 
     );

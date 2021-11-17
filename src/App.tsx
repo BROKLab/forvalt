@@ -1,6 +1,6 @@
 import React, { useCallback } from 'react';
 // import { ClientContext, GraphQLClient } from "graphql-hooks";
-import { Box, Footer, Grommet, Layer, Main, Paragraph, Text } from "grommet";
+import { Box, Footer, Grommet, Main, Paragraph, Text } from "grommet";
 import { BrowserRouter, Route, Switch, useLocation, useHistory } from "react-router-dom";
 import { Theme } from "./assets/Theme";
 import { Navigation } from "./components/Navigation";
@@ -16,7 +16,7 @@ import { ClientContext, GraphQLClient } from "graphql-hooks";
 import { CapTableQuePage } from './pages/CapTableQuePage';
 import { CapTablePage } from './pages/CapTablePage';
 import { LogoutPage } from './pages/LogoutPage';
-import { AccessPermissionRequest } from './permissionRequests/AccessPermissionRequest';
+import { AccessVPRequest } from './verifiablePresentationRequests/AccessVPRequest';
 
 
 function App() {
@@ -50,7 +50,7 @@ function App() {
                   </Switch>
                 </Main>
                 {/** Permission request switch */}
-                <PermissionRequestSwitch />
+                <VerifiablePresentationRequestSwitch />
                 {/* footer */}
                 <Footer background="brand" pad="medium" height={{ min: "10vh" }}>
                   <Box align="center" justify="center" alignContent="center" fill="horizontal">
@@ -70,7 +70,7 @@ function App() {
   );
 }
 
-function PermissionRequestSwitch() {
+function VerifiablePresentationRequestSwitch() {
   const location = useLocation();
   const history = useHistory();
 
@@ -87,8 +87,8 @@ function PermissionRequestSwitch() {
   );
 
   switch (location.hash) {
-    case "#access-permission-request": return (
-        <AccessPermissionRequest 
+    case "#access-vp-request": return (
+        <AccessVPRequest 
           onResolve={onResolve}
           onReject={onReject}
         />
