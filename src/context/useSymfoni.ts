@@ -11,7 +11,7 @@ import { useContracts } from "./useContracts";
 
 var debug = require("debug")("context:symfoni");
 
-type Signer = EthersSigner | WalletConnectSigner;
+export type Signer = EthersSigner | WalletConnectSigner;
 
 export enum STATE {
     INITIALIZING,

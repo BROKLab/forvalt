@@ -1,5 +1,6 @@
 import { Box, Spinner, Text } from "grommet";
 import React from "react";
+import { useLocation } from "react-router";
 import { SignatureRequestModal } from "../components/SignatureRequestModal";
 import { WalletConnectQr } from "../components/WalletConnectQr";
 import { useSymfoni } from "./useSymfoni";
@@ -11,6 +12,7 @@ export const SymfoniContext = React.createContext<SymfoniContextInterface>(undef
 
 export const SymfoniProvider = ({ ...props }) => {
     const symfoni = useSymfoni()
+    const location = useLocation();
 
     const context = {
         ...symfoni
@@ -28,10 +30,12 @@ export const SymfoniProvider = ({ ...props }) => {
                 ? <Loading></Loading>
                 : props.children
             }
-            {symfoni.walletConnectURI &&
+            {/** @TODO Remove !location.pathname.includes("/me"), when finished migrating to new request permission system */}
+            {!location.pathname.includes("/me") && symfoni.walletConnectURI &&
                 <WalletConnectQr walletConnectURI={symfoni.walletConnectURI} handleClose={() => symfoni.setWalletConnectURI(undefined)}></WalletConnectQr>
             }
-            <SignatureRequestModal></SignatureRequestModal>
+            {/** @TODO Remove !location.pathname.includes("/me"), when finished migrating to new request permission system */}
+            {!location.pathname.includes("/me") && <SignatureRequestModal></SignatureRequestModal>}
         </SymfoniContext.Provider>
     );
 };

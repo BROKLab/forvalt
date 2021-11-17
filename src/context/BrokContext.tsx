@@ -255,11 +255,10 @@ export const useBrok = () => {
 
     // requires in jwt ['cacheable', 'domain', 'paths']; and user need to have entity in brok helpers
     const getUnclaimedShares = async () => {
-        const bearerToken = await tryFetchPermissionTokenFromSigner();
         const url = REACT_APP_USE_LOCAL_ENVIROMENT === "true" ? "http://localhost:3004" : REACT_APP_BROK_HELPERS_URL;
         return await axios.get<Unclaimed[]>(`${url}/unclaimed/list`, {
             headers: {
-                Authorization: `Bearer ${bearerToken}`,
+                Authorization: `Bearer ${token}`,
             },
         });
     };

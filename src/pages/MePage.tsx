@@ -2,19 +2,22 @@ import { Box, Button, Heading } from "grommet";
 import React, { useContext } from "react";
 import { MeBalances } from "../components/MeBalances";
 import { SymfoniContext } from "../context/SymfoniContext";
+import { useLocalStorage } from "../utils/useLocalstorage";
 var debug = require("debug")("page:me");
 
 interface Props {}
 
 export const MePage: React.FC<Props> = () => {
     debug("Render");
-    const { address, initSigner } = useContext(SymfoniContext);
+    const { address } = useContext(SymfoniContext);
+    const [token] = useLocalStorage<string>("permissionBrokToken", "");
+    const hasPermission = token && address
 
     return (
         <Box gap="small">
             <Heading level={1}>Mine aksjer</Heading>
-            {address && <MeBalances address={address} />}
-            {!address && <Button size="small" label="Koble til lommebok" onClick={() => initSigner()}></Button>}
+            {hasPermission && <MeBalances address={address} />}
+            {!hasPermission && <Button href="#access-permission-request" size="small" label="Hent mine aksjer"></Button>}
         </Box>
     );
 };

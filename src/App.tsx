@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 // import { ClientContext, GraphQLClient } from "graphql-hooks";
-import { Box, Footer, Grommet, Main, Paragraph, Text } from "grommet";
-import { BrowserRouter, Route, Switch } from "react-router-dom";
+import { Box, Footer, Grommet, Layer, Main, Paragraph, Text } from "grommet";
+import { BrowserRouter, Route, Switch, useLocation, useHistory } from "react-router-dom";
 import { Theme } from "./assets/Theme";
 import { Navigation } from "./components/Navigation";
 import { Home } from './pages/Home';
@@ -16,6 +16,7 @@ import { ClientContext, GraphQLClient } from "graphql-hooks";
 import { CapTableQuePage } from './pages/CapTableQuePage';
 import { CapTablePage } from './pages/CapTablePage';
 import { LogoutPage } from './pages/LogoutPage';
+import { AccessPermissionRequest } from './permissionRequests/AccessPermissionRequest';
 
 
 function App() {
@@ -48,6 +49,8 @@ function App() {
                     <Route path="/logout" component={LogoutPage} />
                   </Switch>
                 </Main>
+                {/** Permission request switch */}
+                <PermissionRequestSwitch />
                 {/* footer */}
                 <Footer background="brand" pad="medium" height={{ min: "10vh" }}>
                   <Box align="center" justify="center" alignContent="center" fill="horizontal">
@@ -65,6 +68,35 @@ function App() {
       </ClientContext.Provider>
     </BrowserRouter>
   );
+}
+
+function PermissionRequestSwitch() {
+  const location = useLocation();
+  const history = useHistory();
+
+  /** Callback */
+  const onResolve = useCallback(
+    () => history.replace(`${location.pathname}${location.search}`),
+    [history, location.pathname, location.search]
+  );
+
+  /** Callback */
+  const onReject = useCallback(
+    () => history.replace(`${location.pathname}${location.search}`),
+    [history, location.pathname, location.search]
+  );
+
+  switch (location.hash) {
+    case "#access-permission-request": return (
+      <Layer onEsc={onReject} onClickOutside={onReject}>
+        <AccessPermissionRequest 
+          onResolve={onResolve}
+          onReject={onReject}
+        />
+      </Layer>
+    )
+    default: return null;
+  }
 }
 
 export default App;
