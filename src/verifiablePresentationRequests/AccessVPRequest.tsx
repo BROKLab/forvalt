@@ -33,7 +33,7 @@ export function AccessVPRequest({ onResolve, onReject  }: AccessVPRequestProps) 
             return;
         }
         // Connected!
-        const permission = await requestAccessPermission(signer);
+        const permission = await requestAccessVP(signer);
         if (!isMounted()){
             return;
         }
@@ -99,15 +99,15 @@ export function AccessVPRequest({ onResolve, onReject  }: AccessVPRequestProps) 
 }
 
 
-/** Fetch token - Send Verifiable Presentation request to wallet. Expect a VP.jwt to be returned. */
-async function requestAccessPermission(signer: Signer) : Promise<string|null> {
+/** requestAccessVP - Send Verifiable Presentation request to wallet. Expect a VP.jwt to be returned. */
+async function requestAccessVP(signer: Signer) : Promise<string|null> {
     if (!("request" in signer)) {
-        debug(`requestAccessPermission(): !("request" in signer")`);
+        debug(`requestAccessVP(): !("request" in signer")`);
         return null;
     }
 
     const url = process.env.REACT_APP_USE_LOCAL_ENVIROMENT === "true" ? "http://localhost:3004" : process.env.REACT_APP_BROK_HELPERS_URL;
-    debug("requestAccessPermission(): fetching from: ", url);
+    debug("requestAccessVP(): fetching from: ", url);
 
     let results;
     try {
@@ -137,17 +137,17 @@ async function requestAccessPermission(signer: Signer) : Promise<string|null> {
             },
         ]) as unknown;
     } catch (e) {
-        debug("requestAccessPermission(): await signatureRequestHandler.results() exception:", e);
+        debug("requestAccessVP(): await signatureRequestHandler.results() exception:", e);
         return null;
     }
 
-    debug("requestAccessPermission(): Acceess VP results", results);
+    debug("requestAccessVP(): Acceess VP results", results);
     let userTokenJwt = (results as { jwt: string }).jwt;
     if (!userTokenJwt) {
-        debug("requestAccessPermission(): !userTokenJwt");
+        debug("requestAccessVP(): !userTokenJwt");
         return null;
     }
     
-    debug("requestAccessPermission(): Access VC fra Wallet", userTokenJwt);
+    debug("requestAccessVP(): Access VC fra Wallet", userTokenJwt);
     return userTokenJwt;
 };
