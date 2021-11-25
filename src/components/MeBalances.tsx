@@ -28,17 +28,19 @@ export const MeBalances: React.FC<Props> = ({ ...props }) => {
     debug("Render");
     const { getUnclaimedShares, claim } = useContext(BrokContext);
     const { signatureRequestHandler, signer, initSigner } = useContext(SymfoniContext);
-    // const requireSigner = !signer || !("request" in signer);
 
-    const { loading, data } = useQuery<TokenHoldersGraphQLTypes.TokenHolderQuery.Response>(TokenHolderGraphQL.TOKEN_HOLDER_QUERY(props.address));
+    const { loading: tokenHoldersLoading, data } = useQuery<TokenHoldersGraphQLTypes.TokenHolderQuery.Response>(
+        TokenHolderGraphQL.TOKEN_HOLDER_QUERY(props.address)
+    );
     const [unclaimedLoading, setUnclaimedLoading] = useState<boolean>(false);
     const [unclaimed, setUnclaimed] = useState<Unclaimed[]>([]);
     const [balances, setBalances] = useState<Balance[]>([]);
     const [toBeClaimed, setToBeClaimed] = useState<string[]>([]);
+    const loading = unclaimedLoading || tokenHoldersLoading;
     const history = useHistory();
 
     useEffect(() => {
-        if (loading || unclaimedLoading) return;
+        if (loading) return;
         if (!data) return;
 
         const _unclm = unclaimed.flatMap((unclm) => {
@@ -66,29 +68,11 @@ export const MeBalances: React.FC<Props> = ({ ...props }) => {
         });
 
         setBalances([..._clm, ..._unclm]);
-    }, [loading, data, unclaimed, unclaimedLoading]);
+    }, [tokenHoldersLoading, data, unclaimed, unclaimedLoading]);
 
-    // TODO almost as useAsyncEffect as under... :()
-    const fetchUnclaimed = async () => {
+    const fetchUnclaimed = async (isMounted: () => boolean = () => true) => {
         try {
             setUnclaimedLoading(true);
-            const response = await getUnclaimedShares();
-            if (response.status === 200) {
-                debug("getUnclaimed response:");
-                debug(response);
-                setUnclaimed(response.data);
-                setUnclaimedLoading(false);
-            }
-        } catch (error) {
-            debug("error in getUnclaimedShares", error);
-            setUnclaimedLoading(false);
-        }
-    };
-
-    useAsyncEffect(async (isMounted) => {
-        try {
-            setUnclaimedLoading(true);
-            debug("inAsync before getUnclaimed");
             const response = await getUnclaimedShares();
             if (response.status === 200) {
                 debug("getUnclaimed response:");
@@ -100,8 +84,14 @@ export const MeBalances: React.FC<Props> = ({ ...props }) => {
             }
         } catch (error) {
             debug("error in getUnclaimedShares", error);
-            setUnclaimedLoading(false);
+            if (isMounted()) {
+                setUnclaimedLoading(false);
+            }
         }
+    };
+
+    useAsyncEffect(async (isMounted) => {
+        await fetchUnclaimed(isMounted);
     }, []);
 
     const toggleToBeClaim = (address: string) => {
@@ -156,9 +146,9 @@ export const MeBalances: React.FC<Props> = ({ ...props }) => {
 
     return (
         <Box gap="small">
-            {!signer || (balances.length === 0 && !loading && !unclaimedLoading && <Heading level={2}>Du har ingen aksjer</Heading>)}
+            {!loading && balances.length === 0 && <Heading level={2}>Du har ingen aksjer</Heading>}
             <Box margin="small" align="center" height="small">
-                {(loading || unclaimedLoading) && <Spinner size="large"></Spinner>}
+                {loading && <Spinner size="large"></Spinner>}
             </Box>
             {balances.length > 0 && (
                 <DataTable
@@ -209,7 +199,7 @@ export const MeBalances: React.FC<Props> = ({ ...props }) => {
             )}
             {toBeClaimed.length > 0 && (
                 <Box>
-                    <Text>Trykk her for gå gjøre krav på aksjer for {toBeClaimed} selskap(er)</Text>
+                    <Text>Trykk her for gå gjøre krav på aksjer for {toBeClaimed.length} selskap(er)</Text>
                     <Button
                         size="small"
                         label="Gjør krav på aksjer"
