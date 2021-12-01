@@ -1,7 +1,5 @@
-import React, { useCallback } from "react";
-// import { ClientContext, GraphQLClient } from "graphql-hooks";
 import { Box, Footer, Grommet, Main, Paragraph, Text } from "grommet";
-import { BrowserRouter, Route, Switch, useLocation, useHistory } from "react-router-dom";
+import { BrowserRouter, Route, Switch } from "react-router-dom";
 import { Theme } from "./assets/Theme";
 import { Navigation } from "./components/Navigation";
 import { Home } from "./pages/Home";
@@ -16,7 +14,6 @@ import { ClientContext, GraphQLClient } from "graphql-hooks";
 import { CapTableQuePage } from "./pages/CapTableQuePage";
 import { CapTablePage } from "./pages/CapTablePage";
 import { LogoutPage } from "./pages/LogoutPage";
-import { AccessVPRequest } from "./verifiablePresentationRequests/AccessVPRequest";
 import { SignatureRequestModal } from "./components/SignatureRequestModal";
 
 function App() {
@@ -49,7 +46,6 @@ function App() {
                                     </Switch>
                                 </Main>
                                 {/** Permission request switch */}
-                                {/* <VerifiablePresentationRequestSwitch /> */}
                                 <SignatureRequestModal />
 
                                 {/* footer */}
@@ -69,24 +65,6 @@ function App() {
             </ClientContext.Provider>
         </BrowserRouter>
     );
-}
-
-function VerifiablePresentationRequestSwitch() {
-    const location = useLocation();
-    const history = useHistory();
-
-    /** Callback */
-    const onResolve = useCallback(() => history.replace(`${location.pathname}${location.search}`), [history, location.pathname, location.search]);
-
-    /** Callback */
-    const onReject = useCallback(() => history.replace(`${location.pathname}${location.search}`), [history, location.pathname, location.search]);
-
-    switch (location.hash) {
-        case "#access-vp-request":
-            return <AccessVPRequest onResolve={onResolve} onReject={onReject} />;
-        default:
-            return null;
-    }
 }
 
 export default App;
