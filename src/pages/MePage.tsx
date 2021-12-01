@@ -3,16 +3,15 @@ import React, { useContext } from "react";
 import { MeBalances } from "../components/MeBalances";
 import { BrokContext } from "../context/BrokContext";
 import { SymfoniContext } from "../context/SymfoniContext";
-import { Signer } from "../context/useSymfoni";
-import { SignatureRequest, SignatureRequestHandler } from "../utils/SignerRequestHandler";
-import { useLocalStorage } from "../utils/useLocalstorage";
+import { useSignAccessVP } from "../hooks/useSignAccessVP";
 var debug = require("debug")("page:me");
 
 interface Props {}
 
 export const MePage: React.FC<Props> = () => {
     debug("Render");
-    const { address, signAccessVP } = useContext(SymfoniContext);
+    const { address } = useContext(SymfoniContext);
+    const { signAccessVP } = useSignAccessVP();
     const { token, setToken } = useContext(BrokContext);
     const hasPermission = token && address;
 
