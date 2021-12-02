@@ -3,11 +3,11 @@ import { CaretDown, CaretUp, Checkmark } from "grommet-icons";
 import React, { useCallback, useContext, useEffect, useState } from "react";
 import { useHistory } from "react-router";
 import { toast } from "react-toastify";
-import { PrivateTokenTransferData, PrivateTokenTransferForm } from "../components/PrivateTokenTransferForm";
-import { OrgData, SelectOrg } from "../components/SelectOrg";
-import { BrokContext } from "../context/BrokContext";
-import { SymfoniContext } from "../context/SymfoniContext";
-import { useSignCreateCapTableVP } from "../sign/useSignCreateCapTableVP";
+import { PrivateTokenTransferData, PrivateTokenTransferForm } from "../../components/PrivateTokenTransferForm";
+import { OrgData, SelectOrg } from "../../components/SelectOrg";
+import { BrokContext } from "../../context/BrokContext";
+import { SymfoniContext } from "../../context/SymfoniContext";
+import { useSignCreateCapTableVP } from "./hooks/useSignCreateCapTableVP";
 var debug = require("debug")("page:createCapTable");
 
 interface Props {}

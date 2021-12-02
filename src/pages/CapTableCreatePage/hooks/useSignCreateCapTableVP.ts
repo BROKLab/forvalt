@@ -1,6 +1,6 @@
-import { PrivateTokenTransferData } from "../components/PrivateTokenTransferForm";
-import { OrgData } from "../components/SelectOrg";
-import { useSign } from "./useSign";
+import { useSign } from "../../../hooks/useSign";
+import { PrivateTokenTransferData } from "../../../components/PrivateTokenTransferForm";
+import { OrgData } from "../../../components/SelectOrg";
 
 export function useSignCreateCapTableVP() {
     const { sign } = useSign();
