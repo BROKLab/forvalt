@@ -3,7 +3,7 @@ import React, { useContext } from "react";
 import { MeBalances } from "../components/MeBalances";
 import { BrokContext } from "../context/BrokContext";
 import { SymfoniContext } from "../context/SymfoniContext";
-import { useSignAccessVP } from "../hooks/useSignAccessVP";
+import { useSignAccessVP } from "../sign/useSignAccessVP";
 var debug = require("debug")("page:me");
 
 interface Props {}
