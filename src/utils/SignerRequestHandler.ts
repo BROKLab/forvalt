@@ -1,4 +1,6 @@
 import { EventEmitter } from "events";
+import { ResultAsync } from "neverthrow";
+import { Signer } from "../context/useSymfoni";
 var debug = require("debug")("utils:SignatureRequestHandler");
 export interface ErrorResponse {
     code: number;
@@ -6,7 +8,7 @@ export interface ErrorResponse {
     data?: string;
 }
 export type SignatureRequest = {
-    fn: () => Promise<any>;
+    fn: (signer: Signer) => Promise<any>;
     message: string;
     data?: Record<string, string>;
 };
@@ -56,7 +58,15 @@ export class SignatureRequestHandler {
             this.events.on("rejected", (event) => this.handleRejected(() => reject(event)));
         });
     }
-
+    async resultsNT<T>() {
+        return ResultAsync.fromPromise<T, Error>(
+            new Promise((resolve, reject) => {
+                this.events.on("done", (event) => this.handleDone(() => resolve(event)));
+                this.events.on("rejected", (event) => this.handleRejected(() => reject(event)));
+            }),
+            () => new Error("Noe gikk galt")
+        );
+    }
     public clear() {
         this.events.emit("onClear", []);
         this.events.removeListener("done", this.handleDone);

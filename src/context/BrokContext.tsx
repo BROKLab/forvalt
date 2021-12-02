@@ -298,6 +298,7 @@ export const useBrok = () => {
         claim,
         getCaptableLegacy,
         updateShareholder,
+        token,
         setToken,
     };
 };

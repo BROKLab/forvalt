@@ -5,9 +5,8 @@ import React, { useContext, useState } from "react";
 import { useHistory } from "react-router";
 import { toast } from "react-toastify";
 import { BalanceAndMaybePrivateData, BrokContext, ROLE } from "../context/BrokContext";
-import { SymfoniContext } from "../context/SymfoniContext";
+import { useSignUpdateShareholderVP } from "../hooks/useSignUpdateShareholderVP";
 import { ExportExcel } from "../utils/ExportExcel";
-import { SignatureRequest } from "../utils/SignerRequestHandler";
 import { EditShareholderModal } from "./EditShareholderModal";
 var debug = require("debug")("component:CapTableBalances");
 
@@ -30,9 +29,7 @@ export const CapTableBalances: React.FC<Props> = ({ ...props }) => {
     const history = useHistory();
 
     const { updateShareholder } = useContext(BrokContext);
-    const { signatureRequestHandler, signer, initSigner } = useContext(SymfoniContext);
-
-    const requireSigner = !signer || !("request" in signer);
+    const { signUpdateShareholderVP } = useSignUpdateShareholderVP();
 
     const toHoursMonthYear = (date: string) => {
         return new Date(date).toLocaleDateString("no-NO", {
@@ -103,43 +100,24 @@ export const CapTableBalances: React.FC<Props> = ({ ...props }) => {
 
     const updateShareholderData = async (updateShareholderData: UpdateShareholderData) => {
         debug("updatreShareholderData", updateShareholderData);
-        if (!editEntity) {
-            debug("editEntity is undefined");
+        // 1. Validate input
+        if (!editEntity?.id) {
+            debug("!editEntity?.id is undefined");
             toast("Noe gikk galt. Prøv å gjør en refresh av siden");
             return;
         }
-        const BROK_HELPERS_VERIFIER = process.env.REACT_APP_BROK_HELPERS_VERIFIER;
-        if (requireSigner) {
-            initSigner();
-            return undefined;
-        }
-        const request: SignatureRequest = {
-            message: "Bekreft endring av data",
-            fn: async () =>
-                await signer.request("symfoniID_updateShareholderVP", [
-                    {
-                        verifier: BROK_HELPERS_VERIFIER,
-                        capTableAddress: props.capTableAddress,
-                        shareholderId: editEntity.id,
-                        shareholderData: {
-                            ...updateShareholderData,
-                        },
-                    },
-                ]),
-        };
-        debug("symfonID_updateShareholderVP request");
-        signatureRequestHandler.add([request]);
 
-        let result;
-        try {
-            const results = (await signatureRequestHandler.results()) as { jwt: string }[];
-            result = results[0];
-        } catch (error: any) {
-            debug("symfonID_updateShareholderVP response error", error);
+        // 2. Sign
+        const signResult = await signUpdateShareholderVP(props.capTableAddress, editEntity.id, updateShareholderData);
+
+        if (signResult.isErr()) {
+            debug("symfonID_updateShareholderVP response error", signResult.error);
             toast("feil ved endring av data");
             return undefined;
         }
+        const result = signResult.value[0];
 
+        // 3. Update
         debug("updateShareholderData", updateShareholderData);
         await updateShareholder(result.jwt);
         history.go(0);

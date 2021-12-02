@@ -1,4 +1,3 @@
-import { AxiosError } from "axios";
 import { Box, Button, Grid, Heading, Paragraph, Spinner, Text } from "grommet";
 import { CaretDown, CaretUp, Checkmark } from "grommet-icons";
 import React, { useCallback, useContext, useEffect, useState } from "react";
@@ -8,7 +7,7 @@ import { PrivateTokenTransferData, PrivateTokenTransferForm } from "../component
 import { OrgData, SelectOrg } from "../components/SelectOrg";
 import { BrokContext } from "../context/BrokContext";
 import { SymfoniContext } from "../context/SymfoniContext";
-import { SignatureRequest } from "../utils/SignerRequestHandler";
+import { useSignCreateCapTableVP } from "../hooks/useSignCreateCapTableVP";
 var debug = require("debug")("page:createCapTable");
 
 interface Props {}
@@ -21,7 +20,8 @@ enum STEP {
 
 export const CapTableCreatePage: React.FC<Props> = ({ ...props }) => {
     const history = useHistory();
-    const { signer, initSigner, signatureRequestHandler } = useContext(SymfoniContext);
+    const { signer } = useContext(SymfoniContext);
+    const { signCreateCapTableVP } = useSignCreateCapTableVP();
     const { createCaptable } = useContext(BrokContext);
     const [step, setStep] = useState(STEP.SELECT_COMPANY); // TEST - ISSUE_SHARES
     const [orgData, setOrgData] = useState<OrgData>(); // TEST - DEFAULT_ORG_DATA[0]
@@ -47,60 +47,34 @@ export const CapTableCreatePage: React.FC<Props> = ({ ...props }) => {
         [step]
     );
 
-    const requireSigner = !signer || !("request" in signer);
-
-    const createCapTable = async () => {
+    const signAndCreateCapTable = async () => {
         debug(`Started createCapTable, has request in signer ${signer && "request" in signer}`);
-        if (!signer || !("request" in signer)) {
-            debug(`No signer or request in signer found, running initSigner`);
-            return initSigner();
-        }
-        const BROK_HELPERS_VERIFIER = process.env.REACT_APP_BROK_HELPERS_VERIFIER;
+
+        // 0. Validate input
         if (!orgData) {
             return toast("Du må velge selskap først");
         }
         if (!privateTokenTransfers) {
             return toast("Du må sette aksjonærer først");
         }
-        setDeploying(true);
         debug(`creating org`, orgData);
         debug(`creating privateTokenTransfers`, privateTokenTransfers);
-        if (!signatureRequestHandler) throw Error("TODO: Create error");
-        debug("BROK_HELPERS_VERIFIER", BROK_HELPERS_VERIFIER);
-        const request: SignatureRequest = {
-            message: "Godkjenn migreringen av aksjeeierboka",
-            fn: async () =>
-                await signer.request("symfoniID_createCapTableVP", [
-                    {
-                        verifier: BROK_HELPERS_VERIFIER,
-                        capTable: {
-                            organizationNumber: orgData.orgnr.toString(),
-                            shareholders: privateTokenTransfers,
-                        },
-                    },
-                ]),
-        };
 
-        debug(`Created request in signatureRequestHandler`);
-        signatureRequestHandler.add([request]);
-        let response = (await signatureRequestHandler.results().catch((error) => {
-            debug(error);
-            return undefined;
-        })) as { jwt: string }[] | undefined;
-        if (!response) {
-            toast(`Signering ble avbrutt.`);
+        // 1. Sign
+        setDeploying(true);
+        const result = await signCreateCapTableVP(orgData, privateTokenTransfers);
+        if (result.isErr()) {
+            console.warn("signCreateCapTableVP(): result.isErr(): ", result.error);
             setDeploying(false);
             return;
         }
-        if (!Array.isArray(response) || !response[0]) {
-            toast(`Feil i respons fra Lommebok.`)!;
-            setDeploying(false);
-            return;
-        }
-        const createCapTableVP = response[0].jwt;
+        const createCapTableVP = result.value[0].jwt;
 
-        debug("signature result", createCapTableVP);
-        const createCapTableRespone = await createCaptable(createCapTableVP).catch((error: AxiosError<{ message: string }>) => {
+        // 2. Create
+        let createCapTableRespone;
+        try {
+            createCapTableRespone = await createCaptable(createCapTableVP);
+        } catch (error: any) {
             if (error.isAxiosError) {
                 if (error.response && error.response.data && "message" in error.response.data) {
                     toast(error.response.data.message);
@@ -109,12 +83,13 @@ export const CapTableCreatePage: React.FC<Props> = ({ ...props }) => {
             }
             toast(error.message);
             return undefined;
-        });
-        debug("deployed contract", createCapTableRespone);
+        } finally {
+            setDeploying(false);
+        }
 
-        setDeploying(false);
-        // history.push("/");
-        if (createCapTableRespone && createCapTableRespone.data.capTableAddress) {
+        // 3. Navigate
+        debug("deployed contract", createCapTableRespone);
+        if (createCapTableRespone?.data?.capTableAddress) {
             history.push("/captable/" + createCapTableRespone.data.capTableAddress);
         }
     };
@@ -242,9 +217,9 @@ export const CapTableCreatePage: React.FC<Props> = ({ ...props }) => {
 
             <Button
                 size="large"
-                label={requireSigner ? "Koble til lommebok" : "Opprett aksjeeierbok"}
+                label={"Opprett aksjeeierbok"}
                 disabled={step !== STEP.CONFIRM || !orgData || !privateTokenTransfers /* || deploying */}
-                onClick={() => createCapTable()}></Button>
+                onClick={() => signAndCreateCapTable()}></Button>
             {deploying && (
                 <Box align="center">
                     <Spinner></Spinner>
