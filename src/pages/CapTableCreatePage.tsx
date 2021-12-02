@@ -47,8 +47,6 @@ export const CapTableCreatePage: React.FC<Props> = ({ ...props }) => {
         [step]
     );
 
-    const requireSigner = !signer || !("request" in signer);
-
     const signAndCreateCapTable = async () => {
         debug(`Started createCapTable, has request in signer ${signer && "request" in signer}`);
 

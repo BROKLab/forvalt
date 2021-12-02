@@ -1,5 +1,5 @@
 import { EventEmitter } from "events";
-import { err, ok, Result, ResultAsync } from "neverthrow";
+import { ResultAsync } from "neverthrow";
 import { Signer } from "../context/useSymfoni";
 var debug = require("debug")("utils:SignatureRequestHandler");
 export interface ErrorResponse {

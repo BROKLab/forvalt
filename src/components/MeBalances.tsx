@@ -68,7 +68,7 @@ export const MeBalances: React.FC<Props> = ({ ...props }) => {
         });
 
         setBalances([..._clm, ..._unclm]);
-    }, [tokenHoldersLoading, data, unclaimed, unclaimedLoading]);
+    }, [loading, data, unclaimed]);
 
     const fetchUnclaimed = async (isMounted: () => boolean = () => true) => {
         try {

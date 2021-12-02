@@ -4,7 +4,7 @@ import { ethers, providers, Signer as EthersSigner, Wallet } from "ethers";
 import { useCallback, useState } from "react";
 import { toast } from "react-toastify";
 import { useAsyncEffect } from "use-async-effect";
-import { SignatureRequest, SignatureRequestHandler } from "../utils/SignerRequestHandler";
+import { SignatureRequestHandler } from "../utils/SignerRequestHandler";
 import { getWalletConnectSigner } from "../utils/walletconnect.utils";
 import { DEFAULT_PROVIDER, PROVIDERS, ProviderTypes, SIGNERS, SignerTypes } from "./defaults";
 import { useContracts } from "./useContracts";
