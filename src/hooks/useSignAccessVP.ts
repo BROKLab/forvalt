@@ -1,4 +1,4 @@
-import { useSign } from "../../../hooks/useSign";
+import { useSign } from "./useSign";
 
 export function useSignAccessVP() {
     const { sign } = useSign();
