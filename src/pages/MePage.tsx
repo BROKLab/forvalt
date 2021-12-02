@@ -20,10 +20,10 @@ export const MePage: React.FC<Props> = () => {
         debug("login() 1", result);
         if (result.isErr()) {
             debug("login() error", result.error);
-        } else {
-            debug("login(), res", result.value);
-            setToken(result.value[0].jwt);
+            return;
         }
+        debug("login(), res", result.value);
+        setToken(result.value[0].jwt);
     };
 
     return (
