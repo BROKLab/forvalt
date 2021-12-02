@@ -10,7 +10,9 @@ import { toast } from "react-toastify";
 import * as yup from "yup";
 import { validateEmail } from "../utils/validator";
 import { DEFAULT_CAPTABLE_PARTITION } from "./../context/defaults";
+
 var debug = require("debug")("component:PrivateTokenTransferForm");
+
 const postalCodes = require("norway-postal-codes");
 
 type PropsSingel = {

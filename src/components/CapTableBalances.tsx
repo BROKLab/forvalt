@@ -100,6 +100,7 @@ export const CapTableBalances: React.FC<Props> = ({ ...props }) => {
 
     const updateShareholderData = async (updateShareholderData: UpdateShareholderData) => {
         debug("updatreShareholderData", updateShareholderData);
+      
         // 1. Validate input
         if (!editEntity?.id) {
             debug("!editEntity?.id is undefined");
